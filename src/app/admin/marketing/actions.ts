@@ -22,6 +22,20 @@ const configSchema = z.object({
   heroSlides: z.array(slideSchema).min(1),
 });
 
+const donationMilestoneSchema = z.object({
+  goal: z.number().positive().max(1_000_000),
+  title: z.string().min(1).max(120),
+  description: z.string().max(240).optional(),
+});
+
+const donationSettingsSchema = z.object({
+  donationGoal: z.number().min(100).max(1_000_000),
+  impactStudentsHelped: z.number().min(0).max(1_000_000),
+  impactNotesShared: z.number().min(0).max(5_000_000),
+  impactLibrariesDigitized: z.number().min(0).max(50_000),
+  milestones: z.array(donationMilestoneSchema).max(12),
+});
+
 const getSupabaseAdmin = () => {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
@@ -32,6 +46,65 @@ const getSupabaseAdmin = () => {
 
   return createAdminClient(supabaseUrl, supabaseServiceKey);
 };
+
+export async function updateDonationSettings(formData: FormData) {
+  try {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user || user.user_metadata?.role !== 'admin') {
+      throw new Error('Forbidden: Admins only.');
+    }
+
+    const rawSettings = formData.get('settings');
+    if (typeof rawSettings !== 'string') {
+      throw new Error('Invalid payload.');
+    }
+
+    const parsed = donationSettingsSchema.parse(JSON.parse(rawSettings));
+
+    const supabaseAdmin = getSupabaseAdmin();
+
+    const mutations = [
+      supabaseAdmin
+        .from('app_config')
+        .upsert({ key: 'donation_goal', value: String(parsed.donationGoal) }, { onConflict: 'key' }),
+      supabaseAdmin
+        .from('app_config')
+        .upsert({ key: 'impact_students_helped', value: String(parsed.impactStudentsHelped) }, { onConflict: 'key' }),
+      supabaseAdmin
+        .from('app_config')
+        .upsert({ key: 'impact_notes_shared', value: String(parsed.impactNotesShared) }, { onConflict: 'key' }),
+      supabaseAdmin
+        .from('app_config')
+        .upsert({ key: 'impact_libraries_digitized', value: String(parsed.impactLibrariesDigitized) }, { onConflict: 'key' }),
+      supabaseAdmin
+        .from('app_config')
+        .upsert({ key: 'donation_milestones', value: parsed.milestones }, { onConflict: 'key' }),
+    ];
+
+    const results = await Promise.all(mutations);
+    const failing = results.find((result) => result.error);
+    if (failing?.error) {
+      throw new Error(failing.error.message);
+    }
+
+    await supabaseAdmin.from('audit_log').insert({
+      admin_id: user.id,
+      action: 'donation_settings_update',
+      details: `Updated donation goal to ₹${parsed.donationGoal.toLocaleString()} and ${parsed.milestones.length} milestone(s).`,
+    });
+
+    revalidatePath('/donate');
+    revalidatePath('/donate/thank-you');
+    revalidatePath('/admin/marketing/donations');
+
+    return { success: true, error: null };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return { success: false, error: message };
+  }
+}
 
 const uploadSlideImage = async (file: File, index: number) => {
   if (!file || file.size === 0) return { url: null, error: null };

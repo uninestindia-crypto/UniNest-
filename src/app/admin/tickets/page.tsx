@@ -1,6 +1,4 @@
 
-'use client';
-
 import PageHeader from "@/components/admin/page-header";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,95 +8,85 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import TicketStatusChanger from "@/components/admin/tickets/ticket-status-changer";
 import Link from "next/link";
 import type { SupportTicket, Profile } from "@/lib/types";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
-import { createBrowserClient } from '@supabase/ssr';
+import { createClient as createAdminClient } from "@supabase/supabase-js";
 
 type TicketWithProfile = SupportTicket & {
     profile: Pick<Profile, 'id' | 'full_name' | 'avatar_url'> | null;
 }
 
-export default function AdminTicketsPage() {
-    const [tickets, setTickets] = useState<TicketWithProfile[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const router = useRouter();
+export const revalidate = 0;
 
-    useEffect(() => {
-        const fetchTickets = async () => {
-            const supabase = createBrowserClient(
-                process.env.NEXT_PUBLIC_SUPABASE_URL!,
-                process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-            );
+export default async function AdminTicketsPage() {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
 
-            const { data: ticketsData, error: ticketsError } = await supabase
-                .from('support_tickets')
-                .select('*')
-                .order('created_at', { ascending: false });
+    if (!supabaseUrl || !supabaseServiceKey) {
+        return (
+            <div className="space-y-8">
+                <PageHeader title="Support Tickets" description="Review and manage user feedback and issues." />
+                <div className="rounded-md border border-destructive bg-destructive/10 p-4 text-destructive">
+                    Supabase service credentials are not configured.
+                </div>
+            </div>
+        );
+    }
 
-            if (ticketsError) {
-                setError(`Error loading tickets: ${ticketsError.message}`);
-                setLoading(false);
-                return;
-            }
+    const supabase = createAdminClient(supabaseUrl, supabaseServiceKey);
 
-            const baseTickets = (ticketsData || []) as SupportTicket[];
+    const { data: ticketsData, error: ticketsError } = await supabase
+        .from('support_tickets')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-            if (baseTickets.length === 0) {
-                setTickets([]);
-                setLoading(false);
-                return;
-            }
+    if (ticketsError) {
+        return (
+            <div className="space-y-8">
+                <PageHeader title="Support Tickets" description="Review and manage user feedback and issues." />
+                <div className="rounded-md border border-destructive bg-destructive/10 p-4 text-destructive">
+                    Error loading tickets: {ticketsError.message}
+                </div>
+            </div>
+        );
+    }
 
-            const userIds = Array.from(new Set(baseTickets.map(ticket => ticket.user_id).filter(Boolean)));
+    const baseTickets = (ticketsData || []) as SupportTicket[];
 
-            if (userIds.length === 0) {
-                setTickets(baseTickets as TicketWithProfile[]);
-                setLoading(false);
-                return;
-            }
+    let tickets: TicketWithProfile[] = [];
+    let profilesErrorMessage: string | null = null;
 
+    if (baseTickets.length > 0) {
+        const userIds = Array.from(new Set(baseTickets.map(ticket => ticket.user_id).filter(Boolean)));
+
+        let profileMap = new Map<string, Pick<Profile, 'id' | 'full_name' | 'avatar_url'>>();
+
+        if (userIds.length > 0) {
             const { data: profilesData, error: profilesError } = await supabase
                 .from('profiles')
                 .select('id, full_name, avatar_url')
                 .in('id', userIds);
 
             if (profilesError) {
-                setError(`Error loading tickets: ${profilesError.message}`);
-                setLoading(false);
-                return;
+                profilesErrorMessage = profilesError.message;
+            } else if (profilesData) {
+                profileMap = new Map(profilesData.map(profile => [profile.id, profile]));
             }
+        }
 
-            const profileMap = new Map((profilesData || []).map(profile => [profile.id, profile]));
-
-            setTickets(
-                baseTickets.map(ticket => ({
-                    ...ticket,
-                    profile: profileMap.get(ticket.user_id) || null,
-                })) as TicketWithProfile[]
-            );
-            setLoading(false);
-        };
-
-        fetchTickets();
-    }, []);
-
-    if (loading) {
-        return (
-            <div className="flex h-64 items-center justify-center">
-                <Loader2 className="size-8 animate-spin" />
-            </div>
-        )
+        tickets = baseTickets.map(ticket => ({
+            ...ticket,
+            profile: profileMap.get(ticket.user_id) || null,
+        })) as TicketWithProfile[];
     }
 
-    if (error) {
+    if (profilesErrorMessage) {
         return (
             <div className="space-y-8">
                 <PageHeader title="Support Tickets" description="Review and manage user feedback and issues." />
-                <p>{error}</p>
+                <div className="rounded-md border border-destructive bg-destructive/10 p-4 text-destructive">
+                    Error loading tickets: {profilesErrorMessage}
+                </div>
             </div>
-        )
+        );
     }
 
     return (
@@ -125,7 +113,7 @@ export default function AdminTicketsPage() {
                                 </TableRow>
                             ) : (
                                 tickets.map(ticket => (
-                                    <TableRow key={ticket.id} className="cursor-pointer hover:bg-muted/50" onClick={() => router.push(`/admin/tickets/${ticket.id}`)}>
+                                    <TableRow key={ticket.id} className="hover:bg-muted/50">
                                         <TableCell>
                                             <div className="flex items-center gap-3">
                                                 <Avatar className="size-9">
@@ -138,7 +126,7 @@ export default function AdminTicketsPage() {
                                             </div>
                                         </TableCell>
                                         <TableCell className="font-medium max-w-xs truncate">
-                                            <Link href={`/admin/tickets/${ticket.id}`} className="hover:underline" onClick={(e) => e.stopPropagation()}>
+                                            <Link href={`/admin/tickets/${ticket.id}`} className="hover:underline">
                                                 {ticket.subject}
                                             </Link>
                                         </TableCell>

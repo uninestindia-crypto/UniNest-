@@ -11,12 +11,11 @@ export default async function MyProfilePage() {
   if (!user) {
     redirect('/login');
   }
-  
+
   const handle = user.user_metadata?.handle;
   if (handle) {
     redirect(`/profile/${handle}`);
-  } else {
-    // If user has no handle, redirect to settings to create one.
-    redirect('/settings');
   }
+
+  redirect('/profile/setup');
 }

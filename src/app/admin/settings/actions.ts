@@ -1,6 +1,7 @@
 
 'use server';
 
+import { createClient as createAdminClient } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
@@ -21,9 +22,21 @@ const settingsSchema = z.object({
   start_date: z.string().datetime({ offset: true }).nullable(),
 });
 
+const getSupabaseAdmin = () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
+
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error('Supabase service role key is not configured.');
+  }
+
+  return createAdminClient(supabaseUrl, supabaseServiceKey);
+};
+
 export async function updateSettings(settings: unknown) {
   try {
     const supabase = createClient();
+    const supabaseAdmin = getSupabaseAdmin();
 
     // 1. Check for authenticated user
     const { data: { user } } = await supabase.auth.getUser();
@@ -44,7 +57,7 @@ export async function updateSettings(settings: unknown) {
     }
 
     // 4. Upsert the settings in the database
-    const { error: dbError } = await supabase
+    const { error: dbError } = await supabaseAdmin
       .from('platform_settings')
       .upsert({
         key: 'monetization',
@@ -59,7 +72,7 @@ export async function updateSettings(settings: unknown) {
     }
 
     // 5. Log the action to the audit log
-    const { error: logError } = await supabase.from('audit_log').insert({
+    const { error: logError } = await supabaseAdmin.from('audit_log').insert({
       admin_id: user.id,
       action: 'settings_update',
       details: `Updated monetization settings.`,
