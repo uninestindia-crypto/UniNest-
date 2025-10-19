@@ -129,29 +129,27 @@ export default function DonateContent({ initialDonors, initialGoal, initialRaise
             setRaisedAmount(data.goal.raised);
 
             if (Array.isArray(data.donors?.leaderboard) && data.donors.leaderboard.length > 0) {
+                const leaderboardDonors = data.donors.leaderboard.map((item) => ({
+                    name: item.name,
+                    avatar: item.avatar,
+                    amount: item.total,
+                    userId: item.userId,
+                }));
+
                 setDonors((prevDonors) => {
-                    const merged = [
-                        ...data.donors.leaderboard.map((item) => ({
-                            name: item.name,
-                            avatar: item.avatar,
-                            amount: item.total,
-                            userId: item.userId,
-                        })),
-                        ...prevDonors,
-                    ]
-                      .reduce<Donor[]>((acc, donor) => {
+                    const combined = [...leaderboardDonors, ...prevDonors];
+                    const merged = combined.reduce<Donor[]>((acc, donor) => {
                         const existing = acc.find((d) => d.userId === donor.userId);
                         if (existing) {
                             existing.amount = Math.max(existing.amount, donor.amount);
                             existing.avatar = existing.avatar ?? donor.avatar;
                             existing.name = existing.name ?? donor.name;
                         } else {
-                            acc.push(donor);
+                            acc.push({ ...donor });
                         }
                         return acc;
-                    }, [])
-                      .sort((a, b) => b.amount - a.amount);
-                    return merged;
+                    }, []);
+                    return merged.sort((a, b) => b.amount - a.amount);
                 });
             }
 

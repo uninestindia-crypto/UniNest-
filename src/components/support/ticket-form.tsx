@@ -25,6 +25,7 @@ const formSchema = z.object({
 
 export default function SupportTicketForm() {
   const [isLoading, setIsLoading] = useState(false);
+  const [isBucketReady, setIsBucketReady] = useState(false);
   const { toast } = useToast();
   const { user, supabase } = useAuth();
 
@@ -38,21 +39,38 @@ export default function SupportTicketForm() {
 
   const uploadFile = async (file: File): Promise<string | null> => {
     if (!supabase || !user) return null;
-    const filePath = `${user.id}/${Date.now()}-${file.name}`;
-    const { error: uploadError } = await supabase.storage
-      .from('support-tickets')
-      .upload(filePath, file);
-    
-    if (uploadError) {
-      console.error('Upload Error:', uploadError);
+
+    try {
+      if (!isBucketReady) {
+        const response = await fetch('/api/support/ensure-bucket', { method: 'POST' });
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}));
+          throw new Error(data.error || 'Unable to prepare storage bucket.');
+        }
+        setIsBucketReady(true);
+      }
+
+      const filePath = `${user.id}/${Date.now()}-${file.name}`;
+      const { error: uploadError } = await supabase.storage
+        .from('support-tickets')
+        .upload(filePath, file, {
+          contentType: file.type || 'application/octet-stream',
+        });
+      
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('support-tickets')
+        .getPublicUrl(filePath);
+        
+      return publicUrl;
+    } catch (error) {
+      console.error('Upload Error:', error);
+      setIsBucketReady(false);
       return null;
     }
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('support-tickets')
-      .getPublicUrl(filePath);
-      
-    return publicUrl;
   }
 
   async function onSubmit(values: z.infer<typeof formSchema>) {

@@ -78,7 +78,7 @@ export function SidebarNav() {
         <div className='flex-grow' />
 
          <SidebarMenuItem>
-            <SidebarMenuButton asChild variant="secondary" className="bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-900 font-bold border-amber-200 dark:border-amber-800 border-2" onClick={handleLinkClick}>
+            <SidebarMenuButton asChild className="bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-900 font-bold border-amber-200 dark:border-amber-800 border-2" onClick={handleLinkClick}>
                 <Link href="/donate">
                     <Heart className="size-5" />
                     <span>Donate</span>
