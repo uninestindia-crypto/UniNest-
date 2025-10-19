@@ -105,12 +105,19 @@ export default function SettingsContent() {
   const hasRecordedPayment = Boolean(user?.user_metadata?.last_payment_id);
   const isVendorActive = rawVendorActive && (isTrialActive || hasRecordedPayment);
   const isTrialEligible = !vendorTrialStartedAt;
-  const vendorSettings = monetizationSettings?.vendor;
-  const planPrice = vendorSettings?.price_per_service_per_month ?? 100;
+
+  const vendorMonetization = monetizationSettings?.vendor;
+  const planPrice = vendorMonetization?.price_per_service_per_month ?? 100;
   const discountedPrice = 100;
   const originalPrice = 1000;
-  const shouldCharge = selectedRole === 'vendor' && vendorSettings?.charge_for_platform_access && vendorCategoryCount > 0;
+  const shouldCharge = selectedRole === 'vendor' && vendorMonetization?.charge_for_platform_access && vendorCategoryCount > 0;
   const requiresImmediatePayment = shouldCharge && !isTrialEligible && !isTrialActive && !isVendorActive && planPrice > 0;
+  const totalCost = vendorCategoryCount * (vendorMonetization?.price_per_service_per_month ?? 0);
+  const showPaymentAlert =
+    selectedRole === 'vendor' &&
+    vendorMonetization?.charge_for_platform_access &&
+    !isVendorActive &&
+    vendorCategoryCount > 0;
   const submitLabel = (() => {
     if (selectedRole !== 'vendor') return 'Save Changes';
     if (shouldCharge && isTrialEligible) return 'Activate Free Trial';
@@ -163,7 +170,7 @@ export default function SettingsContent() {
     const wantsVendorRole = values.role === 'vendor';
     const hasSelectedServices = (values.vendorCategories?.length ?? 0) > 0;
     const planActive = wantsVendorRole && vendorSettings?.charge_for_platform_access && hasSelectedServices;
-    const planPrice = vendorSettings?.price_per_service_per_month ?? discountedPrice;
+    const planPriceForSubmission = vendorSettings?.price_per_service_per_month ?? discountedPrice;
     const requiresPayment = planActive && !isTrialEligible && !isTrialActive && !isVendorActive;
 
     if (planActive && isTrialEligible) {
@@ -181,7 +188,7 @@ export default function SettingsContent() {
     }
 
     if (requiresPayment) {
-      const totalCost = planPrice;
+      const totalCost = planPriceForSubmission;
 
       if (totalCost <= 0) {
         // If cost is zero, just activate them
@@ -416,20 +423,7 @@ export default function SettingsContent() {
     }
     setIsBannerLoading(false);
   }
-  
-  const vendorSettings = monetizationSettings?.vendor;
-  const showPaymentAlert = requiresImmediatePayment;
-  const planDetails = shouldCharge
-    ? {
-        discounted: discountedPrice,
-        original: originalPrice,
-        trialEligible: isTrialEligible,
-        trialActive: isTrialActive,
-        expiresAt: vendorTrialExpiresAt,
-      }
-    : null;
-
-  if (loading) {
+    if (loading) {
     return <div>Loading...</div>;
   }
   
@@ -667,6 +661,20 @@ export default function SettingsContent() {
                             </FormControl>
                             <FormMessage />
                         </FormItem>
+                    )}
+                    />
+                  </Card>
+              )}
+
+              <Button type="submit" disabled={isProfileLoading}>
+                {isProfileLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {submitLabel}
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle>Change Password</CardTitle>

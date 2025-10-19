@@ -57,22 +57,36 @@ export default async function DonatePage() {
     if (donorsError) console.error('Error fetching donors:', donorsError.message);
     if (goalError) console.error('Error fetching goal amount:', goalError.message);
 
-    const aggregatedDonors: AggregatedDonor[] = ((donations || []) as DonationWithProfile[]).reduce((acc: AggregatedDonor[], current) => {
+    const aggregatedDonorsMap = ((donations || []) as DonationWithProfile[]).reduce((map, current) => {
         const profile = Array.isArray(current.profiles) ? current.profiles[0] : current.profiles;
-        if (!profile) return acc;
-        const existing = acc.find(d => d.userId === current.user_id);
+        const userId = current.user_id;
+        if (!userId) return map;
+
+        const displayName = profile?.full_name && profile.full_name.trim().length > 0 ? profile.full_name : 'Anonymous';
+        const avatarUrl = profile?.avatar_url ?? null;
+
+        const existing = map.get(userId);
         if (existing) {
             existing.amount += current.amount;
+            if (existing.name === 'Anonymous' && displayName !== 'Anonymous') {
+                existing.name = displayName;
+            }
+            if (!existing.avatar && avatarUrl) {
+                existing.avatar = avatarUrl;
+            }
         } else {
-            acc.push({
-                name: profile.full_name,
-                userId: current.user_id,
-                avatar: profile.avatar_url,
-                amount: current.amount
+            map.set(userId, {
+                name: displayName,
+                userId,
+                avatar: avatarUrl,
+                amount: current.amount,
             });
         }
-        return acc;
-    }, []).sort((a,b) => b.amount - a.amount);
+
+        return map;
+    }, new Map<string, AggregatedDonor>());
+
+    const aggregatedDonors: AggregatedDonor[] = Array.from(aggregatedDonorsMap.values()).sort((a, b) => b.amount - a.amount);
 
     const goalAmount = goalData ? Number(goalData.value) : 50000;
     const initialRaisedAmount = (donations || []).reduce((sum, d) => sum + d.amount, 0);

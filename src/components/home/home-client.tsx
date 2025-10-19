@@ -151,8 +151,8 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
   return (
     <>
       <DonationModal isOpen={isDonationModalOpen} onOpenChange={setIsDonationModalOpen} />
-      <div className="bg-muted/30 py-6">
-        <div className="container space-y-8 px-4 md:px-6">
+      <div className="bg-muted/30 py-4 sm:py-6">
+        <div className="mx-auto w-full max-w-6xl space-y-6 sm:space-y-8 px-4 sm:px-6">
           <section className="grid gap-4 lg:grid-cols-[minmax(0,3fr),minmax(280px,1fr)]">
             <div className="relative overflow-hidden rounded-2xl bg-background shadow-xl">
               <Carousel
@@ -162,7 +162,7 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
               >
                 <CarouselContent>
                   {heroSlides.map((slide) => (
-                    <CarouselItem key={slide.id} className="h-[360px] md:h-[420px]">
+                    <CarouselItem key={slide.id} className="h-[320px] md:h-[420px]">
                       <div className="relative h-full w-full">
                         <Image
                           src={slide.imageUrl}
@@ -212,7 +212,7 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
                   </>
                 )}
               </Carousel>
-              <div className="absolute bottom-4 left-6 right-6">
+              <div className="absolute bottom-4 left-4 right-4 sm:left-6 sm:right-6">
                 <div className="relative">
                   <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <Input
@@ -281,7 +281,7 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
         </div>
       </div>
 
-      <div className="container px-4 md:px-6 space-y-16 md:space-y-24 py-12">
+      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 space-y-12 sm:space-y-16 lg:space-y-20 xl:space-y-24 py-10 sm:py-12">
         <section>
           <div className="grid gap-6 lg:grid-cols-3">
             {curatedCollections.map((collection) => (
