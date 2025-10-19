@@ -125,7 +125,7 @@ export async function updateHomePoster(formData: FormData) {
       admin_id: user.id,
       action: 'home_poster_update',
       details: `Updated home poster with ${posterConfig.heroSlides.length} slide(s).`,
-    }).catch(() => undefined);
+    });
 
     revalidatePath('/');
     revalidatePath('/admin/marketing');

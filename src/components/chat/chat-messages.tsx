@@ -71,13 +71,10 @@ export default function ChatMessages({ room, messages, onSendMessage, loading, c
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: false,
-          onProgress: (progress) => {
-            const progressPercentage = Math.round((progress.loaded / progress.total) * 100);
-            setUploadProgress(progressPercentage);
-          },
         });
 
       if (error) throw error;
+      setUploadProgress(100);
       
       // Get the public URL
       const { data: { publicUrl } } = supabase.storage
