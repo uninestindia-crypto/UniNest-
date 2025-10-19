@@ -106,14 +106,15 @@ export default function SettingsContent() {
   const isVendorActive = rawVendorActive && (isTrialActive || hasRecordedPayment);
   const isTrialEligible = !vendorTrialStartedAt;
   const vendorSettings = monetizationSettings?.vendor;
-  const totalCost = vendorSettings?.price_per_service_per_month ?? 0;
+  const planPrice = vendorSettings?.price_per_service_per_month ?? 100;
+  const discountedPrice = 100;
   const originalPrice = 1000;
   const shouldCharge = selectedRole === 'vendor' && vendorSettings?.charge_for_platform_access && vendorCategoryCount > 0;
-  const showPaymentAlert = shouldCharge && !isTrialEligible && !isTrialActive && !isVendorActive && totalCost > 0;
+  const requiresImmediatePayment = shouldCharge && !isTrialEligible && !isTrialActive && !isVendorActive && planPrice > 0;
   const submitLabel = (() => {
     if (selectedRole !== 'vendor') return 'Save Changes';
     if (shouldCharge && isTrialEligible) return 'Activate Free Trial';
-    if (showPaymentAlert) return `Pay ₹${totalCost}/mo (₹${originalPrice}/mo) and Save`;
+    if (requiresImmediatePayment) return `Pay ₹${discountedPrice}/mo (₹${originalPrice}/mo) and Save`;
     return 'Save Changes';
   })();
   
@@ -159,19 +160,32 @@ export default function SettingsContent() {
     if (!user) return;
   
     const vendorSettings = monetizationSettings?.vendor;
-    const requiresPayment =
-      values.role === 'vendor' &&
-      vendorSettings?.charge_for_platform_access &&
-      !isVendorActive &&
-      (values.vendorCategories?.length ?? 0) > 0;
-  
+    const wantsVendorRole = values.role === 'vendor';
+    const hasSelectedServices = (values.vendorCategories?.length ?? 0) > 0;
+    const planActive = wantsVendorRole && vendorSettings?.charge_for_platform_access && hasSelectedServices;
+    const planPrice = vendorSettings?.price_per_service_per_month ?? discountedPrice;
+    const requiresPayment = planActive && !isTrialEligible && !isTrialActive && !isVendorActive;
+
+    if (planActive && isTrialEligible) {
+      const trialStart = new Date();
+      const trialEnd = new Date(trialStart);
+      trialEnd.setMonth(trialEnd.getMonth() + 3);
+      await saveProfile(values, {
+        activateVendor: true,
+        trial: {
+          startedAt: trialStart.toISOString(),
+          expiresAt: trialEnd.toISOString(),
+        },
+      });
+      return;
+    }
+
     if (requiresPayment) {
-      const numberOfServices = values.vendorCategories?.length ?? 0;
-      const totalCost = numberOfServices * vendorSettings.price_per_service_per_month;
-  
+      const totalCost = planPrice;
+
       if (totalCost <= 0) {
         // If cost is zero, just activate them
-        await saveProfile(values, true);
+        await saveProfile(values, { activateVendor: true });
         return;
       }
   
@@ -190,11 +204,14 @@ export default function SettingsContent() {
           amount: order.amount,
           currency: order.currency,
           name: 'UniNest Vendor Subscription',
-          description: `Monthly fee for ${numberOfServices} service(s).`,
+          description: `Monthly access at ₹${discountedPrice} (₹${originalPrice} value).`,
           order_id: order.id,
           handler: async (response: any) => {
             // On successful payment, save the profile with active status
-            await saveProfile(values, true, response.razorpay_payment_id);
+            await saveProfile(values, {
+              activateVendor: true,
+              paymentId: response.razorpay_payment_id,
+            });
           },
           modal: { ondismiss: () => setIsProfileLoading(false) },
           prefill: { name: user.user_metadata?.full_name || '', email: user.email || '' },
@@ -209,14 +226,24 @@ export default function SettingsContent() {
       }
     } else {
       // No payment required, just save the profile
-      await saveProfile(values, isVendorActive);
+      await saveProfile(values, { activateVendor: isVendorActive });
     }
   };
 
-  async function saveProfile(values: z.infer<typeof profileFormSchema>, isNowActive: boolean, paymentId?: string) {
+  type SaveProfileOptions = {
+    activateVendor?: boolean;
+    paymentId?: string;
+    trial?: {
+      startedAt: string;
+      expiresAt: string;
+    };
+  };
+
+  async function saveProfile(values: z.infer<typeof profileFormSchema>, options: SaveProfileOptions = {}) {
     if (!user || !supabase) return;
     setIsProfileLoading(true);
 
+    const shouldActivateVendor = options.activateVendor ?? false;
     const userData = {
         ...user.user_metadata,
         full_name: values.fullName,
@@ -226,8 +253,10 @@ export default function SettingsContent() {
         role: values.role,
         opening_hours: values.role === 'vendor' ? values.openingHours : undefined,
         vendor_categories: values.role === 'vendor' ? values.vendorCategories : [],
-        is_vendor_active: values.role === 'vendor' ? isNowActive : false,
-        last_payment_id: paymentId || user.user_metadata?.last_payment_id,
+        is_vendor_active: values.role === 'vendor' ? shouldActivateVendor : false,
+        last_payment_id: options.paymentId || user.user_metadata?.last_payment_id,
+        vendor_trial_started_at: options.trial?.startedAt || user.user_metadata?.vendor_trial_started_at,
+        vendor_trial_expires_at: options.trial?.expiresAt || user.user_metadata?.vendor_trial_expires_at,
     };
     
     const { error: authError } = await supabase.auth.updateUser({ data: userData });
@@ -241,7 +270,7 @@ export default function SettingsContent() {
         full_name: values.fullName,
         handle: values.handle,
         role: values.role,
-     }).eq('id', user.id);
+      }).eq('id', user.id);
 
     if (profileError) {
       toast({ variant: 'destructive', title: 'Profile Error', description: 'Could not update public profile. ' + profileError.message });
