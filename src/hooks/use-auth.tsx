@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import type { Notification } from '@/lib/types';
 
-type UserRole = 'student' | 'vendor' | 'admin' | 'guest';
+type UserRole = 'student' | 'vendor' | 'co-admin' | 'admin' | 'guest';
 
 type AuthContextType = {
   supabase: SupabaseClient;
