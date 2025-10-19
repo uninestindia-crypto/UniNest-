@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/hooks/use-auth';
+import { trackEvent } from '@/lib/analytics';
 import { Users, BookOpen, Library, Star, Share2, Rocket } from 'lucide-react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
@@ -253,13 +254,21 @@ export default function ThankYouClient() {
             <p className="text-sm text-muted-foreground mb-6">Help us reach 100% to unlock free premium features for all students. 🎉</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
                  <Button size="lg" asChild>
-                    <Link href="/donate">
+                    <Link
+                      href="/donate"
+                      onClick={() => trackEvent('donation_thankyou_donate_again_click', { amount })}
+                    >
                         <Rocket className="mr-2"/>
                         Donate Again
                     </Link>
                 </Button>
                 <Button size="lg" variant="outline" asChild>
-                    <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${'https://uninest.app'}`} target="_blank" rel="noopener noreferrer">
+                    <a
+                      href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${'https://uninest.app'}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => trackEvent('donation_thankyou_share_click', { platform: 'twitter', amount })}
+                    >
                         <Share2 className="mr-2"/>
                         Share Your Impact
                     </a>

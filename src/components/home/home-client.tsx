@@ -133,9 +133,16 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
     }
   }, []);
 
-  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && searchQuery.trim()) {
+  const executeSearch = () => {
+    if (searchQuery.trim()) {
       router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      executeSearch();
     }
   };
 
@@ -213,8 +220,16 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
                     className="w-full rounded-full bg-background/95 py-5 pl-12 text-base shadow-lg"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyDown={handleSearch}
+                    onKeyDown={handleSearchKeyDown}
                   />
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full px-5"
+                    onClick={executeSearch}
+                  >
+                    Search
+                  </Button>
                 </div>
               </div>
             </div>
