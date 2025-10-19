@@ -26,31 +26,54 @@ export default function SearchResults() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!query || !supabase) {
+    if (!supabase) {
       setLoading(false);
       return;
     }
 
     const performSearch = async () => {
-      setLoading(true);
-      
-      // We'll perform searches in parallel
-      const [productRes, profileRes] = await Promise.all([
-        supabase.from('products').select('*, profiles:seller_id(full_name)').textSearch('name', query, { type: 'websearch' }),
-        supabase.from('profiles').select('*').textSearch('full_name', query, { type: 'websearch' })
-      ]);
+      const trimmedQuery = (query || '').trim();
 
-      if (productRes.error || profileRes.error) {
-        toast({ variant: 'destructive', title: 'Search Error', description: 'Could not perform search.' });
-        console.error('Search errors:', { p: productRes.error, u: profileRes.error });
+      if (!trimmedQuery) {
+        setResults({ products: [], profiles: [] });
+        setLoading(false);
+        return;
       }
 
-      setResults({
-        products: (productRes.data as any[] || []).map(p => ({ ...p, seller: p.profiles })) as Product[],
-        profiles: profileRes.data as Profile[] || [],
-      });
+      setLoading(true);
 
-      setLoading(false);
+      const ilikePattern = `%${trimmedQuery.replace(/[%_]/g, '')}%`;
+
+      try {
+        const [productRes, profileRes] = await Promise.all([
+          supabase
+            .from('products')
+            .select('*, profiles:seller_id(full_name)')
+            .or(`name.ilike.${ilikePattern},description.ilike.${ilikePattern}`),
+          supabase
+            .from('profiles')
+            .select('*')
+            .ilike('full_name', ilikePattern),
+        ]);
+
+        if (productRes.error || profileRes.error) {
+          toast({ variant: 'destructive', title: 'Search Error', description: 'Could not perform search.' });
+          console.error('Search errors:', { p: productRes.error, u: profileRes.error });
+          setResults({ products: [], profiles: [] });
+          return;
+        }
+
+        setResults({
+          products: ((productRes.data as any[]) || []).map((p) => ({ ...p, seller: p.profiles })) as Product[],
+          profiles: (profileRes.data as Profile[]) || [],
+        });
+      } catch (error) {
+        toast({ variant: 'destructive', title: 'Search Error', description: 'Could not perform search.' });
+        console.error('Unexpected search error:', error);
+        setResults({ products: [], profiles: [] });
+      } finally {
+        setLoading(false);
+      }
     };
 
     performSearch();

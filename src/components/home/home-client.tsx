@@ -222,14 +222,6 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={handleSearchKeyDown}
                   />
-                  <Button
-                    type="button"
-                    size="sm"
-                    className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full px-5"
-                    onClick={executeSearch}
-                  >
-                    Search
-                  </Button>
                 </div>
               </div>
             </div>
