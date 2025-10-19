@@ -2,52 +2,173 @@
 import PageHeader from '@/components/admin/page-header';
 import AdminDashboardContent from '@/components/admin/dashboard/page';
 import { createClient } from '@/lib/supabase/server';
-import TopDonorsTable from '@/components/admin/top-donors-table';
+import { subMonths, startOfMonth, format } from 'date-fns';
 
-type AggregatedDonor = {
-  name: string;
-  userId: string;
-  avatar: string | null;
-  total: number;
+type DonationRow = {
+  user_id: string;
+  amount: number;
+  created_at: string;
+  profiles: {
+    full_name: string | null;
+    avatar_url: string | null;
+  } | null;
+};
+
+type CompetitionEntryRow = {
+  competitions: {
+    entry_fee: number | null;
+  } | null;
+  created_at: string;
+};
+
+type CategoryRow = {
+  category: string | null;
 };
 
 export default async function AdminDashboardPage() {
   const supabase = createClient();
-  const { data: topDonors, error } = await supabase
+
+  const [donationsResult, competitionResult, usersResult, listingsResult, categoriesResult] = await Promise.all([
+    supabase
       .from('donations')
-      .select(`
-          user_id,
-          amount,
-          profiles (
-              full_name,
-              avatar_url
-          )
-      `)
-      .order('amount', { ascending: false })
-      .limit(10);
+      .select('user_id, amount, created_at, profiles:profiles(full_name, avatar_url)'),
+    supabase
+      .from('competition_entries')
+      .select('competitions(entry_fee), created_at'),
+    supabase
+      .from('profiles')
+      .select('id', { count: 'exact', head: true }),
+    supabase
+      .from('products')
+      .select('id', { count: 'exact', head: true }),
+    supabase
+      .from('products')
+      .select('category'),
+  ]);
 
-  // Manual aggregation in JS
-  const aggregatedDonors: AggregatedDonor[] = (topDonors || []).reduce((acc: any[], current) => {
-      if (!current.profiles) return acc;
-      const existing = acc.find(d => d.userId === current.user_id);
-      if (existing) {
-          existing.total += current.amount;
-      } else {
-          acc.push({
-              name: current.profiles.full_name,
-              userId: current.user_id,
-              avatar: current.profiles.avatar_url,
-              total: current.amount
-          });
+  if (donationsResult.error) {
+    console.error('Error fetching donations for dashboard:', donationsResult.error.message);
+  }
+  if (competitionResult.error) {
+    console.error('Error fetching competition entries for dashboard:', competitionResult.error.message);
+  }
+  if (categoriesResult.error) {
+    console.error('Error fetching product categories for dashboard:', categoriesResult.error.message);
+  }
+
+  const donations = (donationsResult.data ?? []) as DonationRow[];
+  const competitionEntries = (competitionResult.data ?? []) as CompetitionEntryRow[];
+  const productCategories = (categoriesResult.data ?? []) as CategoryRow[];
+  const usersCount = usersResult.count ?? 0;
+  const listingsCount = listingsResult.count ?? 0;
+
+  const startOfCurrentMonth = startOfMonth(new Date());
+
+  const aggregateDonations = (source: DonationRow[], predicate: (createdAt: Date) => boolean) => {
+    const map = new Map<
+      string,
+      {
+        name: string;
+        avatar: string | null;
+        total: number;
       }
-      return acc;
-  }, []).sort((a,b) => b.total - a.total).slice(0, 5);
+    >();
 
+    source.forEach((donation) => {
+      const createdAt = new Date(donation.created_at);
+      if (!Number.isFinite(createdAt.valueOf()) || !predicate(createdAt)) {
+        return;
+      }
+
+      const profile = donation.profiles;
+      const existing = map.get(donation.user_id);
+      const name = profile?.full_name || 'Unknown Donor';
+      const avatar = profile?.avatar_url || null;
+
+      if (existing) {
+        existing.total += donation.amount;
+      } else {
+        map.set(donation.user_id, {
+          name,
+          avatar,
+          total: donation.amount,
+        });
+      }
+    });
+
+    return Array.from(map.entries())
+      .map(([userId, donor]) => ({
+        userId,
+        name: donor.name,
+        avatar: donor.avatar,
+        total: donor.total,
+      }))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 5);
+  };
+
+  const monthlyTopDonors = aggregateDonations(donations, (createdAt) => createdAt >= startOfCurrentMonth);
+  const allTimeTopDonors = aggregateDonations(donations, () => true);
+  const topDonors = monthlyTopDonors.length > 0 ? monthlyTopDonors : allTimeTopDonors;
+
+  const totalDonations = donations.reduce((sum, donation) => sum + donation.amount, 0);
+  const totalCompetitionFees = competitionEntries.reduce(
+    (sum, entry) => sum + (entry.competitions?.entry_fee || 0),
+    0
+  );
+
+  const stats = {
+    revenue: totalDonations + totalCompetitionFees,
+    donations: totalDonations,
+    users: usersCount,
+    listings: listingsCount,
+    donationsCount: donations.length,
+  };
+
+  const allTransactions = [
+    ...donations
+      .filter((donation) => donation.amount > 0 && donation.created_at)
+      .map((donation) => ({ amount: donation.amount, created_at: donation.created_at })),
+    ...competitionEntries
+      .filter((entry) => (entry.competitions?.entry_fee || 0) > 0 && entry.created_at)
+      .map((entry) => ({ amount: entry.competitions?.entry_fee || 0, created_at: entry.created_at })),
+  ];
+
+  const monthlyRevenueBuckets: Record<string, number> = {};
+  for (let i = 0; i < 12; i += 1) {
+    const date = subMonths(new Date(), i);
+    const key = format(date, 'MMM yy');
+    monthlyRevenueBuckets[key] = 0;
+  }
+
+  allTransactions.forEach((transaction) => {
+    const key = format(new Date(transaction.created_at), 'MMM yy');
+    if (Object.prototype.hasOwnProperty.call(monthlyRevenueBuckets, key)) {
+      monthlyRevenueBuckets[key] += transaction.amount;
+    }
+  });
+
+  const revenueData = Object.entries(monthlyRevenueBuckets)
+    .map(([name, revenue]) => ({ name, revenue }))
+    .reverse();
+
+  const categoryCounts = productCategories.reduce((acc, { category }) => {
+    const key = category || 'Uncategorized';
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const categoryData = Object.entries(categoryCounts).map(([name, value]) => ({ name, value }));
 
   return (
     <div className="space-y-8">
       <PageHeader title="Dashboard" description="An overview of your platform's performance." />
-      <AdminDashboardContent topDonors={aggregatedDonors as any[]} />
+      <AdminDashboardContent
+        topDonors={topDonors}
+        stats={stats}
+        revenueData={revenueData}
+        categoryData={categoryData}
+      />
     </div>
   );
 }

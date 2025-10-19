@@ -4,12 +4,16 @@ import { useSearchParams } from 'next/navigation';
 import ProductCard from '@/components/marketplace/product-card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, ListFilter, Library, Utensils, Laptop, Bed, Book, Package, X, Loader2, Plus, MessageSquare, Armchair } from 'lucide-react';
-import type { Product, Profile } from '@/lib/types';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Slider } from '@/components/ui/slider';
+import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';
+import { Search, ListFilter, Library, Utensils, Laptop, Bed, Book, Package, X, Loader2, Plus, MessageSquare } from 'lucide-react';
+import type { Product } from '@/lib/types';
 import Link from 'next/link';
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 import { useRazorpay } from '@/hooks/use-razorpay';
 import { useRouter } from 'next/navigation';
@@ -34,65 +38,203 @@ export default function MarketplaceContent() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [purchasingProductId, setPurchasingProductId] = useState<number | null>(null);
-  
+  const [selectedLocation, setSelectedLocation] = useState('all');
+  const [selectedType, setSelectedType] = useState('all');
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 0]);
+  const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
+
   const selectedCategory = searchParams.get('category');
 
+  const priceBounds = useMemo(() => {
+    if (!products.length) return { min: 0, max: 0 };
+    const prices = products
+      .map(product => product.price)
+      .filter((value): value is number => typeof value === 'number');
+    if (!prices.length) return { min: 0, max: 0 };
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+    return { min, max: max === min ? min + 100 : max };
+  }, [products]);
+
+  const sliderStep = useMemo(() => {
+    const span = priceBounds.max - priceBounds.min;
+    if (span <= 1000) return 50;
+    if (span <= 5000) return 100;
+    if (span <= 20000) return 500;
+    return 1000;
+  }, [priceBounds.max, priceBounds.min]);
+
+  const availableLocations = useMemo(() => {
+    const uniques = new Set<string>();
+    products.forEach(product => {
+      if (product.location) uniques.add(product.location);
+    });
+    return Array.from(uniques).sort((a, b) => a.localeCompare(b));
+  }, [products]);
+
+  const availableTypes = useMemo(() => {
+    const uniques = new Set<string>(categories.map(category => category.name));
+    products.forEach(product => {
+      if (product.category) uniques.add(product.category);
+    });
+    return Array.from(uniques);
+  }, [products]);
+
   useEffect(() => {
-    const fetchProducts = async () => {
-      if (!supabase) return;
-      setLoading(true);
-      let query = supabase
-        .from('products')
-        .select(`
-          *,
-          profiles:seller_id (
-            full_name
-          )
-        `);
+    if (!products.length) {
+      setPriceRange([0, 0]);
+      return;
+    }
+    setPriceRange(previous => {
+      const next: [number, number] = [priceBounds.min, priceBounds.max];
+      if (previous[0] === next[0] && previous[1] === next[1]) return previous;
+      return next;
+    });
+  }, [priceBounds.min, priceBounds.max, products.length]);
 
-      if (selectedCategory) {
-        let categoryQuery = selectedCategory;
-        if (selectedCategory === 'Other Products') {
-           // A bit of a hack to show products not in the main categories
-           query = query.not('category', 'in', '("Books", "Hostels", "Food Mess", "Cyber Café", "Library", "Hostel Room", "Library Seat")');
-        } else {
-            query = query.eq('category', selectedCategory);
-        }
-      } else {
-        // Exclude child products from main view
-        query = query.not('category', 'in', '("Hostel Room", "Library Seat")');
-      }
+  const hasPriceFilter = useMemo(() => {
+    if (!products.length) return false;
+    return priceRange[0] > priceBounds.min || priceRange[1] < priceBounds.max;
+  }, [priceBounds.max, priceBounds.min, priceRange, products.length]);
 
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (selectedLocation !== 'all') count += 1;
+    if (selectedType !== 'all') count += 1;
+    if (hasPriceFilter) count += 1;
+    return count;
+  }, [hasPriceFilter, selectedLocation, selectedType]);
 
-      const { data, error } = await query.order('created_at', { ascending: false });
+  const appliedFilters = useMemo(() => {
+    const result: { id: string; label: string }[] = [];
+    if (selectedLocation !== 'all') {
+      result.push({ id: 'location', label: selectedLocation });
+    }
+    if (selectedType !== 'all') {
+      result.push({ id: 'type', label: selectedType });
+    }
+    if (hasPriceFilter) {
+      result.push({
+        id: 'price',
+        label: `₹${Math.round(priceRange[0]).toLocaleString()} – ₹${Math.round(priceRange[1]).toLocaleString()}`,
+      });
+    }
+    return result;
+  }, [hasPriceFilter, priceRange, selectedLocation, selectedType]);
 
-      if (error) {
-        console.error('Error fetching products:', error);
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: 'Could not fetch product listings.',
-        });
-      } else {
-        const mappedData = data.map(p => ({
-          ...p,
-          seller: p.profiles
-        }));
-        setProducts(mappedData as Product[]);
-      }
-      setLoading(false);
-    };
+  const resetFilters = useCallback(() => {
+    setSelectedLocation('all');
+    setSelectedType('all');
+    if (products.length) {
+      setPriceRange([priceBounds.min, priceBounds.max]);
+    } else {
+      setPriceRange([0, 0]);
+    }
+  }, [priceBounds.max, priceBounds.min, products.length]);
 
-    fetchProducts();
-  }, [selectedCategory, supabase, toast]);
+  const FilterControls = () => (
+    <div className="space-y-6">
+      <div className="space-y-1">
+        <h2 className="text-xl font-semibold">Refine results</h2>
+        <p className="text-sm text-muted-foreground">Narrow listings to match what you&apos;re looking for.</p>
+      </div>
 
-  const filteredProducts = useMemo(() => {
-    if (!searchQuery) return products;
-    return products.filter(product => 
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [products, searchQuery]);
+      <div className="space-y-3">
+        <Label className="text-sm font-medium">Location</Label>
+        <Select value={selectedLocation} onValueChange={setSelectedLocation}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="All locations" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All locations</SelectItem>
+            {availableLocations.map(location => (
+              <SelectItem key={location} value={location}>
+                {location}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-3">
+        <Label className="text-sm font-medium">Type</Label>
+        <Select value={selectedType} onValueChange={setSelectedType}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="All types" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All types</SelectItem>
+            {availableTypes.map(type => (
+              <SelectItem key={type} value={type}>
+                {type}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Label className="text-sm font-medium">Price range</Label>
+          <span className="text-sm text-muted-foreground">
+            ₹{Math.round(priceRange[0]).toLocaleString()} – ₹{Math.round(priceRange[1]).toLocaleString()}
+          </span>
+        </div>
+        <Slider
+          value={priceRange}
+          onValueChange={value => setPriceRange([value[0], value[1]])}
+          min={priceBounds.min}
+          max={priceBounds.max}
+          step={sliderStep}
+          disabled={!products.length}
+        />
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="marketplace-price-min" className="text-xs uppercase tracking-wide text-muted-foreground">Min</Label>
+            <Input
+              id="marketplace-price-min"
+              type="number"
+              min={priceBounds.min}
+              max={priceRange[1]}
+              value={priceRange[0]}
+              disabled={!products.length}
+              onChange={event => {
+                if (!products.length) return;
+                const next = Number(event.target.value);
+                if (Number.isNaN(next)) return;
+                const clamped = Math.min(Math.max(next, priceBounds.min), priceRange[1]);
+                setPriceRange([clamped, priceRange[1]]);
+              }}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="marketplace-price-max" className="text-xs uppercase tracking-wide text-muted-foreground">Max</Label>
+            <Input
+              id="marketplace-price-max"
+              type="number"
+              min={priceRange[0]}
+              max={priceBounds.max}
+              value={priceRange[1]}
+              disabled={!products.length}
+              onChange={event => {
+                if (!products.length) return;
+                const next = Number(event.target.value);
+                if (Number.isNaN(next)) return;
+                const clamped = Math.max(Math.min(next, priceBounds.max), priceRange[0]);
+                setPriceRange([priceRange[0], clamped]);
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap gap-3">
+        <Button variant="outline" size="sm" onClick={resetFilters} disabled={!products.length || (!activeFilterCount && !hasPriceFilter)}>
+          Clear filters
+        </Button>
+      </div>
+    </div>
+  );
 
   const handleBuyNow = useCallback(async (product: Product) => {
     if (!user || !supabase) {
@@ -226,6 +368,82 @@ export default function MarketplaceContent() {
     return `/marketplace?category=${encodeURIComponent(categoryName)}`;
   };
 
+  useEffect(() => {
+    const fetchProducts = async () => {
+      if (!supabase) return;
+      setLoading(true);
+      let query = supabase
+        .from('products')
+        .select(`
+          *,
+          profiles:seller_id (
+            full_name
+          )
+        `);
+
+      if (selectedCategory) {
+        let categoryQuery = selectedCategory;
+        if (selectedCategory === 'Other Products') {
+           // A bit of a hack to show products not in the main categories
+           query = query.not('category', 'in', '("Books", "Hostels", "Food Mess", "Cyber Café", "Library", "Hostel Room", "Library Seat")');
+        } else {
+            query = query.eq('category', selectedCategory);
+        }
+      } else {
+        // Exclude child products from main view
+        query = query.not('category', 'in', '("Hostel Room", "Library Seat")');
+      }
+
+
+      const { data, error } = await query.order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching products:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Could not fetch product listings.',
+        });
+      } else {
+        const mappedData = data.map(p => ({
+          ...p,
+          seller: p.profiles
+        }));
+        setProducts(mappedData as Product[]);
+      }
+      setLoading(false);
+    };
+
+    fetchProducts();
+  }, [selectedCategory, supabase, toast]);
+
+  const filteredProducts = useMemo(() => {
+    const trimmedQuery = searchQuery.trim().toLowerCase();
+    return products.filter(product => {
+      const matchesSearch = !trimmedQuery
+        || product.name.toLowerCase().includes(trimmedQuery)
+        || product.description.toLowerCase().includes(trimmedQuery);
+      if (!matchesSearch) return false;
+
+      if (selectedLocation !== 'all') {
+        if (!product.location) return false;
+        if (product.location.toLowerCase() !== selectedLocation.toLowerCase()) return false;
+      }
+
+      if (selectedType !== 'all' && product.category !== selectedType) {
+        return false;
+      }
+
+      if (products.length) {
+        if (product.price < priceRange[0] || product.price > priceRange[1]) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [priceRange, products, searchQuery, selectedLocation, selectedType]);
+
   return (
     <div className="space-y-8">
        {/* New Header Section */}
@@ -251,10 +469,27 @@ export default function MarketplaceContent() {
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
                 </div>
-                <Button variant="outline" className="gap-2 h-12 rounded-full w-full sm:w-auto">
-                    <ListFilter className="size-5" />
-                    <span className="font-semibold">Filters</span>
-                </Button>
+                <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>
+                    <SheetTrigger asChild>
+                        <Button variant="outline" className="gap-2 h-12 rounded-full w-full sm:w-auto lg:hidden">
+                            <ListFilter className="size-5" />
+                            <span className="font-semibold">Filters{activeFilterCount ? ` (${activeFilterCount})` : ''}</span>
+                        </Button>
+                    </SheetTrigger>
+                    <SheetContent side="left" className="w-full sm:max-w-sm overflow-y-auto">
+                        <SheetHeader>
+                            <SheetTitle>Filters</SheetTitle>
+                        </SheetHeader>
+                        <div className="mt-6 space-y-6">
+                            <FilterControls />
+                            <SheetClose asChild>
+                                <Button className="w-full" onClick={() => setIsFilterSheetOpen(false)}>
+                                    Show results
+                                </Button>
+                            </SheetClose>
+                        </div>
+                    </SheetContent>
+                </Sheet>
             </div>
             <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm font-semibold mr-2">Categories:</span>
@@ -277,31 +512,50 @@ export default function MarketplaceContent() {
        </section>
       
       {/* Listings Section */}
-      <section>
-        {loading ? (
-            <div className="flex justify-center items-center h-64">
-                <Loader2 className="size-8 animate-spin text-muted-foreground" />
+      <section className="grid gap-6 lg:grid-cols-[280px_1fr]">
+        <aside className="hidden lg:block">
+            <div className="sticky top-24 space-y-6 rounded-2xl border bg-card p-6 shadow-md">
+                <FilterControls />
             </div>
-        ) : filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filteredProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                user={user}
-                onBuyNow={handleBuyNow}
-                onChat={handleChat}
-                isBuying={purchasingProductId === product.id}
-                isRazorpayLoaded={isLoaded}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center text-muted-foreground py-16 bg-card rounded-2xl">
-            <h2 className="text-xl font-semibold">No listings found</h2>
-            <p>{selectedCategory ? `There are no products in the "${selectedCategory}" category yet.` : 'No products have been listed on the marketplace yet.'} Check back later!</p>
-          </div>
-        )}
+        </aside>
+        <div className="space-y-6">
+            {appliedFilters.length > 0 && (
+                <div className="flex flex-wrap items-center gap-2">
+                    {appliedFilters.map(filter => (
+                        <Badge key={filter.id} variant="secondary" className="rounded-full px-3 py-1 text-sm font-medium">
+                            {filter.label}
+                        </Badge>
+                    ))}
+                    <Button variant="ghost" size="sm" onClick={resetFilters}>
+                        Clear all
+                    </Button>
+                </div>
+            )}
+            {loading ? (
+                <div className="flex justify-center items-center h-64">
+                    <Loader2 className="size-8 animate-spin text-muted-foreground" />
+                </div>
+            ) : filteredProducts.length > 0 ? (
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5">
+                    {filteredProducts.map((product) => (
+                    <ProductCard
+                        key={product.id}
+                        product={product}
+                        user={user}
+                        onBuyNow={handleBuyNow}
+                        onChat={handleChat}
+                        isBuying={purchasingProductId === product.id}
+                        isRazorpayLoaded={isLoaded}
+                    />
+                    ))}
+                </div>
+            ) : (
+                <div className="text-center text-muted-foreground py-16 bg-card rounded-2xl">
+                    <h2 className="text-xl font-semibold">No listings found</h2>
+                    <p>{selectedCategory ? `There are no products in the "${selectedCategory}" category yet.` : 'No products have been listed on the marketplace yet.'} Check back later!</p>
+                </div>
+            )}
+        </div>
       </section>
     </div>
   );

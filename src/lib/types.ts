@@ -161,3 +161,19 @@ export type SupportTicket = {
       avatar_url: string | null;
   } | null;
 };
+
+export type HomeHeroSlide = {
+  id: string;
+  title: string;
+  subtitle?: string;
+  imageUrl: string;
+  ctaLabel?: string;
+  ctaHref?: string;
+  secondaryCtaLabel?: string;
+  secondaryCtaHref?: string;
+  tag?: string;
+};
+
+export type HomePosterConfig = {
+  heroSlides: HomeHeroSlide[];
+};
