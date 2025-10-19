@@ -87,19 +87,34 @@ export function SidebarNav() {
         </SidebarMenuItem>
 
         {role === 'admin' && (
-             <SidebarMenuItem>
-                <SidebarMenuButton
-                    asChild
-                    isActive={pathname.startsWith('/admin')}
-                    className="font-headline"
-                    onClick={handleLinkClick}
-                >
-                    <Link href="/admin/dashboard">
-                    <UserCog className="size-5" />
-                    <span>Admin Panel</span>
-                    </Link>
-                </SidebarMenuButton>
-             </SidebarMenuItem>
+             <>
+                <SidebarMenuItem>
+                    <SidebarMenuButton
+                        asChild
+                        isActive={pathname.startsWith('/admin') && !pathname.startsWith('/admin/marketing')}
+                        className="font-headline"
+                        onClick={handleLinkClick}
+                    >
+                        <Link href="/admin/dashboard">
+                            <UserCog className="size-5" />
+                            <span>Admin Panel</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                    <SidebarMenuButton
+                        asChild
+                        isActive={pathname.startsWith('/admin/marketing')}
+                        className="font-headline"
+                        onClick={handleLinkClick}
+                    >
+                        <Link href="/admin/marketing/donations">
+                            <Sparkles className="size-5" />
+                            <span>Donation Settings</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+             </>
         )}
         
         {user && (
