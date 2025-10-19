@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -22,23 +22,40 @@ import {
 
 const Confetti = dynamic(() => import('react-confetti'), { ssr: false });
 
-// --- Mock Data (replace with API calls) ---
-const MOCK_STATS = {
-  studentsHelped: 4521,
-  notesShared: 12300,
-  librariesDigitized: 2,
+type ImpactStats = {
+  studentsHelped: number;
+  notesShared: number;
+  librariesDigitized: number;
 };
 
-const MOCK_RECENT_DONORS = [
-  { name: 'Rohan V.', avatar: 'https://picsum.photos/seed/donor1/40' },
-  { name: 'Ananya S.', avatar: 'https://picsum.photos/seed/donor2/40' },
-  { name: 'Kabir A.', avatar: 'https://picsum.photos/seed/donor3/40' },
-  { name: 'Meera P.', avatar: 'https://picsum.photos/seed/donor4/40' },
-  { name: 'Arjun K.', avatar: 'https://picsum.photos/seed/donor5/40' },
-  { name: 'Sana R.', avatar: 'https://picsum.photos/seed/donor6/40' },
-];
+type Donor = {
+  name: string;
+  avatar: string | null;
+  amount: number;
+};
 
-const MOCK_GOAL_PROGRESS = 74;
+type DonationStatsResponse = {
+  goal: {
+    amount: number;
+    raised: number;
+    progress: number;
+  };
+  impact: ImpactStats;
+  donors: {
+    leaderboard: {
+      userId: string;
+      name: string;
+      avatar: string | null;
+      total: number;
+    }[];
+    recent: Donor[];
+  };
+  milestones: {
+    goal: number;
+    title: string;
+    achieved: boolean;
+  }[];
+};
 
 // --- Helper Functions & Components ---
 
@@ -85,12 +102,37 @@ export default function ThankYouClient() {
   const { user } = useAuth();
   const { width, height } = useWindowSize();
   const [showConfetti, setShowConfetti] = useState(false);
+  const [stats, setStats] = useState<DonationStatsResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // Trigger confetti on mount
     setShowConfetti(true);
     const timer = setTimeout(() => setShowConfetti(false), 8000); // Stop confetti after 8 seconds
     return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/donations/stats');
+        if (!response.ok) {
+          throw new Error('Failed to load donation stats');
+        }
+        const data = (await response.json()) as DonationStatsResponse;
+        setStats(data);
+        setError(null);
+      } catch (err) {
+        console.error('[thank-you-client] stats load failed', err);
+        setError('We could not load the latest impact stats.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
   }, []);
 
   const amount = Number(searchParams.get('amount') || '50');
@@ -100,9 +142,25 @@ export default function ThankYouClient() {
 
   const shareText = `I just fueled the future at UniNest by becoming a ${badge.name}! Join me in supporting our student community. 🚀`;
 
+  const impactCounters = useMemo(() => {
+    return stats?.impact ?? {
+      studentsHelped: 0,
+      notesShared: 0,
+      librariesDigitized: 0,
+    };
+  }, [stats?.impact]);
+
+  const goalProgress = stats?.goal.progress ?? 0;
+  const recentDonors = stats?.donors.recent ?? [];
+
   return (
     <>
       {showConfetti && <Confetti width={width} height={height} recycle={false} numberOfPieces={400} />}
+      {error && (
+        <div className="max-w-2xl mx-auto text-center text-sm text-amber-500">
+          {error}
+        </div>
+      )}
       <div className="max-w-2xl mx-auto space-y-12 py-8 text-center">
         {/* 1. Thank You Section */}
         <section className="space-y-3">
@@ -135,21 +193,27 @@ export default function ThankYouClient() {
                <Card>
                   <CardContent className="p-4">
                       <Users className="size-8 mx-auto text-primary mb-2"/>
-                      <p className="text-2xl"><AnimatedCounter to={MOCK_STATS.studentsHelped} /></p>
+                      <p className="text-2xl">
+                        {loading ? '—' : <AnimatedCounter to={impactCounters.studentsHelped} />}
+                      </p>
                       <p className="text-sm text-muted-foreground">Students Helped</p>
                   </CardContent>
                </Card>
                <Card>
                   <CardContent className="p-4">
                       <BookOpen className="size-8 mx-auto text-primary mb-2"/>
-                      <p className="text-2xl"><AnimatedCounter to={MOCK_STATS.notesShared} /></p>
+                      <p className="text-2xl">
+                        {loading ? '—' : <AnimatedCounter to={impactCounters.notesShared} />}
+                      </p>
                       <p className="text-sm text-muted-foreground">Notes Shared</p>
                   </CardContent>
                </Card>
                <Card>
                   <CardContent className="p-4">
                       <Library className="size-8 mx-auto text-primary mb-2"/>
-                       <p className="text-2xl"><AnimatedCounter to={MOCK_STATS.librariesDigitized} /></p>
+                       <p className="text-2xl">
+                        {loading ? '—' : <AnimatedCounter to={impactCounters.librariesDigitized} />}
+                       </p>
                       <p className="text-sm text-muted-foreground">Libraries Digitized</p>
                   </CardContent>
                </Card>
@@ -162,16 +226,16 @@ export default function ThankYouClient() {
             <p className="text-muted-foreground mb-6">You're building the future of UniNest, one contribution at a time.</p>
              <Carousel opts={{ align: "start", loop: true }} className="w-full max-w-lg mx-auto">
                 <CarouselContent>
-                    {MOCK_RECENT_DONORS.map((donor, index) => (
-                    <CarouselItem key={index} className="basis-1/3 sm:basis-1/4">
-                        <div className="flex flex-col items-center gap-2">
-                             <Avatar className="size-16 border-2 border-primary/50">
-                                <AvatarImage src={donor.avatar} alt={donor.name} width={64} height={64} data-ai-hint="person face" />
-                                <AvatarFallback>{donor.name.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                            <p className="font-semibold text-sm">{donor.name}</p>
-                        </div>
-                    </CarouselItem>
+                    {(recentDonors.length > 0 ? recentDonors : [{ name: 'Anonymous Hero', avatar: null, amount: 0 }]).map((donor, index) => (
+                      <CarouselItem key={`${donor.name}-${index}`} className="basis-1/3 sm:basis-1/4">
+                          <div className="flex flex-col items-center gap-2">
+                               <Avatar className="size-16 border-2 border-primary/50">
+                                  {donor.avatar && <AvatarImage src={donor.avatar} alt={donor.name} width={64} height={64} data-ai-hint="person face" />}
+                                  <AvatarFallback>{donor.name.charAt(0)}</AvatarFallback>
+                              </Avatar>
+                              <p className="font-semibold text-sm">{donor.name}</p>
+                          </div>
+                      </CarouselItem>
                     ))}
                 </CarouselContent>
                 <CarouselPrevious className="hidden sm:flex" />
@@ -182,8 +246,10 @@ export default function ThankYouClient() {
         {/* 5. Repeat Donation Teaser */}
         <section className="bg-card rounded-2xl p-8 shadow-xl">
             <h2 className="text-2xl font-bold font-headline mb-3">Keep the Momentum Going! ⚡</h2>
-            <p className="text-muted-foreground">We’re at <span className="font-bold text-primary">{MOCK_GOAL_PROGRESS}%</span> of this month’s target to keep UniNest running ad-free!</p>
-            <Progress value={MOCK_GOAL_PROGRESS} className="my-4 h-3" />
+            <p className="text-muted-foreground">
+              We’re at <span className="font-bold text-primary">{loading ? '—' : `${Math.round(goalProgress)}%`}</span> of this month’s target to keep UniNest running ad-free!
+            </p>
+            <Progress value={goalProgress} className="my-4 h-3" />
             <p className="text-sm text-muted-foreground mb-6">Help us reach 100% to unlock free premium features for all students. 🎉</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
                  <Button size="lg" asChild>
