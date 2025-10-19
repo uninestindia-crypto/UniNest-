@@ -130,7 +130,8 @@ export function MobileBottomNav() {
   const { user } = useAuth();
   const role = getRole(user);
 
-  const profileLink = user ? `/profile/${user.user_metadata?.handle}` : '/login';
+  const userHandle = user?.user_metadata?.handle;
+  const profileLink = user ? (userHandle ? `/profile/${userHandle}` : '/profile') : '/login';
 
   const defaultNavItems = [
     { href: '/', label: 'Home', icon: Home, roles: ['student', 'vendor', 'guest', 'admin'] },

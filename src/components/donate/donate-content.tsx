@@ -1,6 +1,4 @@
-
-
-'use client';
+  'use client';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -75,6 +73,28 @@ type DonateContentProps = {
     initialRaised: number;
 }
 
+type DonationStatsResponse = {
+    goal: {
+        amount: number;
+        raised: number;
+        progress: number;
+    };
+    donors: {
+        leaderboard: {
+            userId: string;
+            name: string;
+            avatar: string | null;
+            total: number;
+        }[];
+    };
+    milestones: {
+        goal: number;
+        title: string;
+        description?: string;
+        achieved: boolean;
+    }[];
+};
+
 export default function DonateContent({ initialDonors, initialGoal, initialRaised }: DonateContentProps) {
   const router = useRouter();
   const { openCheckout, isLoaded } = useRazorpay();
@@ -82,8 +102,9 @@ export default function DonateContent({ initialDonors, initialGoal, initialRaise
   const { user, supabase } = useAuth();
   const [isDonating, setIsDonating] = useState(false);
   const [donors, setDonors] = useState<Donor[]>(initialDonors);
-  const [goalAmount] = useState(initialGoal);
+  const [goalAmount, setGoalAmount] = useState(initialGoal);
   const [raisedAmount, setRaisedAmount] = useState(initialRaised);
+  const [milestones, setMilestones] = useState(milestoneRewards);
   const [donationAmount, setDonationAmount] = useState('100');
   const [questProgress, setQuestProgress] = useState<QuestProgress>(() => {
       if (typeof window === 'undefined') return defaultQuestProgress;
@@ -97,6 +118,64 @@ export default function DonateContent({ initialDonors, initialGoal, initialRaise
       }
   });
   const lastDonationRef = useRef<number>(initialRaised);
+
+  useEffect(() => {
+    const hydrateStats = async () => {
+        try {
+            const response = await fetch('/api/donations/stats');
+            if (!response.ok) return;
+            const data = await response.json() as DonationStatsResponse;
+            setGoalAmount(data.goal.amount);
+            setRaisedAmount(data.goal.raised);
+
+            if (Array.isArray(data.donors?.leaderboard) && data.donors.leaderboard.length > 0) {
+                setDonors((prevDonors) => {
+                    const merged = [
+                        ...data.donors.leaderboard.map((item) => ({
+                            name: item.name,
+                            avatar: item.avatar,
+                            amount: item.total,
+                            userId: item.userId,
+                        })),
+                        ...prevDonors,
+                    ]
+                      .reduce<Donor[]>((acc, donor) => {
+                        const existing = acc.find((d) => d.userId === donor.userId);
+                        if (existing) {
+                            existing.amount = Math.max(existing.amount, donor.amount);
+                            existing.avatar = existing.avatar ?? donor.avatar;
+                            existing.name = existing.name ?? donor.name;
+                        } else {
+                            acc.push(donor);
+                        }
+                        return acc;
+                    }, [])
+                      .sort((a, b) => b.amount - a.amount);
+                    return merged;
+                });
+            }
+
+            if (Array.isArray(data.milestones)) {
+                setMilestones(
+                    data.milestones.map((milestone) => ({
+                        goal: milestone.goal,
+                        title: milestone.title,
+                        description:
+                          milestone.description ??
+                          milestoneRewards.find((m) => m.goal === milestone.goal)?.description,
+                        icon:
+                          milestoneRewards.find((m) => m.goal === milestone.goal)?.icon ?? Trophy,
+                        achieved: milestone.achieved,
+                    }))
+                );
+            }
+        } catch (error) {
+            console.warn('[donations] failed to hydrate stats', error);
+        }
+    };
+
+    hydrateStats();
+  }, []);
 
   useEffect(() => {
       if (typeof window === 'undefined') return;

@@ -14,9 +14,9 @@ const DEFAULT_IMPACT = {
 };
 
 const MILESTONE_REWARDS = [
-  { goal: 5000, title: "Peer Mentorship Boost" },
-  { goal: 15000, title: "Skill Sprint Weekend" },
-  { goal: 30000, title: "Founders' Innovation Grant" },
+  { goal: 5000, title: "Peer Mentorship Boost", description: "Unlock mentor office hours for freshers." },
+  { goal: 15000, title: "Skill Sprint Weekend", description: "Fund campus-wide learning workshops." },
+  { goal: 30000, title: "Founders' Innovation Grant", description: "Sponsor prototyping grants for student teams." },
 ];
 
 type DonationRow = {
@@ -40,6 +40,29 @@ const parseNumber = (value: string | null | undefined, fallback = 0) => {
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
+const computeImpactFromRaised = (raised: number) => {
+  const studentsHelped = Math.max(
+    DEFAULT_IMPACT.studentsHelped,
+    Math.round(raised / 75)
+  );
+
+  const notesShared = Math.max(
+    DEFAULT_IMPACT.notesShared,
+    Math.round(studentsHelped * 2.5)
+  );
+
+  const librariesDigitized = Math.max(
+    DEFAULT_IMPACT.librariesDigitized,
+    Math.floor(raised / 6000)
+  );
+
+  return {
+    studentsHelped,
+    notesShared,
+    librariesDigitized,
+  };
+};
+
 export async function GET() {
   try {
     const supabase = createClient();
@@ -58,6 +81,7 @@ export async function GET() {
           IMPACT_KEYS.studentsHelped,
           IMPACT_KEYS.notesShared,
           IMPACT_KEYS.librariesDigitized,
+          'donation_milestones',
         ]),
     ]);
 
@@ -68,7 +92,7 @@ export async function GET() {
       throw configResult.error;
     }
 
-    const donations = (donationsResult.data ?? []) as DonationRow[];
+    const donations = (donationsResult.data ?? []) as unknown as DonationRow[];
     const configEntries = (configResult.data ?? []) as AppConfigRow[];
 
     const configMap = configEntries.reduce<Record<string, string | null>>((acc, curr) => {
@@ -80,14 +104,35 @@ export async function GET() {
     const raisedAmount = donations.reduce((sum, donation) => sum + donation.amount, 0);
     const progressPercentage = goalAmount > 0 ? Math.min((raisedAmount / goalAmount) * 100, 100) : 0;
 
+    const computedImpact = computeImpactFromRaised(raisedAmount);
     const impact = {
-      studentsHelped: parseNumber(configMap[IMPACT_KEYS.studentsHelped], DEFAULT_IMPACT.studentsHelped),
-      notesShared: parseNumber(configMap[IMPACT_KEYS.notesShared], DEFAULT_IMPACT.notesShared),
+      studentsHelped: parseNumber(configMap[IMPACT_KEYS.studentsHelped], computedImpact.studentsHelped),
+      notesShared: parseNumber(configMap[IMPACT_KEYS.notesShared], computedImpact.notesShared),
       librariesDigitized: parseNumber(
         configMap[IMPACT_KEYS.librariesDigitized],
-        DEFAULT_IMPACT.librariesDigitized,
+        computedImpact.librariesDigitized,
       ),
     };
+
+    const configuredMilestones = (() => {
+      const raw = configMap['donation_milestones'];
+      if (!raw) return null;
+      try {
+        const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        if (!Array.isArray(parsed)) return null;
+        return parsed
+          .map((item) => ({
+            goal: parseNumber(item.goal, 0),
+            title: typeof item.title === 'string' && item.title.length > 0 ? item.title : 'Milestone',
+            description: typeof item.description === 'string' ? item.description : undefined,
+          }))
+          .filter((item) => item.goal > 0)
+          .sort((a, b) => a.goal - b.goal);
+      } catch (error) {
+        console.warn('[donations/stats] failed to parse milestones config', error);
+        return null;
+      }
+    })();
 
     const donorTotals = new Map<
       string,
@@ -137,7 +182,8 @@ export async function GET() {
         amount: donation.amount,
       }));
 
-    const milestones = MILESTONE_REWARDS.map((milestone) => ({
+    const milestonesSource = configuredMilestones ?? MILESTONE_REWARDS;
+    const milestones = milestonesSource.map((milestone) => ({
       ...milestone,
       achieved: raisedAmount >= milestone.goal,
     }));
@@ -154,6 +200,10 @@ export async function GET() {
         recent: recentDonors,
       },
       milestones,
+    }, {
+      headers: {
+        'Cache-Control': 's-maxage=60, stale-while-revalidate=300',
+      },
     });
   } catch (error: any) {
     console.error('[donations/stats] failed to load stats', error);
