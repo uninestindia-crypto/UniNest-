@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import type { HomePosterConfig } from '@/lib/types';
 import { defaultHomePosterConfig } from '@/lib/home-poster';
 
+export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
   title: 'Marketing | UniNest Admin',
 };

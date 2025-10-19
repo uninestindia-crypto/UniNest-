@@ -18,54 +18,64 @@ type AggregatedDonor = {
     userId: string;
 }
 
+type DonationProfile = {
+    full_name: string | null;
+    avatar_url: string | null;
+};
+
+type DonationWithProfile = {
+    user_id: string;
+    amount: number;
+    profiles: DonationProfile | DonationProfile[] | null;
+};
+
 export default async function DonatePage() {
     const supabase = createClient();
     
-    // Fetch initial data for SSR
-    const { data: donations, error: donorsError } = await supabase
-        .from('donations')
-        .select(`
-            user_id,
-            amount,
-            profiles (
-                full_name,
-                avatar_url
-            )
-        `)
-        .order('amount', { ascending: false });
+    const [donationsResult, goalResult] = await Promise.all([
+        supabase
+            .from('donations')
+            .select(`
+                user_id,
+                amount,
+                profiles (
+                    full_name,
+                    avatar_url
+                )
+            `)
+            .order('amount', { ascending: false }),
+        supabase
+            .from('app_config')
+            .select('value')
+            .eq('key', 'donation_goal')
+            .single()
+    ]);
 
-    const { data: goalData, error: goalError } = await supabase
-        .from('app_config')
-        .select('value')
-        .eq('key', 'donation_goal')
-        .single();
-    
-    const { data: raisedData, error: raisedError } = await supabase
-        .from('donations')
-        .select('amount');
+    const { data: donations, error: donorsError } = donationsResult;
+    const { data: goalData, error: goalError } = goalResult;
 
     if (donorsError) console.error('Error fetching donors:', donorsError.message);
-    if (raisedError) console.error('Error fetching raised amount:', raisedError.message);
+    if (goalError) console.error('Error fetching goal amount:', goalError.message);
 
-    const aggregatedDonors: AggregatedDonor[] = (donations || []).reduce((acc: AggregatedDonor[], current) => {
-        if (!current.profiles) return acc;
+    const aggregatedDonors: AggregatedDonor[] = ((donations || []) as DonationWithProfile[]).reduce((acc: AggregatedDonor[], current) => {
+        const profile = Array.isArray(current.profiles) ? current.profiles[0] : current.profiles;
+        if (!profile) return acc;
         const existing = acc.find(d => d.userId === current.user_id);
         if (existing) {
             existing.amount += current.amount;
         } else {
             acc.push({
-                name: current.profiles.full_name,
+                name: profile.full_name,
                 userId: current.user_id,
-                avatar: current.profiles.avatar_url,
+                avatar: profile.avatar_url,
                 amount: current.amount
             });
         }
         return acc;
     }, []).sort((a,b) => b.amount - a.amount);
 
-
     const goalAmount = goalData ? Number(goalData.value) : 50000;
-    const initialRaisedAmount = (raisedData || []).reduce((sum, d) => sum + d.amount, 0);
+    const initialRaisedAmount = (donations || []).reduce((sum, d) => sum + d.amount, 0);
 
     return <DonateContent 
         initialDonors={aggregatedDonors as any[] || []}
