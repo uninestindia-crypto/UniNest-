@@ -30,6 +30,68 @@ export default function ChatLayout() {
     }
   }, [authLoading, user]);
 
+  const fetchRoomsWithoutRpc = useCallback(async (): Promise<Room[]> => {
+    if (!supabase) {
+      return [];
+    }
+
+    type ChatRoomRow = {
+      id: string;
+      created_at: string;
+      name: string | null;
+      avatar?: string | null;
+    };
+
+    const { data: roomRows, error: roomError } = await supabase
+      .from('chat_rooms')
+      .select('id, created_at, name, avatar')
+      .order('created_at', { ascending: false });
+
+    if (roomError) {
+      throw roomError;
+    }
+
+    const roomsData = (roomRows || []) as ChatRoomRow[];
+    const roomIds = roomsData.map((room) => room.id);
+
+    type LastMessageRow = {
+      room_id: string;
+      content: string | null;
+      created_at: string | null;
+    };
+
+    const lastMessageMap = new Map<string, LastMessageRow>();
+
+    if (roomIds.length > 0) {
+      const { data: lastMessagesRows, error: lastMessagesError } = await supabase
+        .from('chat_messages')
+        .select('room_id, content, created_at')
+        .in('room_id', roomIds)
+        .order('created_at', { ascending: false });
+
+      if (!lastMessagesError && lastMessagesRows) {
+        for (const message of lastMessagesRows as LastMessageRow[]) {
+          if (!lastMessageMap.has(message.room_id)) {
+            lastMessageMap.set(message.room_id, message);
+          }
+        }
+      }
+    }
+
+    return roomsData.map((room) => {
+      const lastMessage = lastMessageMap.get(room.id);
+      return {
+        id: room.id,
+        name: room.name,
+        avatar: room.avatar ?? null,
+        last_message: lastMessage?.content ?? null,
+        last_message_timestamp: lastMessage?.created_at ?? null,
+        unread_count: 0,
+        room_created_at: room.created_at,
+      } satisfies Room;
+    });
+  }, [supabase]);
+
   const fetchRooms = useCallback(async () => {
     if (!user || !supabase) {
       setLoadingRooms(false);
@@ -40,18 +102,39 @@ export default function ChatLayout() {
       const { data, error } = await supabase.rpc('get_user_chat_rooms');
 
       if (error) {
-        throw error;
+        console.warn('Failed to fetch rooms via RPC, falling back to direct queries.', error);
+        const fallbackRooms = await fetchRoomsWithoutRpc();
+        setRooms(fallbackRooms);
+        if (fallbackRooms.length === 0) {
+          toast({ variant: 'destructive', title: 'Error loading chats', description: 'Could not fetch your chat rooms. Please try refreshing.' });
+        }
+        return;
       }
       
-      setRooms(data || []);
+      const normalizedRooms = (data || []).map((room: any) => ({
+        ...room,
+        unread_count: room?.unread_count ?? 0,
+        room_created_at: room?.room_created_at ?? room?.created_at ?? new Date().toISOString(),
+      })) as Room[];
+
+      setRooms(normalizedRooms);
 
     } catch (error: any) {
         console.error('Error fetching user rooms:', error);
-        toast({ variant: 'destructive', title: 'Error loading chats', description: 'Could not fetch your chat rooms. Please try refreshing.' });
+        try {
+          const fallbackRooms = await fetchRoomsWithoutRpc();
+          setRooms(fallbackRooms);
+          if (fallbackRooms.length === 0) {
+            toast({ variant: 'destructive', title: 'Error loading chats', description: 'Could not fetch your chat rooms. Please try refreshing.' });
+          }
+        } catch (fallbackError) {
+          console.error('Fallback room fetch failed:', fallbackError);
+          toast({ variant: 'destructive', title: 'Error loading chats', description: 'Could not fetch your chat rooms. Please try refreshing.' });
+        }
     } finally {
         setLoadingRooms(false);
     }
-  }, [user, supabase, toast]);
+  }, [user, supabase, toast, fetchRoomsWithoutRpc]);
   
   useEffect(() => {
     if (user && supabase) {
