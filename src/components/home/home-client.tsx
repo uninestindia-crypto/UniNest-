@@ -16,12 +16,13 @@ import {
 } from '@/components/ui/carousel';
 import Autoplay from 'embla-carousel-autoplay';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowRight, BookOpen, GraduationCap, Rocket, Users, Building, Sparkles, Library, Search, Package, LayoutGrid } from 'lucide-react';
+import { ArrowRight, BookOpen, GraduationCap, Rocket, Users, Building, Sparkles, Library, Search, Package } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import StatCard from '@/components/home/stat-card';
 import DonationModal from './donation-modal';
 import Image from 'next/image';
 import type { HomePosterConfig } from '@/lib/types';
+import { defaultHomePosterConfig } from '@/lib/home-poster';
 
 const stats = [
   { value: 10000, label: 'Students Connected', icon: GraduationCap, isPlus: true },
@@ -138,7 +139,7 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
     }
   };
 
-  const heroSlides = posterConfig?.heroSlides?.length ? posterConfig.heroSlides : [];
+  const heroSlides = posterConfig?.heroSlides?.length ? posterConfig.heroSlides : defaultHomePosterConfig.heroSlides;
 
   return (
     <>
