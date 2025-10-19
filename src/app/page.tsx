@@ -17,7 +17,8 @@ export default async function HomePage() {
     .eq('key', 'home_poster')
     .single();
 
-  const posterConfig = ((data?.value as HomePosterConfig | undefined) && Array.isArray((data?.value as HomePosterConfig).heroSlides) ? (data?.value as HomePosterConfig) : null) ?? defaultHomePosterConfig;
+  const rawValue = data?.value as HomePosterConfig | null;
+  const posterConfig = rawValue && Array.isArray(rawValue.heroSlides) ? rawValue : defaultHomePosterConfig;
 
   return <HomeClient posterConfig={posterConfig} />;
 }
