@@ -50,7 +50,7 @@ export default function UserDropdown() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-                <Link href={`/profile/${user.user_metadata?.handle}`}>
+                <Link href={user.user_metadata?.handle ? `/profile/${user.user_metadata.handle}` : '/profile'}>
                     <UserIcon className="mr-2 size-4" />
                     My Profile
                 </Link>

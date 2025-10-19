@@ -15,24 +15,38 @@ export const revalidate = 0;
 
 export default async function TicketDetailPage({ params }: { params: { id: string } }) {
     const supabase = createClient();
-    const { data: ticket, error } = await supabase
+    const { data: ticketData, error } = await supabase
         .from('support_tickets')
-        .select(`
-            *,
-            profile:profiles (
-                id,
-                full_name,
-                email,
-                avatar_url,
-                handle
-            )
-        `)
+        .select('*')
         .eq('id', params.id)
         .single();
-    
-    if (error || !ticket) {
+
+    if (error || !ticketData) {
         notFound();
     }
+
+    let profile = null as {
+        id: string;
+        full_name: string;
+        email: string | null;
+        avatar_url: string | null;
+        handle: string | null;
+    } | null;
+
+    if (ticketData.user_id) {
+        const { data: profileData } = await supabase
+            .from('profiles')
+            .select('id, full_name, email, avatar_url, handle')
+            .eq('id', ticketData.user_id)
+            .single();
+
+        profile = profileData || null;
+    }
+
+    const ticket = {
+        ...ticketData,
+        profile,
+    };
     
     return (
         <div className="space-y-8">

@@ -54,7 +54,8 @@ export default function MainLayout({ children }: { children: ReactNode }) {
       )
   }
 
-  const profileLink = user ? `/profile/${user.user_metadata?.handle}` : '/login';
+  const userHandle = user?.user_metadata?.handle;
+  const profileLink = user ? (userHandle ? `/profile/${userHandle}` : '/profile') : '/login';
 
   return (
     <>

@@ -31,24 +31,53 @@ export default function AdminTicketsPage() {
                 process.env.NEXT_PUBLIC_SUPABASE_URL!,
                 process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
             );
-            
-            const { data: ticketsData, error: fetchError } = await supabase
+
+            const { data: ticketsData, error: ticketsError } = await supabase
                 .from('support_tickets')
-                .select(`
-                    *,
-                    profile:profiles (
-                        id,
-                        full_name,
-                        avatar_url
-                    )
-                `)
+                .select('*')
                 .order('created_at', { ascending: false });
 
-            if (fetchError) {
-                setError(`Error loading tickets: ${fetchError.message}`);
-            } else {
-                setTickets((ticketsData as any) || []);
+            if (ticketsError) {
+                setError(`Error loading tickets: ${ticketsError.message}`);
+                setLoading(false);
+                return;
             }
+
+            const baseTickets = (ticketsData || []) as SupportTicket[];
+
+            if (baseTickets.length === 0) {
+                setTickets([]);
+                setLoading(false);
+                return;
+            }
+
+            const userIds = Array.from(new Set(baseTickets.map(ticket => ticket.user_id).filter(Boolean)));
+
+            if (userIds.length === 0) {
+                setTickets(baseTickets as TicketWithProfile[]);
+                setLoading(false);
+                return;
+            }
+
+            const { data: profilesData, error: profilesError } = await supabase
+                .from('profiles')
+                .select('id, full_name, avatar_url')
+                .in('id', userIds);
+
+            if (profilesError) {
+                setError(`Error loading tickets: ${profilesError.message}`);
+                setLoading(false);
+                return;
+            }
+
+            const profileMap = new Map((profilesData || []).map(profile => [profile.id, profile]));
+
+            setTickets(
+                baseTickets.map(ticket => ({
+                    ...ticket,
+                    profile: profileMap.get(ticket.user_id) || null,
+                })) as TicketWithProfile[]
+            );
             setLoading(false);
         };
 

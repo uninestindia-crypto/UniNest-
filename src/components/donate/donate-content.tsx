@@ -13,6 +13,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { Input } from '../ui/input';
 import { useAuth } from '@/hooks/use-auth';
 import { cn } from '@/lib/utils';
+import { trackEvent } from '@/lib/analytics';
 import { ScrollArea } from '../ui/scroll-area';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -247,7 +248,14 @@ export default function DonateContent({ initialDonors, initialGoal, initialRaise
         <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">
           Every donation helps UniNest stay alive for your campus.
         </p>
-        <Button size="lg" className="text-lg" onClick={() => document.getElementById('donate-section')?.scrollIntoView({ behavior: 'smooth' })}>
+        <Button
+          size="lg"
+          className="text-lg"
+          onClick={() => {
+            trackEvent('donation_scroll_to_form');
+            document.getElementById('donate-section')?.scrollIntoView({ behavior: 'smooth' });
+          }}
+        >
             Power Up Now ⚡
         </Button>
       </section>
@@ -315,7 +323,13 @@ export default function DonateContent({ initialDonors, initialGoal, initialRaise
                             "py-6 text-base font-bold transition-all border-2 flex flex-col h-auto",
                             donationAmount === tier.amount.toString() && "primary-gradient text-primary-foreground border-transparent ring-2 ring-primary"
                         )}
-                        onClick={() => setDonationAmount(tier.amount.toString())}
+                        onClick={() => {
+                            setDonationAmount(tier.amount.toString());
+                            trackEvent('donation_tier_selected', {
+                                amount: tier.amount,
+                                label: tier.title,
+                            });
+                        }}
                     >
                         <span className="text-lg">₹{tier.amount}</span>
                         <span className="text-xs font-normal">{tier.title}</span>
@@ -332,7 +346,18 @@ export default function DonateContent({ initialDonors, initialGoal, initialRaise
                     onChange={(e) => setDonationAmount(e.target.value)}
                 />
             </div>
-            <Button size="lg" className="w-full text-lg h-14" onClick={() => handleDonate(donationAmount)} disabled={!isLoaded || isDonating || !donationAmount}>
+            <Button
+              size="lg"
+              className="w-full text-lg h-14"
+              onClick={() => {
+                trackEvent('donation_attempt', {
+                  amount: Number(donationAmount) || 0,
+                  method: 'razorpay',
+                });
+                handleDonate(donationAmount);
+              }}
+              disabled={!isLoaded || isDonating || !donationAmount}
+            >
                 {isLoaded ? <Sparkles className="mr-2 size-5" /> : <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isDonating ? 'Processing...' : `Donate ₹${donationAmount || 0}`}
             </Button>
@@ -457,7 +482,14 @@ export default function DonateContent({ initialDonors, initialGoal, initialRaise
             Join our community of supporters and make a direct impact on the student experience.
           </p>
           <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
-            <Button size="lg" className="text-lg" onClick={() => document.getElementById('donate-section')?.scrollIntoView({ behavior: 'smooth' })}>
+            <Button
+              size="lg"
+              className="text-lg"
+              onClick={() => {
+                trackEvent('donation_cta_footer');
+                document.getElementById('donate-section')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+            >
                 Donate Now & Join the Heroes ⚡
             </Button>
             <Button size="lg" variant="outline" onClick={() => router.push('/donate/thank-you')}>
