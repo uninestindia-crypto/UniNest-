@@ -37,6 +37,9 @@ type SidebarContext = {
 }
 
 const SidebarContext = React.createContext<SidebarContext | null>(null)
+function useSidebarContext() {
+  return React.useContext(SidebarContext)
+}
 function useSidebar() {
   const context = React.useContext(SidebarContext)
   if (!context) {
@@ -443,5 +446,6 @@ export {
   SidebarMenuItem,
   SidebarProvider,
   SidebarTrigger,
+  useSidebarContext,
   useSidebar,
 }
