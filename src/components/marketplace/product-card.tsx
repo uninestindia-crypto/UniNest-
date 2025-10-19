@@ -18,15 +18,25 @@ type ProductCardProps = {
   onChat: (sellerId: string, productName: string) => void;
   isBuying: boolean;
   isRazorpayLoaded: boolean;
+  layout?: 'grid' | 'list';
 };
 
-export default function ProductCard({ product, user, onBuyNow, onChat, isBuying, isRazorpayLoaded }: ProductCardProps) {
+export default function ProductCard({ product, user, onBuyNow, onChat, isBuying, isRazorpayLoaded, layout = 'grid' }: ProductCardProps) {
   const sellerName = typeof product.seller === 'object' && product.seller !== null 
     ? product.seller.full_name 
     : 'Anonymous';
   
   const canContact = user && user.id !== product.seller_id;
   const isBookable = ['Library', 'Hostels', 'Food Mess', 'Cyber Café'].includes(product.category);
+  const cardClassName = layout === 'list'
+    ? 'overflow-hidden shadow-sm transition-shadow hover:shadow-lg flex flex-col flex-grow group md:flex-row'
+    : 'overflow-hidden shadow-sm transition-shadow hover:shadow-lg flex flex-col flex-grow group';
+  const imageWrapperClass = layout === 'list'
+    ? 'relative aspect-[16/9] block md:w-64 md:flex-shrink-0'
+    : 'relative aspect-[16/9] block';
+  const contentClassName = layout === 'list'
+    ? 'p-4 flex-grow md:flex-1'
+    : 'p-4 flex-grow';
 
   const handleButtonClick = (e: React.MouseEvent<HTMLButtonElement>, action: () => void) => {
     e.stopPropagation();
@@ -41,9 +51,9 @@ export default function ProductCard({ product, user, onBuyNow, onChat, isBuying,
   }
 
   return (
-    <Card className="overflow-hidden shadow-sm transition-shadow hover:shadow-lg flex flex-col flex-grow group">
+    <Card className={cardClassName}>
     <CardHeader className="p-0">
-        <Link href={getCardLink()} className="relative aspect-[16/9] block">
+        <Link href={getCardLink()} className={imageWrapperClass}>
         <Image
             src={product.image_url || 'https://picsum.photos/seed/product/400/225'}
             alt={product.name}
@@ -54,7 +64,7 @@ export default function ProductCard({ product, user, onBuyNow, onChat, isBuying,
         />
         </Link>
     </CardHeader>
-    <CardContent className="p-4 flex-grow">
+    <CardContent className={contentClassName}>
         <Badge variant="secondary" className="mb-2 capitalize">{product.category}</Badge>
         <Link href={getCardLink()}>
             <CardTitle className="text-lg font-semibold leading-snug mb-2 h-12 overflow-hidden group-hover:text-primary transition-colors">{product.name}</CardTitle>

@@ -418,12 +418,16 @@ export default function SettingsContent() {
   }
   
   const vendorSettings = monetizationSettings?.vendor;
-  const showPaymentAlert =
-    profileForm.watch('role') === 'vendor' &&
-    vendorSettings?.charge_for_platform_access &&
-    !isVendorActive &&
-    (watchedVendorCategories?.length ?? 0) > 0;
-  const totalCost = (watchedVendorCategories?.length ?? 0) * (vendorSettings?.price_per_service_per_month ?? 0);
+  const showPaymentAlert = requiresImmediatePayment;
+  const planDetails = shouldCharge
+    ? {
+        discounted: discountedPrice,
+        original: originalPrice,
+        trialEligible: isTrialEligible,
+        trialActive: isTrialActive,
+        expiresAt: vendorTrialExpiresAt,
+      }
+    : null;
 
   if (loading) {
     return <div>Loading...</div>;
@@ -663,30 +667,6 @@ export default function SettingsContent() {
                             </FormControl>
                             <FormMessage />
                         </FormItem>
-                        )}
-                    />
-                  </Card>
-               )}
-
-              {showPaymentAlert && (
-                <Alert variant="destructive">
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertTitle>Action Required: Complete Subscription</AlertTitle>
-                  <AlertDescription>
-                    To activate your vendor services, a payment of <strong>₹{totalCost}</strong> is required. Click the button below to complete your subscription.
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              <Button type="submit" disabled={isProfileLoading}>
-                {isProfileLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {showPaymentAlert ? `Pay ₹${totalCost} and Save` : 'Save Changes'}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
-      
       <Card>
         <CardHeader>
           <CardTitle>Change Password</CardTitle>
