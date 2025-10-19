@@ -66,18 +66,47 @@ export default function ChatLayout() {
     setLoadingMessages(true);
     setMessages([]);
 
-    const { data, error } = await supabase
+    const { data: messageRows, error } = await supabase
       .from('chat_messages')
-      .select('*, profile:profiles(*)')
+      .select('id, content, created_at, room_id, user_id')
       .eq('room_id', room.id)
       .order('created_at', { ascending: true });
 
     if (error) {
       toast({ variant: 'destructive', title: 'Error fetching messages' });
       console.error(error);
-    } else {
-      setMessages(data || []);
+      setLoadingMessages(false);
+      return;
     }
+
+    type RawMessage = Omit<Message, 'profile'>;
+
+    const rawMessages = (messageRows || []) as RawMessage[];
+    const userIds = Array.from(new Set(rawMessages.map((message) => message.user_id)));
+
+    if (userIds.length === 0) {
+      setMessages(rawMessages.map((message) => ({ ...message, profile: null })));
+      setLoadingMessages(false);
+      return;
+    }
+
+    const { data: profileRows, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, full_name, avatar_url, handle')
+      .in('id', userIds);
+
+    if (profileError) {
+      console.error(profileError);
+    }
+
+    const profileMap = new Map((profileRows || []).map((profile) => [profile.id, profile]));
+
+    const messagesWithProfiles = rawMessages.map((message) => ({
+      ...message,
+      profile: profileMap.get(message.user_id) || null,
+    }));
+
+    setMessages(messagesWithProfiles);
     setLoadingMessages(false);
   }, [supabase, toast]);
 

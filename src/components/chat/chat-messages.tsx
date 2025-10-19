@@ -5,7 +5,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Paperclip, Send, Loader2, ArrowLeft } from 'lucide-react';
+import { Paperclip, Send, Loader2, ArrowLeft, X } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/use-auth';
 import { cn } from '@/lib/utils';
 import type { Room, Message } from '@/lib/types';
 import type { User } from '@supabase/supabase-js';
@@ -21,7 +23,13 @@ type ChatMessagesProps = {
 
 export default function ChatMessages({ room, messages, onSendMessage, loading, currentUser: user, onBack }: ChatMessagesProps) {
   const [newMessage, setNewMessage] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
+  const { supabase } = useAuth();
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -32,10 +40,79 @@ export default function ChatMessages({ room, messages, onSendMessage, loading, c
     }
   }, [messages]);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (newMessage.trim()) {
       onSendMessage(newMessage);
       setNewMessage('');
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      handleFileUpload(file);
+    }
+  };
+
+  const handleFileUpload = async (file: File) => {
+    if (!supabase || !room) return;
+    
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+    const filePath = `chat-files/${room.id}/${fileName}`;
+    
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    try {
+      const { data, error } = await supabase.storage
+        .from('chat-files')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false,
+          onProgress: (progress) => {
+            const progressPercentage = Math.round((progress.loaded / progress.total) * 100);
+            setUploadProgress(progressPercentage);
+          },
+        });
+
+      if (error) throw error;
+      
+      // Get the public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('chat-files')
+        .getPublicUrl(filePath);
+
+      // Send the file URL as a message
+      onSendMessage(`[File] ${file.name}: ${publicUrl}`);
+      
+      toast({
+        title: 'File uploaded',
+        description: `${file.name} has been shared in the chat`,
+      });
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Upload failed',
+        description: 'Could not upload the file. Please try again.',
+      });
+    } finally {
+      setIsUploading(false);
+      setSelectedFile(null);
+      setUploadProgress(0);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleRemoveFile = () => {
+    setSelectedFile(null);
+    setUploadProgress(0);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -113,19 +190,66 @@ export default function ChatMessages({ room, messages, onSendMessage, loading, c
           })}
         </div>
       </ScrollArea>
-      <div className="flex items-center gap-2 border-t p-4">
-        <Button variant="ghost" size="icon">
-          <Paperclip className="size-5" />
-          <span className="sr-only">Attach file</span>
-        </Button>
+      <div className="space-y-2 border-t p-4">
+        {isUploading && (
+          <div className="relative h-2 w-full overflow-hidden rounded-full bg-secondary">
+            <div 
+              className="h-full bg-primary transition-all duration-300"
+              style={{ width: `${uploadProgress}%` }}
+            />
+          </div>
+        )}
+        {selectedFile && (
+          <div className="flex items-center justify-between rounded-md bg-muted p-2 text-sm">
+            <span className="truncate">{selectedFile.name}</span>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-6 w-6"
+              onClick={handleRemoveFile}
+              disabled={isUploading}
+            >
+              <X className="size-4" />
+            </Button>
+          </div>
+        )}
+        <div className="flex items-center gap-2">
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            className="hidden"
+            id="file-upload"
+            disabled={isUploading}
+          />
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            asChild
+            disabled={isUploading}
+          >
+            <label htmlFor="file-upload" className="cursor-pointer">
+              <Paperclip className="size-5" />
+              <span className="sr-only">Attach file</span>
+            </label>
+          </Button>
         <Input
           placeholder="Type a message..."
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+          disabled={isUploading}
+          className="flex-1"
         />
-        <Button onClick={handleSend}>
-          <Send className="size-5" />
+        <Button 
+          onClick={handleSend}
+          disabled={isUploading || (!newMessage.trim() && !selectedFile)}
+        >
+          {isUploading ? (
+            <Loader2 className="size-5 animate-spin" />
+          ) : (
+            <Send className="size-5" />
+          )}
           <span className="sr-only">Send</span>
         </Button>
       </div>

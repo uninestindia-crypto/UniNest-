@@ -2,6 +2,7 @@
 'use client';
 
 import React, { type ReactNode, useEffect, useState } from 'react';
+import type { User } from '@supabase/supabase-js';
 import {
   SidebarProvider,
   Sidebar,
@@ -54,6 +55,20 @@ export default function VendorLayout({ children }: { children: ReactNode }) {
     )
   }
 
+  return (
+    <VendorLayoutShell user={user} signOut={signOut}>
+      {children}
+    </VendorLayoutShell>
+  );
+}
+
+type VendorLayoutShellProps = {
+  children: ReactNode;
+  user: User | null;
+  signOut: () => Promise<void>;
+};
+
+function VendorLayoutShell({ children, user, signOut }: VendorLayoutShellProps) {
   return (
     <SidebarProvider>
       <Sidebar>

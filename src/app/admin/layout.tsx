@@ -2,6 +2,7 @@
 'use client';
 
 import React, { type ReactNode, useEffect, useState } from 'react';
+import type { User } from '@supabase/supabase-js';
 import {
   SidebarProvider,
   Sidebar,
@@ -59,6 +60,20 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     )
   }
 
+  return (
+    <AdminLayoutShell user={user} signOut={signOut}>
+      {children}
+    </AdminLayoutShell>
+  );
+}
+
+type AdminLayoutShellProps = {
+  children: ReactNode;
+  user: User | null;
+  signOut: () => Promise<void>;
+};
+
+function AdminLayoutShell({ children, user, signOut }: AdminLayoutShellProps) {
   return (
     <SidebarProvider>
       <Sidebar>
