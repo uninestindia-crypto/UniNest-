@@ -9,7 +9,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';
-import { Search, ListFilter, Library, Utensils, Laptop, Bed, Book, Package, X, Loader2, Plus, MessageSquare } from 'lucide-react';
+import { Search, ListFilter, Library, Utensils, Laptop, Bed, Book, Package, X, Loader2, Plus, MessageSquare, Rows3, Rows } from 'lucide-react';
 import type { Product } from '@/lib/types';
 import Link from 'next/link';
 import { useEffect, useState, useMemo, useCallback } from 'react';
@@ -27,6 +27,10 @@ const categories = [
   { name: 'Other Products', icon: Package },
 ];
 
+type LayoutMode = 'grid' | 'list';
+
+const MARKETPLACE_LAYOUT_KEY = 'uninest_marketplace_layout';
+
 export default function MarketplaceContent() {
   const { user, supabase } = useAuth();
   const searchParams = useSearchParams();
@@ -42,8 +46,47 @@ export default function MarketplaceContent() {
   const [selectedType, setSelectedType] = useState('all');
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 0]);
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
+  const [layoutMode, setLayoutMode] = useState<LayoutMode>('grid');
 
   const selectedCategory = searchParams.get('category');
+
+  useEffect(() => {
+    const storedLayout = typeof window !== 'undefined' ? window.sessionStorage.getItem(MARKETPLACE_LAYOUT_KEY) : null;
+    if (storedLayout === 'grid' || storedLayout === 'list') {
+      setLayoutMode(storedLayout);
+    }
+  }, []);
+
+  const handleLayoutChange = useCallback((mode: LayoutMode) => {
+    setLayoutMode(mode);
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.setItem(MARKETPLACE_LAYOUT_KEY, mode);
+    }
+  }, []);
+
+  const layoutToggle = useMemo(() => (
+    <div className="inline-flex items-center gap-2 rounded-full border bg-card px-2 py-1 text-sm">
+      <span className="text-muted-foreground">Layout</span>
+      <div className="flex rounded-full bg-muted p-1">
+        <Button
+          size="sm"
+          variant={layoutMode === 'grid' ? 'default' : 'ghost'}
+          className="rounded-full px-2"
+          onClick={() => handleLayoutChange('grid')}
+        >
+          <Rows3 className="size-4" />
+        </Button>
+        <Button
+          size="sm"
+          variant={layoutMode === 'list' ? 'default' : 'ghost'}
+          className="rounded-full px-2"
+          onClick={() => handleLayoutChange('list')}
+        >
+          <Rows className="size-4" />
+        </Button>
+      </div>
+    </div>
+  ), [handleLayoutChange, layoutMode]);
 
   const priceBounds = useMemo(() => {
     if (!products.length) return { min: 0, max: 0 };
@@ -521,23 +564,42 @@ export default function MarketplaceContent() {
                     </Button>
                 </div>
             )}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              {appliedFilters.length > 0 ? (
+                <div className="flex flex-wrap items-center gap-2">
+                  {appliedFilters.map(filter => (
+                    <Badge key={filter.id} variant="secondary" className="rounded-full px-3 py-1 text-sm font-medium">
+                      {filter.label}
+                    </Badge>
+                  ))}
+                  <Button variant="ghost" size="sm" onClick={resetFilters}>
+                    Clear all
+                  </Button>
+                </div>
+              ) : (
+                <div className="text-sm text-muted-foreground">Showing {filteredProducts.length} listings</div>
+              )}
+              {layoutToggle}
+            </div>
             {loading ? (
                 <div className="flex justify-center items-center h-64">
                     <Loader2 className="size-8 animate-spin text-muted-foreground" />
                 </div>
             ) : filteredProducts.length > 0 ? (
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5">
-                    {filteredProducts.map((product) => (
-                    <ProductCard
-                        key={product.id}
+                <div className={layoutMode === 'grid' ? 'grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5' : 'space-y-4'}>
+                  {filteredProducts.map((product) => (
+                    <div key={product.id} className={layoutMode === 'list' ? 'rounded-2xl border bg-card p-4 shadow-sm hover:shadow-md transition-shadow' : undefined}>
+                      <ProductCard
                         product={product}
                         user={user}
                         onBuyNow={handleBuyNow}
                         onChat={handleChat}
                         isBuying={purchasingProductId === product.id}
                         isRazorpayLoaded={isLoaded}
-                    />
-                    ))}
+                        layout={layoutMode}
+                      />
+                    </div>
+                  ))}
                 </div>
             ) : (
                 <div className="text-center text-muted-foreground py-16 bg-card rounded-2xl">

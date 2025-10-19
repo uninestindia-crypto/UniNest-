@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,6 +28,8 @@ type InternshipPreview = {
   location: string;
 };
 
+type LayoutMode = 'grid' | 'list';
+
 export default function WorkspaceClient() {
   const { user, supabase } = useAuth();
   const role = user?.user_metadata?.role;
@@ -36,6 +38,31 @@ export default function WorkspaceClient() {
   const [internships, setInternships] = useState<InternshipPreview[]>([]);
   const [competitionsLoading, setCompetitionsLoading] = useState(true);
   const [internshipsLoading, setInternshipsLoading] = useState(true);
+  const [layoutMode, setLayoutMode] = useState<LayoutMode>('grid');
+
+  const layoutToggle = useMemo(() => (
+    <div className="inline-flex items-center gap-2 rounded-full border bg-card px-2 py-1 text-sm">
+      <span className="text-muted-foreground">Layout</span>
+      <div className="flex rounded-full bg-muted p-1">
+        <Button
+          size="sm"
+          variant={layoutMode === 'grid' ? 'default' : 'ghost'}
+          className="rounded-full px-3"
+          onClick={() => setLayoutMode('grid')}
+        >
+          Grid
+        </Button>
+        <Button
+          size="sm"
+          variant={layoutMode === 'list' ? 'default' : 'ghost'}
+          className="rounded-full px-3"
+          onClick={() => setLayoutMode('list')}
+        >
+          List
+        </Button>
+      </div>
+    </div>
+  ), [layoutMode]);
 
   useEffect(() => {
     let isMounted = true;
@@ -207,27 +234,30 @@ export default function WorkspaceClient() {
             <h2 className="text-2xl font-semibold">Latest Competitions</h2>
             <p className="text-muted-foreground">Speed-run your achievements with upcoming challenges.</p>
           </div>
-          <Button variant="ghost" asChild>
-            <Link href="/workspace/competitions" className="gap-2">
-              View all
-              <ArrowUpRight className="size-4" />
-            </Link>
-          </Button>
+          <div className="flex items-center gap-3">
+            {layoutToggle}
+            <Button variant="ghost" asChild>
+              <Link href="/workspace/competitions" className="gap-2">
+                View all
+                <ArrowUpRight className="size-4" />
+              </Link>
+            </Button>
+          </div>
         </div>
         {competitionsLoading ? (
           <div className="flex justify-center py-12">
             <Loader2 className="size-6 animate-spin text-muted-foreground" />
           </div>
         ) : competitions.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className={layoutMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'}>
             {competitions.map((comp) => (
-              <Link key={comp.id} href={`/workspace/competitions/${comp.id}`} className="flex">
-                <Card className="flex flex-col flex-1 transition-shadow hover:shadow-lg">
-                  <CardHeader>
+              <Link key={comp.id} href={`/workspace/competitions/${comp.id}`} className={layoutMode === 'grid' ? 'flex' : 'block'}>
+                <Card className={`transition-shadow hover:shadow-lg ${layoutMode === 'list' ? 'flex flex-col md:flex-row md:items-center' : 'flex flex-col flex-1'}`}>
+                  <CardHeader className={layoutMode === 'list' ? 'md:w-1/3' : undefined}>
                     <CardTitle className="line-clamp-2 text-lg">{comp.title}</CardTitle>
                     <CardDescription className="line-clamp-3 pt-2 text-sm">{comp.description}</CardDescription>
                   </CardHeader>
-                  <CardContent className="flex flex-col gap-4 text-sm text-muted-foreground">
+                  <CardContent className={`text-sm text-muted-foreground ${layoutMode === 'list' ? 'md:w-2/3 md:border-l md:border-muted/50 md:pl-6 flex flex-col gap-4' : 'flex flex-col gap-4'}`}>
                     <div className="flex items-center gap-2">
                       <Trophy className="size-4 text-amber-500" />
                       <span>Prize Pool <span className="font-semibold text-foreground">₹{comp.prize.toLocaleString()}</span></span>
@@ -262,23 +292,26 @@ export default function WorkspaceClient() {
             <h2 className="text-2xl font-semibold">Hot Internships</h2>
             <p className="text-muted-foreground">Land real-world experience without hopping across pages.</p>
           </div>
-          <Button variant="ghost" asChild>
-            <Link href="/workspace/internships" className="gap-2">
-              View all
-              <ArrowUpRight className="size-4" />
-            </Link>
-          </Button>
+          <div className="flex items-center gap-3">
+            {layoutToggle}
+            <Button variant="ghost" asChild>
+              <Link href="/workspace/internships" className="gap-2">
+                View all
+                <ArrowUpRight className="size-4" />
+              </Link>
+            </Button>
+          </div>
         </div>
         {internshipsLoading ? (
           <div className="flex justify-center py-12">
             <Loader2 className="size-6 animate-spin text-muted-foreground" />
           </div>
         ) : internships.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className={layoutMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'}>
             {internships.map((internship) => (
-              <Link key={internship.id} href={`/workspace/internships/${internship.id}`} className="flex">
-                <Card className="flex flex-col flex-1 transition-shadow hover:shadow-lg">
-                  <CardHeader className="space-y-2">
+              <Link key={internship.id} href={`/workspace/internships/${internship.id}`} className={layoutMode === 'grid' ? 'flex' : 'block'}>
+                <Card className={`transition-shadow hover:shadow-lg ${layoutMode === 'list' ? 'flex flex-col md:flex-row md:items-center' : 'flex flex-col flex-1'}`}>
+                  <CardHeader className={`space-y-2 ${layoutMode === 'list' ? 'md:w-1/3' : ''}`}>
                     <CardTitle className="flex items-center gap-2 text-lg">
                       <Briefcase className="size-5 text-sky-500" />
                       <span className="line-clamp-2">{internship.role}</span>
@@ -288,7 +321,7 @@ export default function WorkspaceClient() {
                       {internship.company}
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="flex flex-col gap-4 text-sm text-muted-foreground">
+                  <CardContent className={`text-sm text-muted-foreground ${layoutMode === 'list' ? 'md:w-2/3 md:border-l md:border-muted/50 md:pl-6 flex flex-col gap-4' : 'flex flex-col gap-4'}`}>
                     <div className="flex items-center gap-2">
                       <IndianRupee className="size-4" />
                       <span>

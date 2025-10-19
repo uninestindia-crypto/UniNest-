@@ -91,8 +91,31 @@ export default function SettingsContent() {
     },
   });
   
+  const selectedRole = profileForm.watch('role');
   const watchedVendorCategories = profileForm.watch('vendorCategories');
-  const isVendorActive = user?.user_metadata?.is_vendor_active || false;
+  const vendorCategoryCount = watchedVendorCategories?.length ?? 0;
+  const rawVendorActive = user?.user_metadata?.is_vendor_active || false;
+  const vendorTrialStartedAt = user?.user_metadata?.vendor_trial_started_at
+    ? new Date(user.user_metadata.vendor_trial_started_at)
+    : null;
+  const vendorTrialExpiresAt = user?.user_metadata?.vendor_trial_expires_at
+    ? new Date(user.user_metadata.vendor_trial_expires_at)
+    : null;
+  const isTrialActive = vendorTrialExpiresAt ? new Date() <= vendorTrialExpiresAt : false;
+  const hasRecordedPayment = Boolean(user?.user_metadata?.last_payment_id);
+  const isVendorActive = rawVendorActive && (isTrialActive || hasRecordedPayment);
+  const isTrialEligible = !vendorTrialStartedAt;
+  const vendorSettings = monetizationSettings?.vendor;
+  const totalCost = vendorSettings?.price_per_service_per_month ?? 0;
+  const originalPrice = 1000;
+  const shouldCharge = selectedRole === 'vendor' && vendorSettings?.charge_for_platform_access && vendorCategoryCount > 0;
+  const showPaymentAlert = shouldCharge && !isTrialEligible && !isTrialActive && !isVendorActive && totalCost > 0;
+  const submitLabel = (() => {
+    if (selectedRole !== 'vendor') return 'Save Changes';
+    if (shouldCharge && isTrialEligible) return 'Activate Free Trial';
+    if (showPaymentAlert) return `Pay ₹${totalCost}/mo (₹${originalPrice}/mo) and Save`;
+    return 'Save Changes';
+  })();
   
   const passwordForm = useForm<z.infer<typeof passwordFormSchema>>({
     resolver: zodResolver(passwordFormSchema),
