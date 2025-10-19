@@ -3,6 +3,7 @@
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
+import { ensureBucketExists } from '@/lib/supabase/storage';
 
 const getSupabaseAdmin = () => {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -12,24 +13,6 @@ const getSupabaseAdmin = () => {
         throw new Error('Supabase service role key is not configured.');
     }
     return createClient(supabaseUrl, supabaseServiceKey);
-}
-
-const ensureBucketExists = async (supabaseAdmin: SupabaseClient, bucket: string) => {
-    const { data, error } = await supabaseAdmin.storage.getBucket(bucket);
-    if (data) {
-        return { error: null };
-    }
-
-    if (error && error.message && !error.message.toLowerCase().includes('not found')) {
-        return { error: error.message };
-    }
-
-    const { error: createError } = await supabaseAdmin.storage.createBucket(bucket, { public: true });
-    if (createError) {
-        return { error: createError.message };
-    }
-
-    return { error: null };
 }
 
 const uploadFile = async (supabaseAdmin: SupabaseClient, file: File, bucket: string) => {

@@ -107,7 +107,9 @@ export async function updateHomePoster(formData: FormData) {
       heroSlides: processedSlides,
     };
 
-    const { error: upsertError } = await supabase
+    const supabaseAdmin = getSupabaseAdmin();
+
+    const { error: upsertError } = await supabaseAdmin
       .from('platform_settings')
       .upsert(
         {
@@ -121,7 +123,7 @@ export async function updateHomePoster(formData: FormData) {
       throw new Error(upsertError.message);
     }
 
-    await supabase.from('audit_log').insert({
+    await supabaseAdmin.from('audit_log').insert({
       admin_id: user.id,
       action: 'home_poster_update',
       details: `Updated home poster with ${posterConfig.heroSlides.length} slide(s).`,
