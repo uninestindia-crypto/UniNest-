@@ -4,27 +4,45 @@ import type { SVGProps } from 'react';
 export const Logo = (props: SVGProps<SVGSVGElement>) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
+    viewBox="0 0 64 64"
     fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
     {...props}
   >
     <defs>
-      <linearGradient id="logo-gradient-stroke" x1="0%" y1="0%" x2="100%" y2="100%">
+      <linearGradient id="logo-gradient-fill" x1="12%" y1="10%" x2="88%" y2="90%">
         <stop offset="0%" style={{ stopColor: 'hsl(var(--primary-start))', stopOpacity: 1 }} />
         <stop offset="100%" style={{ stopColor: 'hsl(var(--primary-end))', stopOpacity: 1 }} />
       </linearGradient>
-       <linearGradient id="logo-gradient-fill" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" style={{ stopColor: 'hsl(var(--primary-start))', stopOpacity: 1 }} />
-        <stop offset="100%" style={{ stopColor: 'hsl(var(--primary-end))', stopOpacity: 1 }} />
+      <linearGradient id="logo-arc-stroke" x1="20%" y1="20%" x2="80%" y2="95%">
+        <stop offset="0%" style={{ stopColor: 'rgba(255,255,255,0.8)', stopOpacity: 1 }} />
+        <stop offset="100%" style={{ stopColor: 'rgba(226,232,240,0.4)', stopOpacity: 1 }} />
       </linearGradient>
     </defs>
-    <path 
-      d="M6 2C4.89543 2 4 2.89543 4 4V20C4 21.1046 4.89543 22 6 22H18C19.1046 22 20 21.1046 20 20V13.1429C20 12 19.1429 11 18 11H13C10.2386 11 8 8.76142 8 6V4C8 2.89543 7.10457 2 6 2Z" 
-      fill="url(#logo-gradient-fill)" 
+    <circle cx="32" cy="32" r="28" fill="url(#logo-gradient-fill)" />
+    <path
+      d="M17 28.5L32 16L47 28.5L43.4 30.9L32 22L20.6 30.9L17 28.5Z"
+      fill="rgba(255,255,255,0.9)"
+    />
+    <path
+      d="M20 27.5C20 24.4624 22.4624 22 25.5 22H32V45.5L24.8 41.8C21.6339 40.1944 20 36.812 20 33.3382V27.5Z"
+      fill="rgba(248,250,252,0.95)"
+    />
+    <path
+      d="M44 27.5C44 24.4624 41.5376 22 38.5 22H32V45.5L39.2 41.8C42.3661 40.1944 44 36.812 44 33.3382V27.5Z"
+      fill="rgba(241,245,249,0.95)"
+    />
+    <path
+      d="M22 32V34.4C22 40.1808 26.5231 45 32 45C37.4769 45 42 40.1808 42 34.4V32"
+      stroke="rgba(15,23,42,0.55)"
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M18 41.5C21.3 46.8 26.15 49.5 32 49.5C37.85 49.5 42.7 46.8 46 41.5"
+      stroke="url(#logo-arc-stroke)"
+      strokeWidth="2.4"
+      strokeLinecap="round"
     />
   </svg>
 );

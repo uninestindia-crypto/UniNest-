@@ -1,7 +1,7 @@
 
 'use server';
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
 
 const getSupabaseAdmin = () => {
@@ -14,25 +14,37 @@ const getSupabaseAdmin = () => {
     return createClient(supabaseUrl, supabaseServiceKey);
 }
 
-const uploadFile = async (supabaseAdmin: SupabaseClient, file: File, bucket: string): Promise<string | null> => {
-    if (!file || file.size === 0) return null;
-    
+const uploadFile = async (supabaseAdmin: SupabaseClient, file: File, bucket: string) => {
+    if (!file || file.size === 0) {
+        return { url: null, error: 'No file provided for upload.' };
+    }
+
     const filePath = `admin/${Date.now()}-${file.name}`;
 
     const { error: uploadError } = await supabaseAdmin.storage
       .from(bucket)
-      .upload(filePath, file);
-    
+      .upload(filePath, file, {
+        contentType: file.type || 'application/octet-stream',
+      });
+
     if (uploadError) {
-      console.error('Upload Error:', uploadError);
-      return null;
+        console.error('Upload Error:', {
+            bucket,
+            filePath,
+            message: uploadError.message,
+        });
+        return { url: null, error: uploadError.message }; 
     }
-    
+
     const { data: { publicUrl } } = supabaseAdmin.storage
       .from(bucket)
       .getPublicUrl(filePath);
-      
-    return publicUrl;
+
+    if (!publicUrl) {
+        return { url: null, error: 'Unable to generate public URL for uploaded file.' };
+    }
+
+    return { url: publicUrl, error: null };
 }
 
 
@@ -54,16 +66,18 @@ export async function createCompetition(formData: FormData) {
         let pdfUrl: string | null = null;
 
         if (imageFile && imageFile instanceof File && imageFile.size > 0) {
-            imageUrl = await uploadFile(supabaseAdmin, imageFile, 'competitions');
-            if (!imageUrl) {
-                return { error: 'Failed to upload banner image.' };
+            const { url, error } = await uploadFile(supabaseAdmin, imageFile, 'competitions');
+            if (error) {
+                return { error: `Failed to upload banner image: ${error}` };
             }
+            imageUrl = url;
         }
         if (pdfFile && pdfFile instanceof File && pdfFile.size > 0) {
-            pdfUrl = await uploadFile(supabaseAdmin, pdfFile, 'competitions');
-            if (!pdfUrl) {
-                return { error: 'Failed to upload details PDF.' };
+            const { url, error } = await uploadFile(supabaseAdmin, pdfFile, 'competitions');
+            if (error) {
+                return { error: `Failed to upload details PDF: ${error}` };
             }
+            pdfUrl = url;
         }
 
         const { error } = await supabaseAdmin.from('competitions').insert({
@@ -108,12 +122,14 @@ export async function updateCompetition(id: number, formData: FormData) {
         let pdfUrl = existing?.details_pdf_url || null;
 
         if (imageFile && imageFile instanceof File && imageFile.size > 0) {
-            imageUrl = await uploadFile(supabaseAdmin, imageFile, 'competitions');
-            if (!imageUrl) return { error: 'Failed to upload banner image.' };
+            const { url, error } = await uploadFile(supabaseAdmin, imageFile, 'competitions');
+            if (error) return { error: `Failed to upload banner image: ${error}` };
+            imageUrl = url;
         }
         if (pdfFile && pdfFile instanceof File && pdfFile.size > 0) {
-            pdfUrl = await uploadFile(supabaseAdmin, pdfFile, 'competitions');
-            if (!pdfUrl) return { error: 'Failed to upload details PDF.' };
+            const { url, error } = await uploadFile(supabaseAdmin, pdfFile, 'competitions');
+            if (error) return { error: `Failed to upload details PDF: ${error}` };
+            pdfUrl = url;
         }
 
         const { error } = await supabaseAdmin.from('competitions').update({

@@ -14,25 +14,37 @@ const getSupabaseAdmin = () => {
     return createClient(supabaseUrl, supabaseServiceKey);
 }
 
-const uploadFile = async (supabaseAdmin: SupabaseClient, file: File, bucket: string): Promise<string | null> => {
-    if (!file || file.size === 0) return null;
+const uploadFile = async (supabaseAdmin: SupabaseClient, file: File, bucket: string) => {
+    if (!file || file.size === 0) {
+        return { url: null, error: 'No file provided for upload.' };
+    }
     
     const filePath = `admin/${Date.now()}-${file.name}`;
-    
+
     const { error: uploadError } = await supabaseAdmin.storage
       .from(bucket)
-      .upload(filePath, file);
+      .upload(filePath, file, {
+        contentType: file.type || 'application/octet-stream',
+      });
     
     if (uploadError) {
-      console.error('Upload Error:', uploadError);
-      return null;
+      console.error('Upload Error:', {
+        bucket,
+        filePath,
+        message: uploadError.message,
+      });
+      return { url: null, error: uploadError.message };
     }
     
     const { data: { publicUrl } } = supabaseAdmin.storage
       .from(bucket)
       .getPublicUrl(filePath);
+
+    if (!publicUrl) {
+        return { url: null, error: 'Unable to generate public URL for uploaded file.' };
+    }
       
-    return publicUrl;
+    return { url: publicUrl, error: null };
 }
 
 export async function createInternship(formData: FormData) {
@@ -55,16 +67,18 @@ export async function createInternship(formData: FormData) {
         let pdfUrl: string | null = null;
 
         if (imageFile && imageFile instanceof File && imageFile.size > 0) {
-            imageUrl = await uploadFile(supabaseAdmin, imageFile, 'internships');
-            if (!imageUrl) {
-                return { error: 'Failed to upload image.' };
+            const { url, error } = await uploadFile(supabaseAdmin, imageFile, 'internships');
+            if (error) {
+                return { error: `Failed to upload image: ${error}` };
             }
+            imageUrl = url;
         }
         if (pdfFile && pdfFile instanceof File && pdfFile.size > 0) {
-            pdfUrl = await uploadFile(supabaseAdmin, pdfFile, 'internships');
-            if (!pdfUrl) {
-                return { error: 'Failed to upload PDF.' };
+            const { url, error } = await uploadFile(supabaseAdmin, pdfFile, 'internships');
+            if (error) {
+                return { error: `Failed to upload PDF: ${error}` };
             }
+            pdfUrl = url;
         }
 
         const { error } = await supabaseAdmin.from('internships').insert({
@@ -111,12 +125,14 @@ export async function updateInternship(id: number, formData: FormData) {
         let pdfUrl = existing?.details_pdf_url || null;
 
         if (imageFile && imageFile instanceof File && imageFile.size > 0) {
-            imageUrl = await uploadFile(supabaseAdmin, imageFile, 'internships');
-            if (!imageUrl) return { error: 'Failed to upload image.' };
+            const { url, error } = await uploadFile(supabaseAdmin, imageFile, 'internships');
+            if (error) return { error: `Failed to upload image: ${error}` };
+            imageUrl = url;
         }
         if (pdfFile && pdfFile instanceof File && pdfFile.size > 0) {
-            pdfUrl = await uploadFile(supabaseAdmin, pdfFile, 'internships');
-            if (!pdfUrl) return { error: 'Failed to upload PDF.' };
+            const { url, error } = await uploadFile(supabaseAdmin, pdfFile, 'internships');
+            if (error) return { error: `Failed to upload PDF: ${error}` };
+            pdfUrl = url;
         }
 
         const { error } = await supabaseAdmin.from('internships').update({
