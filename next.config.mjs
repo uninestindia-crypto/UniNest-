@@ -1,4 +1,39 @@
 
+const supabaseHost = process.env.NEXT_PUBLIC_SUPABASE_URL
+  ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname
+  : null;
+
+const remotePatterns = [
+  {
+    protocol: 'https',
+    hostname: 'placehold.co',
+    port: '',
+    pathname: '/**',
+  },
+  {
+    protocol: 'https',
+    hostname: 'picsum.photos',
+    port: '',
+    pathname: '/**',
+  },
+];
+
+if (supabaseHost) {
+  remotePatterns.push({
+    protocol: 'https',
+    hostname: supabaseHost,
+    port: '',
+    pathname: '/**',
+  });
+} else {
+  remotePatterns.push({
+    protocol: 'https',
+    hostname: 'dfkgefoqodjccrrqmqis.supabase.co',
+    port: '',
+    pathname: '/**',
+  });
+}
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   typescript: {
@@ -8,26 +43,7 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'placehold.co',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'picsum.photos',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'dfkgefoqodjccrrqmqis.supabase.co',
-        port: '',
-        pathname: '/**',
-      },
-    ],
+    remotePatterns,
   },
 };
 

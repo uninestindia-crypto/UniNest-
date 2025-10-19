@@ -138,11 +138,11 @@ export default function ChatMessages({ room, messages, onSendMessage, loading, c
   return (
     <div className="flex flex-1 flex-col">
       <div className="flex items-center gap-2 border-b p-2 md:p-4">
-        {onBack && (
-            <Button onClick={onBack} variant="ghost" size="icon" className="md:hidden">
-                <ArrowLeft />
-            </Button>
-        )}
+        {onBack ? (
+          <Button onClick={onBack} variant="ghost" size="icon" className="md:hidden">
+            <ArrowLeft />
+          </Button>
+        ) : null}
         <Avatar className="h-10 w-10">
           <AvatarImage src={roomAvatar} alt={roomName} data-ai-hint="person face" />
           <AvatarFallback>{roomName.charAt(0)}</AvatarFallback>
@@ -158,16 +158,13 @@ export default function ChatMessages({ room, messages, onSendMessage, loading, c
             const senderName = senderProfile?.full_name || 'User';
 
             return (
-              <div
-                key={message.id}
-                className={cn('flex items-end gap-3', isSentByMe && 'justify-end')}
-              >
-                {!isSentByMe && (
+              <div key={message.id} className={cn('flex items-end gap-3', isSentByMe && 'justify-end')}>
+                {!isSentByMe ? (
                   <Avatar className="h-8 w-8">
-                     <AvatarImage src={senderAvatar} alt={senderName} data-ai-hint="person face"/>
+                    <AvatarImage src={senderAvatar} alt={senderName} data-ai-hint="person face" />
                     <AvatarFallback>{senderName.charAt(0)}</AvatarFallback>
                   </Avatar>
-                )}
+                ) : null}
                 <div
                   className={cn(
                     'max-w-xs rounded-lg p-3 md:max-w-md',
@@ -175,36 +172,47 @@ export default function ChatMessages({ room, messages, onSendMessage, loading, c
                   )}
                 >
                   <p className="text-sm">{message.content}</p>
-                   <p className={cn("text-xs mt-1", isSentByMe ? "text-primary-foreground/70" : "text-muted-foreground")}>
-                       {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                   </p>
+                  <p
+                    className={cn(
+                      'mt-1 text-xs',
+                      isSentByMe ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                    )}
+                  >
+                    {new Date(message.created_at).toLocaleTimeString([], {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </p>
                 </div>
-                 {isSentByMe && (
+                {isSentByMe ? (
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={user?.user_metadata?.avatar_url || 'https://picsum.photos/id/237/40/40'} alt="Your avatar" />
+                    <AvatarImage
+                      src={user?.user_metadata?.avatar_url || 'https://picsum.photos/id/237/40/40'}
+                      alt="Your avatar"
+                    />
                     <AvatarFallback>{user?.email?.[0].toUpperCase() || 'U'}</AvatarFallback>
                   </Avatar>
-                )}
+                ) : null}
               </div>
             );
           })}
         </div>
       </ScrollArea>
       <div className="space-y-2 border-t p-4">
-        {isUploading && (
+        {isUploading ? (
           <div className="relative h-2 w-full overflow-hidden rounded-full bg-secondary">
-            <div 
+            <div
               className="h-full bg-primary transition-all duration-300"
               style={{ width: `${uploadProgress}%` }}
             />
           </div>
-        )}
-        {selectedFile && (
+        ) : null}
+        {selectedFile ? (
           <div className="flex items-center justify-between rounded-md bg-muted p-2 text-sm">
             <span className="truncate">{selectedFile.name}</span>
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               className="h-6 w-6"
               onClick={handleRemoveFile}
               disabled={isUploading}
@@ -212,7 +220,7 @@ export default function ChatMessages({ room, messages, onSendMessage, loading, c
               <X className="size-4" />
             </Button>
           </div>
-        )}
+        ) : null}
         <div className="flex items-center gap-2">
           <input
             type="file"
@@ -222,36 +230,25 @@ export default function ChatMessages({ room, messages, onSendMessage, loading, c
             id="file-upload"
             disabled={isUploading}
           />
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            asChild
-            disabled={isUploading}
-          >
+          <Button variant="ghost" size="icon" asChild disabled={isUploading}>
             <label htmlFor="file-upload" className="cursor-pointer">
               <Paperclip className="size-5" />
               <span className="sr-only">Attach file</span>
             </label>
           </Button>
-        <Input
-          placeholder="Type a message..."
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-          disabled={isUploading}
-          className="flex-1"
-        />
-        <Button 
-          onClick={handleSend}
-          disabled={isUploading || (!newMessage.trim() && !selectedFile)}
-        >
-          {isUploading ? (
-            <Loader2 className="size-5 animate-spin" />
-          ) : (
-            <Send className="size-5" />
-          )}
-          <span className="sr-only">Send</span>
-        </Button>
+          <Input
+            placeholder="Type a message..."
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+            disabled={isUploading}
+            className="flex-1"
+          />
+          <Button onClick={handleSend} disabled={isUploading || (!newMessage.trim() && !selectedFile)}>
+            {isUploading ? <Loader2 className="size-5 animate-spin" /> : <Send className="size-5" />}
+            <span className="sr-only">Send</span>
+          </Button>
+        </div>
       </div>
     </div>
   );

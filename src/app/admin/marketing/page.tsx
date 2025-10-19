@@ -9,7 +9,6 @@ export const metadata: Metadata = {
 };
 
 export default async function MarketingPage() {
-  // Check if Supabase environment variables are set
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
     console.error('Missing Supabase environment variables');
     return (
