@@ -37,11 +37,21 @@ type SidebarContext = {
 }
 
 const SidebarContext = React.createContext<SidebarContext | null>(null)
+const useSidebarContext = () => React.useContext(SidebarContext)
 
 function useSidebar() {
   const context = React.useContext(SidebarContext)
+
   if (!context) {
-    throw new Error("useSidebar must be used within a SidebarProvider.")
+    return {
+      state: "expanded" as const,
+      open: true,
+      setOpen: () => {},
+      isMobile: false,
+      openMobile: false,
+      setOpenMobile: () => {},
+      toggleSidebar: () => {},
+    }
   }
 
   return context
@@ -152,8 +162,12 @@ const Sidebar = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div">
 >(({ className, children, ...props }, ref) => {
-  const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
-  
+  const context = useSidebarContext()
+  const isMobile = context?.isMobile ?? false
+  const state = context?.state ?? "expanded"
+  const openMobile = context?.openMobile ?? false
+  const setOpenMobile = context?.setOpenMobile ?? (() => {})
+
   if (isMobile) {
     return (
       <Sheet open={openMobile} onOpenChange={setOpenMobile}>
@@ -194,7 +208,8 @@ const SidebarTrigger = React.forwardRef<
   React.ElementRef<typeof Button>,
   React.ComponentProps<typeof Button>
 >(({ className, onClick, ...props }, ref) => {
-  const { toggleSidebar } = useSidebar()
+  const context = useSidebarContext()
+  const toggleSidebar = context?.toggleSidebar ?? (() => {})
 
   return (
     <Button
@@ -252,7 +267,9 @@ const SidebarHeader = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div">
 >(({ className, ...props }, ref) => {
-  const { state, isMobile } = useSidebar();
+  const context = useSidebarContext();
+  const state = context?.state ?? 'expanded';
+  const isMobile = context?.isMobile ?? false;
   const displayState = isMobile ? 'expanded' : state;
 
   return (
@@ -281,7 +298,9 @@ const SidebarFooter = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div">
 >(({ className, ...props }, ref) => {
-    const { state, isMobile } = useSidebar();
+    const context = useSidebarContext();
+    const state = context?.state ?? 'expanded';
+    const isMobile = context?.isMobile ?? false;
     const displayState = isMobile ? 'expanded' : state;
     return (
         <div
@@ -374,7 +393,10 @@ const SidebarMenuButton = React.forwardRef<
     ref
   ) => {
     const Comp = asChild ? Slot : "button"
-    const { isMobile, state, setOpenMobile } = useSidebar()
+    const context = useSidebarContext()
+    const isMobile = context?.isMobile ?? false
+    const state = context?.state ?? 'expanded'
+    const setOpenMobile = context?.setOpenMobile ?? (() => {})
     const displayState = isMobile ? 'expanded' : state;
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
