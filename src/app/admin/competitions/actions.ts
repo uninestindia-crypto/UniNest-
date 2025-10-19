@@ -14,9 +14,32 @@ const getSupabaseAdmin = () => {
     return createClient(supabaseUrl, supabaseServiceKey);
 }
 
+const ensureBucketExists = async (supabaseAdmin: SupabaseClient, bucket: string) => {
+    const { data, error } = await supabaseAdmin.storage.getBucket(bucket);
+    if (data) {
+        return { error: null };
+    }
+
+    if (error && error.message && !error.message.toLowerCase().includes('not found')) {
+        return { error: error.message };
+    }
+
+    const { error: createError } = await supabaseAdmin.storage.createBucket(bucket, { public: true });
+    if (createError) {
+        return { error: createError.message };
+    }
+
+    return { error: null };
+}
+
 const uploadFile = async (supabaseAdmin: SupabaseClient, file: File, bucket: string) => {
     if (!file || file.size === 0) {
         return { url: null, error: 'No file provided for upload.' };
+    }
+
+    const { error: ensureError } = await ensureBucketExists(supabaseAdmin, bucket);
+    if (ensureError) {
+        return { url: null, error: ensureError };
     }
 
     const filePath = `admin/${Date.now()}-${file.name}`;

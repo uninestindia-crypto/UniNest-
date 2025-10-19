@@ -55,10 +55,11 @@ export default function LibraryDetailClient({ library, initialSeatProducts, init
 
         const newSeats: Seat[] = seatProducts.map(product => {
             const statusInfo = seatStatusMap.get(product.id);
+            const status: Seat['status'] = statusInfo ?? 'available';
             return {
                 id: product.name.split(' ')[1] || product.id.toString(), // e.g., "Seat 24" -> "24"
                 productId: product.id,
-                status: statusInfo || 'available',
+                status,
             }
         }).sort((a, b) => parseInt(a.id) - parseInt(b.id));
 
@@ -112,21 +113,12 @@ export default function LibraryDetailClient({ library, initialSeatProducts, init
         }
 
         try {
-            const { data, error } = await supabase.rpc('create_private_chat', {
+            const { error } = await supabase.rpc('create_private_chat', {
                 p_user1_id: currentUser.id,
                 p_user2_id: library.seller_id,
             });
 
             if (error) throw error;
-            const newRoomId = data;
-
-            const { error: messageError } = await supabase.from('chat_messages').insert({
-                room_id: newRoomId,
-                user_id: currentUser.id,
-                content: `Hi, I'm interested in booking a seat at ${library.name}.`,
-            });
-
-            if (messageError) throw messageError;
             
             router.push('/chat');
         } catch (error) {

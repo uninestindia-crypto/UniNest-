@@ -49,6 +49,18 @@ const dailyQuests = [
 
 const medalColors = ["text-amber-400", "text-slate-400", "text-amber-700"];
 
+type QuestProgress = {
+    streak: boolean;
+    share: boolean;
+    aim: boolean;
+};
+
+const defaultQuestProgress: QuestProgress = {
+    streak: false,
+    share: false,
+    aim: false,
+};
+
 type Donor = {
     name: string | null;
     avatar: string | null;
@@ -72,6 +84,23 @@ export default function DonateContent({ initialDonors, initialGoal, initialRaise
   const [goalAmount] = useState(initialGoal);
   const [raisedAmount, setRaisedAmount] = useState(initialRaised);
   const [donationAmount, setDonationAmount] = useState('100');
+  const [questProgress, setQuestProgress] = useState<QuestProgress>(() => {
+      if (typeof window === 'undefined') return defaultQuestProgress;
+      const stored = window.localStorage.getItem('donation-quests');
+      if (!stored) return defaultQuestProgress;
+      try {
+          const parsed = JSON.parse(stored) as Partial<QuestProgress>;
+          return { ...defaultQuestProgress, ...parsed };
+      } catch {
+          return defaultQuestProgress;
+      }
+  });
+  const lastDonationRef = useRef<number>(initialRaised);
+
+  useEffect(() => {
+      if (typeof window === 'undefined') return;
+      window.localStorage.setItem('donation-quests', JSON.stringify(questProgress));
+  }, [questProgress]);
 
   useEffect(() => {
     if (!supabase) return;
@@ -89,6 +118,7 @@ export default function DonateContent({ initialDonors, initialGoal, initialRaise
             .single();
 
           setRaisedAmount(prev => prev + newDonation.amount);
+          lastDonationRef.current = newDonation.amount;
 
           const newDonorInfo = {
               name: profileData?.full_name || 'Anonymous',
@@ -117,6 +147,23 @@ export default function DonateContent({ initialDonors, initialGoal, initialRaise
   }, [supabase]);
 
   const progressPercentage = goalAmount > 0 ? Math.min((raisedAmount / goalAmount) * 100, 100) : 0;
+
+  useEffect(() => {
+      const updates = { ...questProgress };
+      dailyQuests.forEach(quest => {
+          if (progressPercentage >= quest.threshold) {
+              updates[quest.id as keyof typeof updates] = true;
+          }
+      });
+      setQuestProgress(prev => ({ ...prev, ...updates }));
+  }, [progressPercentage]);
+
+  const recentBoost = useMemo(() => {
+      if (lastDonationRef.current >= 250) return 'Mega Boost! We just unlocked a campus innovation grant 🎯';
+      if (lastDonationRef.current >= 100) return 'Power Surge! Mentor hours just got extended ⚡';
+      if (lastDonationRef.current > 0) return 'Fresh Spark! Another student just got supported ✨';
+      return null;
+  }, [lastDonationRef.current]);
   
   const handlePaymentSuccess = async (paymentResponse: any, accessToken: string) => {
     const amount = parseInt(donationAmount, 10);
@@ -233,11 +280,30 @@ export default function DonateContent({ initialDonors, initialGoal, initialRaise
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
+            {recentBoost && (
+                <div className="rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm font-medium text-primary animate-in slide-in-from-top-2">
+                    {recentBoost}
+                </div>
+            )}
             <div className="space-y-2">
               <Progress value={progressPercentage} className="h-3" />
               <div className="flex justify-between text-sm font-medium">
                 <span className="text-primary">Raised: ₹{raisedAmount.toLocaleString()}</span>
                 <span className="text-muted-foreground">Goal: ₹{goalAmount.toLocaleString()}</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-muted-foreground">
+                {milestoneRewards.map(reward => {
+                    const achieved = raisedAmount >= reward.goal;
+                    return (
+                        <div key={reward.goal} className={cn("rounded-lg border px-3 py-2 flex items-center gap-2", achieved ? "border-primary/50 bg-primary/10 text-primary" : "border-border") }>
+                            <reward.icon className={cn("size-4", achieved && "text-primary")}/>
+                            <div>
+                                <p className="font-semibold text-foreground text-sm">{reward.title}</p>
+                                <p>{reward.description}</p>
+                            </div>
+                        </div>
+                    );
+                })}
               </div>
             </div>
              <div className="grid grid-cols-3 gap-3">
@@ -325,15 +391,77 @@ export default function DonateContent({ initialDonors, initialGoal, initialRaise
         </Card>
       </div>
       
-       {/* Footer CTA */}
-       <section className="text-center bg-card p-8 md:p-12 rounded-2xl shadow-xl max-w-4xl mx-auto">
+      {/* Social Quests */}
+      <section className="grid lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+        <Card className="border-primary/30">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <Flame className="text-primary" /> Daily Quests
+                </CardTitle>
+                <CardDescription>Complete these missions to unlock campus-wide boosts.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                {dailyQuests.map(quest => {
+                    const completed = questProgress[quest.id as keyof typeof questProgress];
+                    return (
+                        <div key={quest.id} className={cn("rounded-xl border px-4 py-3 flex items-center gap-4", completed ? "border-primary/50 bg-primary/10" : "border-border") }>
+                            <quest.icon className={cn("size-6", completed && "text-primary")}/>
+                            <div className="flex-1">
+                                <p className="font-semibold text-foreground">{quest.title}</p>
+                                <p className="text-sm text-muted-foreground">{quest.reward}</p>
+                            </div>
+                            <span className={cn("text-xs font-semibold px-3 py-1 rounded-full", completed ? "bg-primary text-primary-foreground" : "bg-muted") }>
+                                {completed ? 'Unlocked' : `${quest.threshold}%`}
+                            </span>
+                        </div>
+                    );
+                })}
+            </CardContent>
+        </Card>
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <ShieldCheck className="text-primary" /> Community Boosters
+                </CardTitle>
+                <CardDescription>Every stage unlocks new perks for students.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                {communityBoosts.map(boost => {
+                    const progress = Math.min((raisedAmount / boost.goal) * 100, 100);
+                    return (
+                        <div key={boost.id} className="space-y-3">
+                            <div className="flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-3">
+                                    <div className="rounded-full bg-primary/10 p-2 text-primary">
+                                        <boost.icon className="size-5" />
+                                    </div>
+                                    <div>
+                                        <p className="font-semibold text-foreground">{boost.title}</p>
+                                        <p className="text-xs text-muted-foreground">{boost.description}</p>
+                                    </div>
+                                </div>
+                                <span className="text-xs font-semibold text-primary">₹{boost.goal.toLocaleString()}</span>
+                            </div>
+                            <Progress value={progress} className="h-2" />
+                        </div>
+                    );
+                })}
+            </CardContent>
+        </Card>
+      </section>
+      
+      {/* Footer CTA */}
+      <section className="text-center bg-card p-8 md:p-12 rounded-2xl shadow-xl max-w-5xl mx-auto">
           <h2 className="text-3xl font-bold font-headline primary-gradient bg-clip-text text-transparent">Your donation writes the next chapter 📖</h2>
           <p className="mt-2 max-w-2xl mx-auto text-muted-foreground">
             Join our community of supporters and make a direct impact on the student experience.
           </p>
-          <div className="mt-6">
+          <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
             <Button size="lg" className="text-lg" onClick={() => document.getElementById('donate-section')?.scrollIntoView({ behavior: 'smooth' })}>
                 Donate Now & Join the Heroes ⚡
+            </Button>
+            <Button size="lg" variant="outline" onClick={() => router.push('/donate/thank-you')}>
+                Explore Hall of Heroes
             </Button>
           </div>
         </section>

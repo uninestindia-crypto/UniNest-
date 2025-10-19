@@ -265,22 +265,12 @@ export default function ChatLayout() {
     setIsNewChatModalOpen(false);
     
     try {
-        const { data, error } = await supabase.rpc('create_private_chat', {
+        const { error } = await supabase.rpc('create_private_chat', {
             p_user1_id: user.id,
             p_user2_id: otherUser.id,
         });
 
         if (error) throw error;
-        const newRoomId = data;
-
-        // Insert a starting message to "activate" the chat for both users
-        const { error: messageError } = await supabase.from('chat_messages').insert({
-            room_id: newRoomId,
-            user_id: user.id,
-            content: `Started a new chat with ${otherUser.full_name}.`,
-        });
-
-        if (messageError) throw messageError;
 
         await fetchRooms();
         router.push('/chat');

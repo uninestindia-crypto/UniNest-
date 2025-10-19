@@ -337,22 +337,12 @@ export default function MarketplaceContent() {
         }
 
         try {
-            const { data, error } = await supabase.rpc('create_private_chat', {
+            const { error } = await supabase.rpc('create_private_chat', {
                 p_user1_id: user.id,
                 p_user2_id: sellerId,
             });
 
             if (error) throw error;
-            const newRoomId = data;
-
-            // Insert a starting message to "activate" the chat for both users
-            const { error: messageError } = await supabase.from('chat_messages').insert({
-                room_id: newRoomId,
-                user_id: user.id,
-                content: `Hi, I'm interested in your product: ${productName}`,
-            });
-
-            if (messageError) throw messageError;
 
             router.push('/chat');
         } catch (error) {
