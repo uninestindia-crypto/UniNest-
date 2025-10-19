@@ -12,6 +12,8 @@ declare global {
   }
 }
 
+const SCRIPT_URL = 'https://checkout.razorpay.com/v1/checkout.js';
+
 export function useRazorpay() {
   const [isLoaded, setIsLoaded] = useState(false);
   const { toast } = useToast();
@@ -19,21 +21,55 @@ export function useRazorpay() {
   const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
 
   useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-    script.async = true;
-    script.onload = () => setIsLoaded(true);
-    script.onerror = () => {
+    if (typeof window === 'undefined') return;
+
+    if (window.Razorpay) {
+      setIsLoaded(true);
+      return;
+    }
+
+    const handleLoad = () => {
+      setIsLoaded(true);
+      const existing = document.querySelector<HTMLScriptElement>(`script[src="${SCRIPT_URL}"]`);
+      if (existing) {
+        existing.dataset.loaded = 'true';
+      }
+    };
+
+    const handleError = () => {
       toast({
         variant: 'destructive',
         title: 'Error',
         description: 'Failed to load Razorpay Checkout.',
       });
     };
+
+    const existingScript = document.querySelector<HTMLScriptElement>(`script[src="${SCRIPT_URL}"]`);
+
+    if (existingScript) {
+      if (existingScript.dataset.loaded === 'true') {
+        setIsLoaded(true);
+      } else {
+        existingScript.addEventListener('load', handleLoad);
+        existingScript.addEventListener('error', handleError);
+      }
+
+      return () => {
+        existingScript.removeEventListener('load', handleLoad);
+        existingScript.removeEventListener('error', handleError);
+      };
+    }
+
+    const script = document.createElement('script');
+    script.src = SCRIPT_URL;
+    script.async = true;
+    script.addEventListener('load', handleLoad);
+    script.addEventListener('error', handleError);
     document.body.appendChild(script);
 
     return () => {
-      document.body.removeChild(script);
+      script.removeEventListener('load', handleLoad);
+      script.removeEventListener('error', handleError);
     };
   }, [toast]);
 
@@ -48,7 +84,7 @@ export function useRazorpay() {
       return;
     }
       
-    if (!isLoaded || !supabase) {
+    if (!isLoaded || !supabase || typeof window === 'undefined' || !window.Razorpay) {
       toast({
         variant: 'destructive',
         title: 'Error',

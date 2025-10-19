@@ -5,10 +5,10 @@ import ChatList from './chat-list';
 import ChatMessages from './chat-messages';
 import type { Room, Message, Profile } from '@/lib/types';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { ArrowLeft, Loader2, Plus } from 'lucide-react';
+import { Loader2, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
-import { redirect, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Button } from '../ui/button';
 import NewChatModal from './new-chat-modal';
 
@@ -23,12 +23,14 @@ export default function ChatLayout() {
   const { toast } = useToast();
   const router = useRouter();
   const [isNewChatModalOpen, setIsNewChatModalOpen] = useState(false);
+  const [hasRedirected, setHasRedirected] = useState(false);
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      redirect('/login');
+    if (!authLoading && !user && !hasRedirected) {
+      setHasRedirected(true);
+      router.replace('/login');
     }
-  }, [authLoading, user]);
+  }, [authLoading, user, router, hasRedirected]);
 
   const fetchRoomsWithoutRpc = useCallback(async (): Promise<Room[]> => {
     if (!supabase) {
@@ -103,9 +105,11 @@ export default function ChatLayout() {
 
       if (error) {
         console.warn('Failed to fetch rooms via RPC, falling back to direct queries.', error);
-        const fallbackRooms = await fetchRoomsWithoutRpc();
-        setRooms(fallbackRooms);
-        if (fallbackRooms.length === 0) {
+        try {
+          const fallbackRooms = await fetchRoomsWithoutRpc();
+          setRooms(fallbackRooms);
+        } catch (fallbackError) {
+          console.error('Fallback room fetch failed after RPC error:', fallbackError);
           toast({ variant: 'destructive', title: 'Error loading chats', description: 'Could not fetch your chat rooms. Please try refreshing.' });
         }
         return;
@@ -124,9 +128,6 @@ export default function ChatLayout() {
         try {
           const fallbackRooms = await fetchRoomsWithoutRpc();
           setRooms(fallbackRooms);
-          if (fallbackRooms.length === 0) {
-            toast({ variant: 'destructive', title: 'Error loading chats', description: 'Could not fetch your chat rooms. Please try refreshing.' });
-          }
         } catch (fallbackError) {
           console.error('Fallback room fetch failed:', fallbackError);
           toast({ variant: 'destructive', title: 'Error loading chats', description: 'Could not fetch your chat rooms. Please try refreshing.' });

@@ -6,10 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Heart, Loader2, BookOpen, ShoppingBag, Armchair, IndianRupee, Sparkles, Star } from 'lucide-react';
+import { Heart, Loader2, BookOpen, ShoppingBag, Armchair, IndianRupee, Sparkles, Star, ShieldCheck, Trophy, Medal, Crown, Rocket, Gift, Target, Flame } from 'lucide-react';
 import { useRazorpay } from '@/hooks/use-razorpay';
 import { useToast } from '@/hooks/use-toast';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Input } from '../ui/input';
 import { useAuth } from '@/hooks/use-auth';
 import { cn } from '@/lib/utils';
@@ -27,6 +27,24 @@ const donationTiers = [
     { amount: 50, title: "📖 Knowledge Giver" },
     { amount: 100, title: "✨ Campus Hero" },
     { amount: 250, title: "🔥 UniNest Champion" },
+];
+
+const milestoneRewards = [
+    { goal: 5000, title: "Peer Mentorship Boost", description: "Unlock mentor office hours for freshers.", icon: Trophy },
+    { goal: 15000, title: "Skill Sprint Weekend", description: "Fund campus-wide learning workshops.", icon: Medal },
+    { goal: 30000, title: "Founders' Innovation Grant", description: "Sponsor prototyping grants for student teams.", icon: Crown },
+];
+
+const communityBoosts = [
+    { id: "shield", goal: 4000, title: "Server Shield", description: "Keeps UniNest blazing fast for everyone.", icon: ShieldCheck },
+    { id: "care", goal: 12000, title: "Student Care Fund", description: "Backs emergency micro-scholarships.", icon: Heart },
+    { id: "launch", goal: 22000, title: "Launchpad Sprint", description: "Kickstarts student-led innovation events.", icon: Rocket },
+];
+
+const dailyQuests = [
+    { id: "streak", title: "Keep the Streak Alive", reward: "Hit 25% of goal to earn combo XP.", threshold: 25, icon: Flame },
+    { id: "share", title: "Share the Mission", reward: "Invite 3 friends to donate and unlock a bonus drop.", threshold: 50, icon: Gift },
+    { id: "aim", title: "Bullseye Challenge", reward: "Reach 80% to unveil premium campus perks.", threshold: 80, icon: Target },
 ];
 
 const medalColors = ["text-amber-400", "text-slate-400", "text-amber-700"];

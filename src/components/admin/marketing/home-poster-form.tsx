@@ -56,7 +56,10 @@ const createEmptySlide = (index: number): SlideFormState => ({
   imagePreview: null,
 });
 
-const toNullable = (value: string) => {
+const toNullable = (value: string | null | undefined) => {
+  if (typeof value !== 'string') {
+    return null;
+  }
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : null;
 };
