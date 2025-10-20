@@ -121,8 +121,8 @@ export default function CompetitionDetailClient({ competition: initialCompetitio
         <div className="max-w-4xl mx-auto p-4 space-y-8">
             <div className="space-y-4">
                 {competition.image_url && (
-                    <div className="relative h-64 w-full rounded-2xl overflow-hidden">
-                        <Image src={competition.image_url} alt={competition.title} fill className="object-cover" data-ai-hint="competition banner abstract" />
+                    <div className="relative h-64 w-full rounded-2xl overflow-hidden bg-muted flex items-center justify-center">
+                        <Image src={competition.image_url} alt={competition.title} fill className="object-contain" data-ai-hint="competition banner abstract" />
                     </div>
                 )}
                 <h1 className="text-4xl font-bold font-headline">{competition.title}</h1>

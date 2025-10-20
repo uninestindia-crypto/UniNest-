@@ -491,7 +491,7 @@ export default function LibraryDetailClient({ library, initialSeatProducts, init
                                 <div className="grid gap-3">
                                     <span className="text-sm font-medium text-muted-foreground">Time slot</span>
                                     <div className="grid grid-cols-1 gap-2">
-                                        {timeSlots.map(slot => (
+                                        {timeSlots.map((slot: string) => (
                                             <button
                                                 key={slot}
                                                 onClick={() => setSelectedSlot(slot)}

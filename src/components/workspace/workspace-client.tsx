@@ -315,8 +315,8 @@ export default function WorkspaceClient() {
                   </Button>
                 </div>
               </div>
-              <div className="overflow-x-auto pt-3">
-                <div className="flex min-w-max items-center gap-3 text-xs sm:text-sm text-muted-foreground">
+              <div className="pt-3">
+                <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm text-muted-foreground">
                   <span className="flex items-center gap-2 rounded-full border border-muted/40 bg-background/80 px-3 py-1">
                     <ShieldCheck className="size-4 text-primary" />
                     Verified partners

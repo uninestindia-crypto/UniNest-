@@ -14,6 +14,11 @@ type AuthContextType = {
   user: User | null;
   role: UserRole;
   vendorCategories: string[];
+  vendorSubscriptionStatus: {
+    isVendorActive: boolean;
+    isTrialActive: boolean;
+    hasActiveSubscription: boolean;
+  };
   loading: boolean;
   signOut: () => Promise<void>;
   notifications: Notification[];
@@ -53,6 +58,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [role, setRole] = useState<UserRole>('guest');
   const [vendorCategories, setVendorCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [vendorSubscriptionStatus, setVendorSubscriptionStatus] = useState({
+    isVendorActive: false,
+    isTrialActive: false,
+    hasActiveSubscription: false,
+  });
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -118,14 +128,34 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUser(user);
     const newRole = determineRole(user);
     const newCategories = getVendorCategories(user);
+    const metadata = user?.user_metadata ?? {};
+    const rawVendorActive = Boolean(metadata.is_vendor_active);
+    const trialExpiresAt = metadata.vendor_trial_expires_at ? new Date(metadata.vendor_trial_expires_at) : null;
+    const subscriptionEndAt = metadata.vendor_subscription_end_at ? new Date(metadata.vendor_subscription_end_at) : null;
+    const subscriptionStartAt = metadata.vendor_subscription_start_at ? new Date(metadata.vendor_subscription_start_at) : null;
+    const hasRecordedPayment = Boolean(metadata.last_payment_id);
+    const isTrialActive = trialExpiresAt ? new Date() <= trialExpiresAt : false;
+    const hasActiveSubscription = subscriptionEndAt
+      ? new Date() <= subscriptionEndAt
+      : Boolean(subscriptionStartAt) || hasRecordedPayment;
     setRole(newRole);
     setVendorCategories(newCategories);
+    setVendorSubscriptionStatus({
+      isVendorActive: rawVendorActive && (isTrialActive || hasActiveSubscription),
+      isTrialActive,
+      hasActiveSubscription,
+    });
     if (user) {
       fetchNotifications(user.id);
       ensureProfileRecord(user).catch(console.error);
     } else {
       setNotifications([]);
       setUnreadCount(0);
+      setVendorSubscriptionStatus({
+        isVendorActive: false,
+        isTrialActive: false,
+        hasActiveSubscription: false,
+      });
     }
     setLoading(false);
   }, [fetchNotifications, ensureProfileRecord]);
@@ -193,6 +223,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     user,
     role,
     vendorCategories,
+    vendorSubscriptionStatus,
     loading,
     signOut,
     notifications,

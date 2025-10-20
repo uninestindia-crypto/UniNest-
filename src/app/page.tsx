@@ -10,21 +10,35 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const supabase = createClient();
-  const { data } = await supabase
-    .from('platform_settings')
-    .select('value')
-    .eq('key', 'home_poster')
-    .single();
+  let posterConfig: HomePosterConfig = defaultHomePosterConfig;
 
-  const rawValue = data?.value as HomePosterConfig | null;
-  const posterConfig =
-    rawValue &&
-    Array.isArray(rawValue.heroSlides) &&
-    Array.isArray(rawValue.quickAccessCards) &&
-    Array.isArray(rawValue.curatedCollections)
-      ? rawValue
-      : defaultHomePosterConfig;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (supabaseUrl && supabaseAnonKey) {
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from('platform_settings')
+        .select('value')
+        .eq('key', 'home_poster')
+        .single();
+
+      if (!error) {
+        const rawValue = data?.value as HomePosterConfig | null;
+        if (
+          rawValue &&
+          Array.isArray(rawValue.heroSlides) &&
+          Array.isArray(rawValue.quickAccessCards) &&
+          Array.isArray(rawValue.curatedCollections)
+        ) {
+          posterConfig = rawValue;
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load home poster config', error);
+    }
+  }
 
   return <HomeClient posterConfig={posterConfig} />;
 }

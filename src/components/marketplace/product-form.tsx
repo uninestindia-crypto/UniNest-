@@ -55,7 +55,7 @@ export default function ProductForm({ product, chargeForPosts = false, postPrice
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
-  const { user, supabase, role, vendorCategories: userVendorCategories } = useAuth();
+  const { user, supabase, role, vendorCategories: userVendorCategories, vendorSubscriptionStatus } = useAuth();
   const { openCheckout, isLoaded } = useRazorpay();
   const isEditMode = !!product;
 
@@ -130,6 +130,15 @@ export default function ProductForm({ product, chargeForPosts = false, postPrice
   async function onSubmit(values: FormValues) {
     if (!user) {
         toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in.' });
+        return;
+    }
+
+    if (role === 'vendor' && !vendorSubscriptionStatus.isVendorActive) {
+        toast({
+          variant: 'destructive',
+          title: 'Access required',
+          description: 'Activate your subscription or start a trial to publish listings.',
+        });
         return;
     }
 
