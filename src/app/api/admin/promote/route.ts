@@ -39,19 +39,19 @@ export async function POST(request: NextRequest) {
 
 
         // 2. Get the user by email
-        const { data: { users }, error: listError } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1, email: email as string });
-        
+        const { data: { users }, error: listError } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 200 });
+
         if (listError) {
             console.error('Error listing users:', listError);
             throw new Error(`Error finding user: ${listError.message}`);
         }
         
-        if (!users || users.length === 0) {
+        const user = users?.find(u => u.email?.toLowerCase() === (email as string).toLowerCase());
+
+        if (!user) {
             return NextResponse.json({ error: `User with email ${email} not found. Please ensure the user has signed up first.` }, { status: 404 });
         }
         
-        const user = users[0];
-
         // 3. Update the user's metadata with the admin role
         const { data: { user: updatedUser }, error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
             user.id,
