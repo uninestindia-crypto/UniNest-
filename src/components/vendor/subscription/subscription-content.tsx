@@ -23,7 +23,7 @@ const TRIAL_MONTHS = 3;
 export default function VendorSubscriptionContent() {
   const { toast } = useToast();
   const { user, supabase, loading, vendorCategories: userVendorCategories } = useAuth();
-  const { openCheckout } = useRazorpay();
+  const { openCheckout, isLoaded: isCheckoutReady } = useRazorpay();
   const [monetizationSettings, setMonetizationSettings] = useState<any>(null);
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [isCancelLoading, setIsCancelLoading] = useState(false);
@@ -79,6 +79,9 @@ export default function VendorSubscriptionContent() {
   const requiresImmediatePayment =
     shouldCharge && !isTrialEligible && !isTrialActive && !isVendorActive && totalCost > 0;
   const showPaymentAlert = shouldCharge && !isVendorActive && vendorCategoryCount > 0;
+  const formattedTrialStart = vendorTrialStartedAt
+    ? vendorTrialStartedAt.toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })
+    : null;
   const formattedTrialEnd = vendorTrialExpiresAt
     ? vendorTrialExpiresAt.toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })
     : null;
@@ -111,7 +114,10 @@ export default function VendorSubscriptionContent() {
   })();
 
   const isPrimaryDisabled =
-    isActionLoading || vendorCategoryCount === 0 || (!shouldCharge && isVendorActive);
+    isActionLoading ||
+    vendorCategoryCount === 0 ||
+    (!shouldCharge && isVendorActive) ||
+    (shouldCharge && !isTrialEligible && !isCheckoutReady);
 
   const ensureAuthReady = () => {
     if (!user || !supabase) {
@@ -305,6 +311,11 @@ export default function VendorSubscriptionContent() {
         return;
       }
 
+      if (!isCheckoutReady) {
+        toast({ variant: 'destructive', title: 'Payment unavailable', description: 'Payment gateway is still loading. Please try again in a moment.' });
+        return;
+      }
+
       await handlePaidActivation();
       return;
     }
@@ -399,6 +410,33 @@ export default function VendorSubscriptionContent() {
             </div>
           </div>
 
+          {(isTrialActive || isTrialEligible) && (
+            <div className="grid gap-3 rounded-2xl border border-slate-100 bg-slate-50/70 p-4 sm:grid-cols-2">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Trial window</p>
+                <p className="mt-2 text-sm font-semibold text-slate-900">
+                  {formattedTrialStart ? `Started ${formattedTrialStart}` : 'Start your 3-month trial today'}
+                </p>
+                <p className="text-xs text-slate-500">
+                  {formattedTrialEnd
+                    ? `Ends ${formattedTrialEnd}`
+                    : `Includes ${TRIAL_MONTHS} months of full vendor access.`}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-slate-500">What happens next</p>
+                <p className="mt-2 text-xs text-slate-500">
+                  Trial keeps your listings live without billing. Renew with payment before it expires to stay visible.
+                </p>
+                {isTrialEligible && (
+                  <p className="mt-3 inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 text-xs font-medium text-primary shadow-sm">
+                    <Sparkles className="size-3.5" /> Trial is ready to activate
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
           {vendorCategoryCount === 0 && (
             <Alert className="border-amber-200 bg-amber-50">
               <AlertTriangle className="size-4 text-amber-500" />
@@ -422,6 +460,9 @@ export default function VendorSubscriptionContent() {
               <Sparkles className="size-3.5 text-primary" />
               Update services anytime from settings.
             </span>
+            {shouldCharge && !isTrialEligible && !isCheckoutReady && (
+              <span className="text-xs text-amber-600">Payment gateway is loading. Please wait before paying.</span>
+            )}
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
             <Button onClick={handlePrimaryAction} disabled={isPrimaryDisabled} className="min-w-[180px]">

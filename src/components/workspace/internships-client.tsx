@@ -74,8 +74,8 @@ export default function InternshipsClient() {
                 <Card className="flex flex-col w-full transition-shadow hover:shadow-lg">
                     <CardHeader>
                     {internship.image_url && (
-                        <div className="relative h-40 mb-4 rounded-md overflow-hidden">
-                            <Image src={internship.image_url} alt={internship.company} width={400} height={160} objectFit="cover" data-ai-hint="company logo" />
+                        <div className="relative h-40 mb-4 rounded-md overflow-hidden bg-muted flex items-center justify-center">
+                            <Image src={internship.image_url} alt={internship.company} fill className="object-contain" data-ai-hint="company logo" />
                         </div>
                     )}
                     <CardTitle className="flex items-center gap-2">
