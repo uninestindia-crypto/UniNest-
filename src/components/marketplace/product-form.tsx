@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -31,6 +31,22 @@ const formSchema = z.object({
   location: z.string().optional(),
   phone_number: z.string().optional(),
   whatsapp_number: z.string().optional(),
+  total_seats: z.string().optional(),
+  opening_hours: z.string().optional(),
+  amenities: z.string().optional(),
+  meal_plan_breakfast: z.string().optional(),
+  meal_plan_lunch: z.string().optional(),
+  meal_plan_dinner: z.string().optional(),
+  subscription_price: z.string().optional(),
+  special_notes: z.string().optional(),
+  room_types: z.string().optional(),
+  utilities_included: z.string().optional(),
+  house_rules: z.string().optional(),
+  occupancy: z.string().optional(),
+  furnishing: z.string().optional(),
+  hourly_slots: z.string().optional(),
+  services_offered: z.string().optional(),
+  equipment_specs: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -46,6 +62,20 @@ type ProductFormProps = {
     location: string | null;
     phone_number?: string | null;
     whatsapp_number?: string | null;
+    total_seats?: number | null;
+    opening_hours?: string[] | null;
+    amenities?: string[] | null;
+    meal_plan?: { breakfast?: string | null; lunch?: string | null; dinner?: string | null } | null;
+    subscription_price?: number | null;
+    special_notes?: string | null;
+    room_types?: string[] | null;
+    utilities_included?: string[] | null;
+    house_rules?: string | null;
+    occupancy?: number | null;
+    furnishing?: string | null;
+    hourly_slots?: string[] | null;
+    services_offered?: string[] | null;
+    equipment_specs?: string | null;
   };
   chargeForPosts?: boolean;
   postPrice?: number;
@@ -58,6 +88,8 @@ export default function ProductForm({ product, chargeForPosts = false, postPrice
   const { user, supabase, role, vendorCategories: userVendorCategories, vendorSubscriptionStatus } = useAuth();
   const { openCheckout, isLoaded } = useRazorpay();
   const isEditMode = !!product;
+
+  const formatList = useMemo(() => (value?: string[] | null) => (value && value.length > 0 ? value.join('\n') : ''), []);
 
   const getAvailableCategories = () => {
     if (role === 'vendor') {
@@ -90,6 +122,22 @@ export default function ProductForm({ product, chargeForPosts = false, postPrice
       location: product?.location || '',
       phone_number: product?.phone_number || user?.user_metadata?.contact_number || '',
       whatsapp_number: product?.whatsapp_number || user?.user_metadata?.whatsapp_number || '',
+      total_seats: product?.total_seats ? String(product.total_seats) : '',
+      opening_hours: formatList(product?.opening_hours || null),
+      amenities: formatList(product?.amenities || null),
+      meal_plan_breakfast: product?.meal_plan?.breakfast || '',
+      meal_plan_lunch: product?.meal_plan?.lunch || '',
+      meal_plan_dinner: product?.meal_plan?.dinner || '',
+      subscription_price: product?.subscription_price != null ? String(product.subscription_price) : '',
+      special_notes: product?.special_notes || '',
+      room_types: formatList(product?.room_types || null),
+      utilities_included: formatList(product?.utilities_included || null),
+      house_rules: product?.house_rules || '',
+      occupancy: product?.occupancy != null ? String(product.occupancy) : '',
+      furnishing: product?.furnishing || '',
+      hourly_slots: formatList(product?.hourly_slots || null),
+      services_offered: formatList(product?.services_offered || null),
+      equipment_specs: product?.equipment_specs || '',
     },
   });
   
@@ -140,6 +188,40 @@ export default function ProductForm({ product, chargeForPosts = false, postPrice
           description: 'Activate your subscription or start a trial to publish listings.',
         });
         return;
+    }
+
+    const requireListField = (field: keyof FormValues, message: string) => {
+      const current = values[field];
+      if (!current || (typeof current === 'string' && current.trim().length === 0)) {
+        toast({ variant: 'destructive', title: 'Missing information', description: message });
+        return false;
+      }
+      return true;
+    };
+
+    if (selectedCategory === 'Library') {
+      if (!requireListField('total_seats', 'Enter total seats for your library.')) return;
+      if (!requireListField('opening_hours', 'Provide at least one time slot for your library.')) return;
+    }
+
+    if (selectedCategory === 'Hostels') {
+      if (!requireListField('room_types', 'List the room types available.')) return;
+      if (!requireListField('utilities_included', 'List the utilities included for your hostel.')) return;
+    }
+
+    if (selectedCategory === 'Hostel Room') {
+      if (!requireListField('occupancy', 'Provide the occupancy (beds) for this room.')) return;
+    }
+
+    if (selectedCategory === 'Food Mess') {
+      if (!requireListField('meal_plan_breakfast', 'Describe the breakfast plan.')) return;
+      if (!requireListField('meal_plan_lunch', 'Describe the lunch plan.')) return;
+      if (!requireListField('meal_plan_dinner', 'Describe the dinner plan.')) return;
+    }
+
+    if (selectedCategory === 'Cyber Café') {
+      if (!requireListField('hourly_slots', 'List the hourly slots available.')) return;
+      if (!requireListField('services_offered', 'List the services offered.')) return;
     }
 
     if (isEditMode) {
@@ -244,6 +326,79 @@ export default function ProductForm({ product, chargeForPosts = false, postPrice
                         <FormField control={form.control} name="location" render={({ field }) => (
                                 <FormItem><FormLabel>Location</FormLabel><FormControl><Input placeholder="e.g., Near Main Campus" {...field} value={field.value || ''}/></FormControl><FormMessage /></FormItem>
                         )} />
+                    )}
+
+                    {selectedCategory === 'Library' && (
+                      <>
+                        <FormField control={form.control} name="total_seats" render={({ field }) => (
+                          <FormItem><FormLabel>Total Seats</FormLabel><FormControl><Input type="number" placeholder="e.g., 80" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="opening_hours" render={({ field }) => (
+                          <FormItem><FormLabel>Time Slots / Opening Hours</FormLabel><FormControl><Textarea placeholder="One slot per line, e.g. 08:00 - 10:00" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="amenities" render={({ field }) => (
+                          <FormItem><FormLabel>Amenities</FormLabel><FormControl><Textarea placeholder="List amenities, one per line" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                      </>
+                    )}
+
+                    {selectedCategory === 'Hostels' && (
+                      <>
+                        <FormField control={form.control} name="room_types" render={({ field }) => (
+                          <FormItem><FormLabel>Room Types</FormLabel><FormControl><Textarea placeholder="One room type per line, e.g. Deluxe Twin - 2 beds - ₹12000" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="utilities_included" render={({ field }) => (
+                          <FormItem><FormLabel>Utilities Included</FormLabel><FormControl><Textarea placeholder="One utility per line (Wi-Fi, Laundry, etc.)" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="house_rules" render={({ field }) => (
+                          <FormItem><FormLabel>House Rules</FormLabel><FormControl><Textarea placeholder="Share important rules for tenants" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                      </>
+                    )}
+
+                    {selectedCategory === 'Hostel Room' && (
+                      <>
+                        <FormField control={form.control} name="occupancy" render={({ field }) => (
+                          <FormItem><FormLabel>Occupancy (Beds)</FormLabel><FormControl><Input type="number" placeholder="e.g., 2" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="furnishing" render={({ field }) => (
+                          <FormItem><FormLabel>Furnishing Details</FormLabel><FormControl><Textarea placeholder="Describe furniture and inclusions" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                      </>
+                    )}
+
+                    {selectedCategory === 'Food Mess' && (
+                      <>
+                        <FormField control={form.control} name="meal_plan_breakfast" render={({ field }) => (
+                          <FormItem><FormLabel>Breakfast Plan</FormLabel><FormControl><Textarea placeholder="Describe breakfast items" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="meal_plan_lunch" render={({ field }) => (
+                          <FormItem><FormLabel>Lunch Plan</FormLabel><FormControl><Textarea placeholder="Describe lunch items" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="meal_plan_dinner" render={({ field }) => (
+                          <FormItem><FormLabel>Dinner Plan</FormLabel><FormControl><Textarea placeholder="Describe dinner items" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="subscription_price" render={({ field }) => (
+                          <FormItem><FormLabel>Monthly Subscription Price (INR)</FormLabel><FormControl><Input type="number" placeholder="e.g., 4500" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="special_notes" render={({ field }) => (
+                          <FormItem><FormLabel>Special Notes</FormLabel><FormControl><Textarea placeholder="Add dietary info, delivery options, etc." {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                      </>
+                    )}
+
+                    {selectedCategory === 'Cyber Café' && (
+                      <>
+                        <FormField control={form.control} name="hourly_slots" render={({ field }) => (
+                          <FormItem><FormLabel>Hourly Slots</FormLabel><FormControl><Textarea placeholder="List bookable slots, one per line" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="services_offered" render={({ field }) => (
+                          <FormItem><FormLabel>Services Offered</FormLabel><FormControl><Textarea placeholder="List services such as Printing, Gaming PCs, etc." {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="equipment_specs" render={({ field }) => (
+                          <FormItem><FormLabel>Equipment Specifications</FormLabel><FormControl><Textarea placeholder="Highlight hardware specs or add-ons" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                      </>
                     )}
 
                     {role === 'vendor' && (
