@@ -13,7 +13,6 @@ import {
   SidebarInset,
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { SidebarNav, MobileBottomNav } from './sidebar-nav';
 import { Logo } from '@/components/icons';
 import { useAuth } from '@/hooks/use-auth';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -73,17 +72,15 @@ export default function MainLayout({ children }: { children: ReactNode }) {
     ];
 
     preconnectUrls.forEach((href) => {
-      if (document.querySelector(`link[rel="preconnect"][href="${href}"]`)) {
-        return;
+      if (!document.querySelector(`link[rel="preconnect"][href="${href}"]`)) {
+        const link = document.createElement('link');
+        link.rel = 'preconnect';
+        link.href = href;
+        if (href.includes('gstatic')) {
+          link.crossOrigin = 'anonymous';
+        }
+        document.head.appendChild(link);
       }
-
-      const link = document.createElement('link');
-      link.rel = 'preconnect';
-      link.href = href;
-      if (href.includes('gstatic')) {
-        link.crossOrigin = 'anonymous';
-      }
-      document.head.appendChild(link);
     });
   }, []);
 
