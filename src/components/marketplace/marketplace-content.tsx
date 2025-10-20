@@ -9,7 +9,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';
-import { Search, ListFilter, Library, Utensils, Laptop, Bed, Book, Package, X, Loader2, Plus, MapPin, ShieldCheck, Sparkles } from 'lucide-react';
+import { Search, ListFilter, Library, Utensils, Laptop, Bed, Book, Package, X, Loader2, Plus, MapPin, ShieldCheck, Sparkles, LayoutGrid, Rows3 } from 'lucide-react';
 import type { Product } from '@/lib/types';
 import Link from 'next/link';
 import { useEffect, useState, useMemo, useCallback } from 'react';
@@ -192,6 +192,30 @@ export default function MarketplaceContent() {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 0]);
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
   const [sortOption, setSortOption] = useState<SortOption>('featured');
+  const [layoutMode, setLayoutMode] = useState<'grid' | 'list'>('grid');
+
+  const layoutToggle = useMemo(() => (
+    <div className="flex items-center gap-1 rounded-full border bg-card/80 p-1 text-muted-foreground">
+      <Button
+        type="button"
+        variant={layoutMode === 'grid' ? 'default' : 'ghost'}
+        size="icon"
+        className="size-9 rounded-full"
+        onClick={() => setLayoutMode('grid')}
+      >
+        <LayoutGrid className="size-4" />
+      </Button>
+      <Button
+        type="button"
+        variant={layoutMode === 'list' ? 'default' : 'ghost'}
+        size="icon"
+        className="size-9 rounded-full"
+        onClick={() => setLayoutMode('list')}
+      >
+        <Rows3 className="size-4" />
+      </Button>
+    </div>
+  ), [layoutMode]);
 
   const selectedCategory = searchParams.get('category');
 
@@ -281,7 +305,6 @@ export default function MarketplaceContent() {
       setPriceRange([0, 0]);
     }
   }, [priceBounds.max, priceBounds.min, products.length]);
-
 
   const handleBuyNow = useCallback(async (product: Product) => {
     if (!user || !supabase) {
@@ -579,8 +602,7 @@ export default function MarketplaceContent() {
             ))}
           </div>
         </div>
-      </section>
- className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-3 sm:text-sm">
+        <div className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-3 sm:text-sm">
           <span className="flex items-center gap-2 rounded-xl bg-muted px-3 py-2">
             <MapPin className="size-4 text-primary" />
             Delivering to campus & hostels
@@ -654,9 +676,12 @@ export default function MarketplaceContent() {
                     <Loader2 className="size-8 animate-spin text-muted-foreground" />
                 </div>
             ) : sortedProducts.length > 0 ? (
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5">
+                <div className={layoutMode === 'grid' ? 'grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5' : 'space-y-4'}>
                   {sortedProducts.map((product) => (
-                    <div key={product.id}>
+                    <div
+                      key={product.id}
+                      className={layoutMode === 'list' ? 'rounded-2xl border bg-card p-4 shadow-sm hover:shadow-md transition-shadow' : undefined}
+                    >
                       <ProductCard
                         product={product}
                         user={user}
@@ -664,7 +689,7 @@ export default function MarketplaceContent() {
                         onChat={handleChat}
                         isBuying={purchasingProductId === product.id}
                         isRazorpayLoaded={isLoaded}
-                        layout="grid"
+                        layout={layoutMode}
                       />
                     </div>
                   ))}

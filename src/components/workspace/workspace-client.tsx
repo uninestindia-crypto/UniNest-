@@ -12,7 +12,7 @@ import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetClose 
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Briefcase, Trophy, PlusCircle, Calendar, IndianRupee, MapPin, Loader2, Building, Search, Sparkles, ShieldCheck, Clock, Rows3, Rows, SlidersHorizontal } from 'lucide-react';
+import { Briefcase, Trophy, PlusCircle, Calendar, IndianRupee, MapPin, Loader2, Building, Search, Sparkles, ShieldCheck, Clock, SlidersHorizontal } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 
 type CompetitionPreview = {
@@ -34,7 +34,6 @@ type InternshipPreview = {
   location: string;
 };
 
-type LayoutMode = 'grid' | 'list';
 type SortOption = 'deadline' | 'prize-high' | 'stipend-high';
 
 export default function WorkspaceClient() {
@@ -45,37 +44,12 @@ export default function WorkspaceClient() {
   const [internships, setInternships] = useState<InternshipPreview[]>([]);
   const [competitionsLoading, setCompetitionsLoading] = useState(true);
   const [internshipsLoading, setInternshipsLoading] = useState(true);
-  const [layoutMode, setLayoutMode] = useState<LayoutMode>('grid');
   const [query, setQuery] = useState('');
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'competitions' | 'internships'>('competitions');
   const [sortOption, setSortOption] = useState<SortOption>('deadline');
   const [feeRange, setFeeRange] = useState<[number, number]>([0, 0]);
   const [stipendRange, setStipendRange] = useState<[number, number]>([0, 0]);
-
-  const layoutToggle = useMemo(() => (
-    <div className="inline-flex items-center gap-2 rounded-full border bg-card px-2 py-1 text-sm">
-      <span className="text-muted-foreground">View</span>
-      <div className="flex rounded-full bg-muted p-1">
-        <Button
-          size="icon"
-          variant={layoutMode === 'grid' ? 'default' : 'ghost'}
-          className="rounded-full"
-          onClick={() => setLayoutMode('grid')}
-        >
-          <Rows3 className="size-4" />
-        </Button>
-        <Button
-          size="icon"
-          variant={layoutMode === 'list' ? 'default' : 'ghost'}
-          className="rounded-full"
-          onClick={() => setLayoutMode('list')}
-        >
-          <Rows className="size-4" />
-        </Button>
-      </div>
-    </div>
-  ), [layoutMode]);
 
   useEffect(() => {
     let isMounted = true;
@@ -320,7 +294,6 @@ export default function WorkspaceClient() {
                   </SelectContent>
                 </Select>
               </div>
-              {layoutToggle}
             </div>
           </div>
 
@@ -371,15 +344,15 @@ export default function WorkspaceClient() {
                 <Loader2 className="size-6 animate-spin text-muted-foreground" />
               </div>
             ) : competitionsWithFilters.length > 0 ? (
-              <div className={layoutMode === 'grid' ? 'grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3' : 'space-y-4'}>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
                 {competitionsWithFilters.map((comp) => (
                   <Link key={comp.id} href={`/workspace/competitions/${comp.id}`} className="group block">
-                    <Card className={`transition-shadow hover:shadow-lg ${layoutMode === 'list' ? 'flex flex-col md:flex-row md:items-center' : 'flex flex-col'}`}>
-                      <CardHeader className={layoutMode === 'list' ? 'md:w-1/3' : undefined}>
+                    <Card className="flex flex-col transition-shadow hover:shadow-lg">
+                      <CardHeader>
                         <CardTitle className="line-clamp-2 text-lg group-hover:text-primary transition-colors">{comp.title}</CardTitle>
                         <CardDescription className="line-clamp-3 pt-2 text-sm">{comp.description}</CardDescription>
                       </CardHeader>
-                      <CardContent className={`text-sm text-muted-foreground ${layoutMode === 'list' ? 'md:w-2/3 md:border-l md:border-muted/50 md:pl-6 flex flex-col gap-4' : 'flex flex-col gap-4'}`}>
+                      <CardContent className="flex flex-col gap-4 text-sm text-muted-foreground">
                         <div className="flex flex-wrap items-center gap-2">
                           <Trophy className="size-4 text-amber-500" />
                           <span>Prize pool <span className="font-semibold text-foreground">₹{comp.prize.toLocaleString()}</span></span>
@@ -477,11 +450,11 @@ export default function WorkspaceClient() {
                 <Loader2 className="size-6 animate-spin text-muted-foreground" />
               </div>
             ) : internshipsWithFilters.length > 0 ? (
-              <div className={layoutMode === 'grid' ? 'grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3' : 'space-y-4'}>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
                 {internshipsWithFilters.map((internship) => (
                   <Link key={internship.id} href={`/workspace/internships/${internship.id}`} className="group block">
-                    <Card className={`transition-shadow hover:shadow-lg ${layoutMode === 'list' ? 'flex flex-col md:flex-row md:items-center' : 'flex flex-col'}`}>
-                      <CardHeader className={`space-y-2 ${layoutMode === 'list' ? 'md:w-1/3' : ''}`}>
+                    <Card className="flex flex-col transition-shadow hover:shadow-lg">
+                      <CardHeader className="space-y-2">
                         <CardTitle className="flex items-center gap-2 text-lg group-hover:text-primary transition-colors">
                           <Briefcase className="size-5 text-sky-500" />
                           <span className="line-clamp-2">{internship.role}</span>
@@ -491,7 +464,7 @@ export default function WorkspaceClient() {
                           {internship.company}
                         </CardDescription>
                       </CardHeader>
-                      <CardContent className={`text-sm text-muted-foreground ${layoutMode === 'list' ? 'md:w-2/3 md:border-l md:border-muted/50 md:pl-6 flex flex-col gap-4' : 'flex flex-col gap-4'}`}>
+                      <CardContent className="flex flex-col gap-4 text-sm text-muted-foreground">
                         <div className="flex flex-wrap items-center gap-2">
                           <IndianRupee className="size-4" />
                           <span>

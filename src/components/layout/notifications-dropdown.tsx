@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { Bell, UserPlus, Newspaper } from 'lucide-react';
+import { Bell, UserPlus, Newspaper, MessageCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { formatDistanceToNow } from 'date-fns';
@@ -23,6 +23,8 @@ const NotificationIcon = ({ type }: { type: Notification['type'] }) => {
             return <UserPlus className="size-4 text-blue-500" />;
         case 'new_post':
             return <Newspaper className="size-4 text-green-500" />;
+        case 'new_message':
+            return <MessageCircle className="size-4 text-purple-500" />;
         default:
             return <Bell className="size-4" />;
     }
@@ -44,6 +46,9 @@ export default function NotificationsDropdown() {
              // You would need a way to get the handle. Assuming it's part of the sender object.
              // This is a placeholder and needs a proper profile page route.
              // router.push(`/profile/${notification.sender.handle}`);
+        }
+        if (notification.type === 'new_message') {
+            router.push('/chat');
         }
     }
 
@@ -70,15 +75,23 @@ export default function NotificationsDropdown() {
                             className={cn("flex items-start gap-3 p-2", !notification.is_read && "bg-blue-50 dark:bg-blue-900/20")}
                             onClick={() => handleNotificationClick(notification)}
                         >
-                            <Avatar className="size-8 mt-1">
-                                {notification.sender?.avatar_url && <AvatarImage src={notification.sender.avatar_url} />}
-                                <AvatarFallback>{notification.sender?.full_name[0] || 'U'}</AvatarFallback>
-                            </Avatar>
+                            <div className="relative mt-1">
+                                <Avatar className="size-9">
+                                    {notification.sender?.avatar_url && <AvatarImage src={notification.sender.avatar_url} />}
+                                    <AvatarFallback>{notification.sender?.full_name[0] || 'U'}</AvatarFallback>
+                                </Avatar>
+                                <div className="absolute -bottom-1 -right-1 grid size-5 place-items-center rounded-full border border-background bg-card">
+                                    <NotificationIcon type={notification.type} />
+                                </div>
+                            </div>
                             <div className="flex-1 space-y-1">
-                                <p className="text-sm">
+                                <p className="flex items-center gap-2 text-sm">
                                     <span className="font-semibold">{notification.sender?.full_name || 'Someone'}</span>
-                                    {notification.type === 'new_post' && ' created a new post.'}
-                                    {notification.type === 'new_follower' && ' started following you.'}
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                    {notification.type === 'new_post' && 'created a new post.'}
+                                    {notification.type === 'new_follower' && 'started following you.'}
+                                    {notification.type === 'new_message' && 'sent you a new message.'}
                                 </p>
                                 <p className="text-xs text-muted-foreground">
                                     {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}

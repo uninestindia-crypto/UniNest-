@@ -19,12 +19,24 @@ import { useAuth } from '@/hooks/use-auth';
 import type { Product } from '@/lib/types';
 import type { User } from '@supabase/supabase-js';
 import { cn } from '@/lib/utils';
+import ReservationForm from '@/components/booking/reservation-form';
+
+type SeatStatus = 'available' | 'booked' | 'pending';
 
 type Seat = {
-    id: string; // The seat number like "24"
-    productId: number; // The database ID of the product representing the seat
-    status: 'available' | 'booked' | 'pending';
-}
+    id: string;
+    productId: number;
+    status: SeatStatus;
+    floor: 'Ground Floor' | 'First Floor' | 'Second Floor';
+    section: 'Quiet Zone' | 'Window Wing' | 'Group Pods';
+    seatType: 'quiet' | 'window' | 'group';
+    reservedUntil?: number;
+    bookingSlot?: string | null;
+    orderId?: number;
+    label: string;
+    row: number;
+    column: number;
+};
 
 type LibraryDetailClientProps = {
     library: Product;
@@ -64,6 +76,9 @@ export default function LibraryDetailClient({ library, initialSeatProducts, init
                 id: product.name.split(' ')[1] || product.id.toString(), // e.g., "Seat 24" -> "24"
                 productId: product.id,
                 status,
+                floor: 'Ground Floor',
+                section: 'Quiet Zone',
+                seatType: 'quiet',
             }
         }).sort((a, b) => parseInt(a.id) - parseInt(b.id));
 

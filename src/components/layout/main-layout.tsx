@@ -19,7 +19,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { Button } from '../ui/button';
-import { Heart, Instagram, Loader2 } from 'lucide-react';
+import { Instagram, Loader2 } from 'lucide-react';
 import NotificationsDropdown from './notifications-dropdown';
 import UserDropdown from './user-dropdown';
 
