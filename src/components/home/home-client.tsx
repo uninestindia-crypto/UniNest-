@@ -17,21 +17,7 @@ import {
 import Autoplay from 'embla-carousel-autoplay';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { LucideIcon } from 'lucide-react';
-import { 
-  ArrowRight, 
-  BookOpen, 
-  GraduationCap, 
-  Rocket, 
-  Users, 
-  Building, 
-  Sparkles, 
-  Library, 
-  Search, 
-  Package, 
-  Gift, 
-  BadgePercent, 
-  MapPin 
-} from 'lucide-react';
+import { ArrowRight, BookOpen, GraduationCap, Rocket, Users, Building, Sparkles, Library, Search, Package, MapPin } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import StatCard from '@/components/home/stat-card';
 import DonationModal from './donation-modal';
@@ -39,7 +25,7 @@ import Image from 'next/image';
 import type { HomePosterConfig } from '@/lib/types';
 import { defaultHomePosterConfig } from '@/lib/home-poster';
 
-const iconLibrary: Record<string, LucideIcon> = {
+const quickAccessIconMap: Record<string, LucideIcon> = {
   package: Package,
   users: Users,
   'book-open': BookOpen,
@@ -53,17 +39,48 @@ const iconLibrary: Record<string, LucideIcon> = {
   building: Building,
   library: Library,
   search: Search,
-  mapPin: MapPin,
-  gift: Gift,
-  badgePercent: BadgePercent,
 };
 
-const getQuickAccessIcon = (iconName?: string): LucideIcon => {
+const stats = [
+  { value: 10000, label: 'Students Connected', icon: GraduationCap, isPlus: true },
+  { value: 200, label: 'Vendors Onboarded', icon: Building, isPlus: true },
+  { value: 50, label: 'Libraries Managed', icon: Library, isPlus: true },
+];
+
+const testimonials = [
+  {
+    quote: "UniNest completely changed how I find study materials. The note sharing is a lifesaver, and I've connected with so many peers!",
+    name: 'Fatima Khan',
+    school: 'Jamia Millia Islamia',
+    avatar: 'https://picsum.photos/seed/testimonial1/100',
+  },
+  {
+    quote: "The marketplace is brilliant. I sold all my old textbooks in a week and found a great deal on a used bike. It's so much better than other platforms.",
+    name: 'John Mathew',
+    school: "St. Stephen's College",
+    avatar: 'https://picsum.photos/seed/testimonial2/100',
+  },
+  {
+    quote: 'As a fresher, UniNest helped me feel connected to the campus community instantly. The social feed is always buzzing with useful info.',
+    name: 'Jaspreet Kaur',
+    school: 'Guru Nanak Dev University',
+    avatar: 'https://picsum.photos/seed/testimonial3/100',
+  },
+];
+
+const timeline = [
+  { year: '2024', title: 'The Vision', description: 'Founded with a mission to simplify student life.', icon: Sparkles },
+  { year: '2024 Q2', title: 'First 1,000 Users', description: 'Our community begins to take shape.', icon: Users },
+  { year: '2025 Q1', title: '10,000 Strong', description: 'Crossed 10k students & 200 vendors.', icon: Rocket },
+  { year: 'Future', title: 'Global Expansion', description: 'Connecting 100,000+ learners worldwide.', icon: GraduationCap },
+];
+
+const getQuickAccessIcon = (iconName?: string | null): LucideIcon => {
   if (!iconName) {
     return ArrowRight;
   }
   const key = iconName.toLowerCase().replace(/\s+/g, '-');
-  return iconLibrary[key] ?? ArrowRight;
+  return quickAccessIconMap[key] ?? ArrowRight;
 };
 
 type HomeClientProps = {
@@ -288,29 +305,6 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
             </div>
           </section>
 
-          <section className="space-y-3 md:hidden">
-            <h2 className="text-lg font-semibold">Deals just for you</h2>
-            <div className="grid grid-cols-2 gap-3">
-              {posterConfig?.mobileDeals?.length ? posterConfig.mobileDeals : defaultHomePosterConfig.mobileDeals.map((deal) => (
-                <Link key={deal.title} href={deal.href} className="group">
-                  <Card className="relative overflow-hidden rounded-2xl bg-gradient-to-br p-4 text-background shadow-lg transition-transform duration-300 group-active:scale-95 group-hover:-translate-y-1">
-                    <div className={`absolute inset-0 opacity-80 bg-gradient-to-br ${deal.gradient}`} />
-                    <div className="relative space-y-2">
-                      <div className="flex size-12 items-center justify-center rounded-full bg-background/15 text-background">
-                        <deal.icon className="size-6" />
-                      </div>
-                      <p className="text-sm font-semibold leading-tight">{deal.title}</p>
-                      <p className="text-xs text-background/80">{deal.subtitle}</p>
-                      <span className="inline-flex items-center gap-1 text-xs font-semibold uppercase">
-                        Shop now
-                        <ArrowRight className="h-3 w-3" />
-                      </span>
-                    </div>
-                  </Card>
-                </Link>
-              ))}
-            </div>
-          </section>
         </div>
       </div>
 
@@ -346,8 +340,8 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
         </section>
 
         <section>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3 gap-6">
-            {posterConfig?.stats?.length ? posterConfig.stats : defaultHomePosterConfig.stats.map((stat, index) => (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {stats.map((stat, index) => (
               <StatCard key={index} {...stat} />
             ))}
           </div>

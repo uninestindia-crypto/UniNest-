@@ -1,5 +1,6 @@
 
 import type { User } from "@supabase/supabase-js";
+import type { LucideIcon } from "lucide-react";
 
 export type Profile = {
   id: string;
@@ -191,8 +192,41 @@ export type HomeCuratedCollection = {
   imageUrl: string;
 };
 
+export type HomeMobileDeal = {
+  title: string;
+  subtitle: string;
+  href: string;
+  gradient: string;
+  icon: LucideIcon;
+};
+
+export type HomeStat = {
+  value: number;
+  label: string;
+  icon: LucideIcon;
+  isPlus?: boolean;
+};
+
+export type HomeTestimonial = {
+  name: string;
+  quote: string;
+  school: string;
+  avatar: string;
+};
+
+export type HomeTimelineItem = {
+  year: string;
+  title: string;
+  description: string;
+  icon: LucideIcon;
+};
+
 export type HomePosterConfig = {
   heroSlides: HomeHeroSlide[];
   quickAccessCards: HomeQuickAccessCard[];
   curatedCollections: HomeCuratedCollection[];
+  mobileDeals?: HomeMobileDeal[];
+  stats?: HomeStat[];
+  testimonials?: HomeTestimonial[];
+  timeline?: HomeTimelineItem[];
 };

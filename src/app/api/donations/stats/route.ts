@@ -1,5 +1,20 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+
+const getServiceRoleClient = () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
+
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error('Supabase configuration missing for donations stats route.');
+  }
+
+  return createSupabaseClient(supabaseUrl, supabaseServiceKey, {
+    auth: {
+      persistSession: false,
+    },
+  });
+};
 
 const IMPACT_KEYS = {
   studentsHelped: 'impact_students_helped',
@@ -65,7 +80,7 @@ const computeImpactFromRaised = (raised: number) => {
 
 export async function GET() {
   try {
-    const supabase = createClient();
+    const supabase = getServiceRoleClient();
 
     const [donationsResult, configResult] = await Promise.all([
       supabase

@@ -178,110 +178,6 @@ export default function MarketplaceContent() {
   }, [priceBounds.max, priceBounds.min, products.length]);
 
 
-  const FilterControls = () => (
-    <div className="space-y-6">
-      <div className="space-y-1">
-        <h2 className="text-xl font-semibold">Refine results</h2>
-        <p className="text-sm text-muted-foreground">Narrow listings to match what you&apos;re looking for.</p>
-      </div>
-
-      <div className="space-y-3">
-        <Label className="text-sm font-medium">Location</Label>
-        <Select value={selectedLocation} onValueChange={setSelectedLocation}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="All locations" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All locations</SelectItem>
-            {availableLocations.map(location => (
-              <SelectItem key={location} value={location}>
-                {location}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-3">
-        <Label className="text-sm font-medium">Type</Label>
-        <Select value={selectedType} onValueChange={setSelectedType}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="All types" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All types</SelectItem>
-            {availableTypes.map(type => (
-              <SelectItem key={type} value={type}>
-                {type}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <Label className="text-sm font-medium">Price range</Label>
-          <span className="text-sm text-muted-foreground">
-            ₹{Math.round(priceRange[0]).toLocaleString()} – ₹{Math.round(priceRange[1]).toLocaleString()}
-          </span>
-        </div>
-        <Slider
-          value={priceRange}
-          onValueChange={value => setPriceRange([value[0], value[1]])}
-          min={priceBounds.min}
-          max={priceBounds.max}
-          step={sliderStep}
-          disabled={!products.length}
-        />
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <Label htmlFor="marketplace-price-min" className="text-xs uppercase tracking-wide text-muted-foreground">Min</Label>
-            <Input
-              id="marketplace-price-min"
-              type="number"
-              min={priceBounds.min}
-              max={priceRange[1]}
-              value={priceRange[0]}
-              disabled={!products.length}
-              onChange={event => {
-                if (!products.length) return;
-                const next = Number(event.target.value);
-                if (Number.isNaN(next)) return;
-                const clamped = Math.min(Math.max(next, priceBounds.min), priceRange[1]);
-                setPriceRange([clamped, priceRange[1]]);
-              }}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="marketplace-price-max" className="text-xs uppercase tracking-wide text-muted-foreground">Max</Label>
-            <Input
-              id="marketplace-price-max"
-              type="number"
-              min={priceRange[0]}
-              max={priceBounds.max}
-              value={priceRange[1]}
-              disabled={!products.length}
-              onChange={event => {
-                if (!products.length) return;
-                const next = Number(event.target.value);
-                if (Number.isNaN(next)) return;
-                const clamped = Math.max(Math.min(next, priceBounds.max), priceRange[0]);
-                setPriceRange([priceRange[0], clamped]);
-              }}
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="flex flex-wrap gap-3">
-        <Button variant="outline" size="sm" onClick={resetFilters} disabled={!products.length || (!activeFilterCount && !hasPriceFilter)}>
-          Clear filters
-        </Button>
-      </div>
-    </div>
-  );
-
   const handleBuyNow = useCallback(async (product: Product) => {
     if (!user || !supabase) {
         toast({ variant: 'destructive', title: 'Login Required', description: 'Please log in to purchase items.' });
@@ -493,6 +389,110 @@ export default function MarketplaceContent() {
         return items;
     }
   }, [filteredProducts, sortOption]);
+
+  const FilterControls = () => (
+    <div className="space-y-6">
+      <div className="space-y-1">
+        <h2 className="text-xl font-semibold">Refine results</h2>
+        <p className="text-sm text-muted-foreground">Narrow listings to match what you&apos;re looking for.</p>
+      </div>
+
+      <div className="space-y-3">
+        <Label className="text-sm font-medium">Location</Label>
+        <Select value={selectedLocation} onValueChange={setSelectedLocation}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="All locations" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All locations</SelectItem>
+            {availableLocations.map(location => (
+              <SelectItem key={location} value={location}>
+                {location}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-3">
+        <Label className="text-sm font-medium">Type</Label>
+        <Select value={selectedType} onValueChange={setSelectedType}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="All types" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All types</SelectItem>
+            {availableTypes.map(type => (
+              <SelectItem key={type} value={type}>
+                {type}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Label className="text-sm font-medium">Price range</Label>
+          <span className="text-sm text-muted-foreground">
+            ₹{Math.round(priceRange[0]).toLocaleString()} – ₹{Math.round(priceRange[1]).toLocaleString()}
+          </span>
+        </div>
+        <Slider
+          value={priceRange}
+          onValueChange={value => setPriceRange([value[0], value[1]])}
+          min={priceBounds.min}
+          max={priceBounds.max}
+          step={sliderStep}
+          disabled={!products.length}
+        />
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="marketplace-price-min" className="text-xs uppercase tracking-wide text-muted-foreground">Min</Label>
+            <Input
+              id="marketplace-price-min"
+              type="number"
+              min={priceBounds.min}
+              max={priceRange[1]}
+              value={priceRange[0]}
+              disabled={!products.length}
+              onChange={event => {
+                if (!products.length) return;
+                const next = Number(event.target.value);
+                if (Number.isNaN(next)) return;
+                const clamped = Math.min(Math.max(next, priceBounds.min), priceRange[1]);
+                setPriceRange([clamped, priceRange[1]]);
+              }}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="marketplace-price-max" className="text-xs uppercase tracking-wide text-muted-foreground">Max</Label>
+            <Input
+              id="marketplace-price-max"
+              type="number"
+              min={priceRange[0]}
+              max={priceBounds.max}
+              value={priceRange[1]}
+              disabled={!products.length}
+              onChange={event => {
+                if (!products.length) return;
+                const next = Number(event.target.value);
+                if (Number.isNaN(next)) return;
+                const clamped = Math.max(Math.min(next, priceBounds.max), priceRange[0]);
+                setPriceRange([priceRange[0], clamped]);
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap gap-3">
+        <Button variant="outline" size="sm" onClick={resetFilters} disabled={!products.length || (!activeFilterCount && !hasPriceFilter)}>
+          Clear filters
+        </Button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="space-y-8">
