@@ -585,21 +585,24 @@ export default function MarketplaceContent() {
           </div>
           <div className="flex items-center gap-2 overflow-x-auto pb-1 pl-2 pr-4">
             <span className="shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Categories</span>
-            {categories.map((category) => (
-              <Button
-                key={category.name}
-                asChild
-                variant={selectedCategory === category.name ? 'default' : 'outline'}
-                size="sm"
-                className="rounded-full gap-2 whitespace-nowrap"
-              >
-                <Link href={createCategoryLink(category.name)}>
-                  <category.icon className="size-4" />
-                  {category.name}
-                  {selectedCategory === category.name && <X className="size-4 -mr-1" />}
-                </Link>
-              </Button>
-            ))}
+              {categories.map(category => {
+                const Icon = category.icon;
+                return (
+                  <Button
+                    key={category.name}
+                    asChild
+                    variant={selectedCategory === category.name ? 'default' : 'outline'}
+                    size="sm"
+                    className="rounded-full gap-2 whitespace-nowrap"
+                  >
+                    <Link href={createCategoryLink(category.name)}>
+                      <Icon className="size-4" />
+                      {category.name}
+                      {selectedCategory === category.name && <X className="size-4 -mr-1" />}
+                    </Link>
+                  </Button>
+                );
+              })}
           </div>
         </div>
         <div className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-3 sm:text-sm">

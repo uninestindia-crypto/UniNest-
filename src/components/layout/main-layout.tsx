@@ -17,6 +17,7 @@ import { Logo } from '@/components/icons';
 import { useAuth } from '@/hooks/use-auth';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
+import { MobileBottomNav, SidebarNav } from '@/components/layout/sidebar-nav';
 import Link from 'next/link';
 import { Button } from '../ui/button';
 import { Instagram, Loader2 } from 'lucide-react';
