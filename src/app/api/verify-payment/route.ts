@@ -57,11 +57,16 @@ export async function POST(request: NextRequest) {
             orderId,
             razorpay_payment_id,
             razorpay_signature,
-            type, // 'donation' or 'competition_entry'
+            type, // 'donation' | 'competition_entry' | 'vendor_subscription'
             amount,
             competitionId,
             phone_number,
             whatsapp_number,
+            servicesCount,
+            categories,
+            currency,
+            billingPeriodStart,
+            billingPeriodEnd,
         } = body;
         
         const keySecret = process.env.RAZORPAY_KEY_SECRET;
@@ -104,6 +109,41 @@ export async function POST(request: NextRequest) {
             });
             if (error) throw error;
             
+        } else if (type === 'vendor_subscription') {
+            if (
+                typeof servicesCount !== 'number' ||
+                !Array.isArray(categories) ||
+                !billingPeriodStart ||
+                !billingPeriodEnd
+            ) {
+                return NextResponse.json({ error: 'Invalid vendor subscription payload.' }, { status: 400 });
+            }
+
+            const { error } = await supabaseAdmin.from('vendor_subscriptions').insert({
+                user_id: user.id,
+                razorpay_order_id: orderId,
+                razorpay_payment_id: razorpay_payment_id,
+                amount: amount,
+                currency: currency || 'INR',
+                services_selected: servicesCount,
+                categories,
+                billing_period_start: billingPeriodStart,
+                billing_period_end: billingPeriodEnd,
+                status: 'active',
+            });
+
+            if (error) throw error;
+
+            return NextResponse.json({
+                success: true,
+                message: 'Vendor subscription recorded successfully.',
+                paymentId: razorpay_payment_id,
+                subscription: {
+                    billingPeriodStart,
+                    billingPeriodEnd,
+                },
+            });
+
         } else {
             return NextResponse.json({ error: 'Invalid transaction type.' }, { status: 400 });
         }
