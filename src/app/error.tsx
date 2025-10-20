@@ -19,7 +19,10 @@ export default function Error({
   }, [error])
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] text-center">
+    <div
+      className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] text-center"
+      data-component-name="Error"
+    >
       <div className="p-6 bg-destructive/10 rounded-full mb-6">
         <Frown className="size-12 text-destructive" />
       </div>
