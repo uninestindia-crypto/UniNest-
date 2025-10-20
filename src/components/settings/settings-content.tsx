@@ -10,6 +10,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -131,12 +132,12 @@ export default function SettingsContent() {
     return 'Inactive';
   })();
   const subscriptionStatusHelper = (() => {
-    if (isVendorActive && hasRecordedPayment) return 'Billing renews automatically each month.';
-    if (isVendorActive && isTrialActive) return 'Free trial is active with vendor access enabled.';
-    if (isTrialActive && !isVendorActive) return 'Complete onboarding steps to unlock full access during your trial.';
-    if (showPaymentAlert) return 'Complete payment to activate marketplace visibility.';
-    if (isTrialEligible) return 'Start your complimentary trial when you submit vendor details.';
-    return 'Reactivate anytime from this dashboard.';
+    if (isVendorActive && hasRecordedPayment) return 'Auto-renews monthly.';
+    if (isVendorActive && isTrialActive) return 'Trial live with full access.';
+    if (isTrialActive && !isVendorActive) return 'Finish setup to unlock your trial.';
+    if (showPaymentAlert) return 'Complete payment to go live.';
+    if (isTrialEligible) return 'Start a free trial after adding services.';
+    return 'Reactivate from here anytime.';
   })();
   const canCancelSubscription = isVendorActive || isTrialActive;
   const submitLabel = (() => {
@@ -599,16 +600,16 @@ export default function SettingsContent() {
       {selectedRole === 'vendor' && (
         <Card>
           <CardHeader>
-            <CardTitle>Subscription & Billing</CardTitle>
-            <CardDescription>Review your vendor plan status and manage access.</CardDescription>
+            <CardTitle>Vendor Subscription</CardTitle>
+            <CardDescription>Manage your plan and keep access active.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Status</p>
-              <p className="text-lg font-semibold text-foreground">{subscriptionStatusLabel}</p>
-              <p className="text-sm text-muted-foreground">{subscriptionStatusHelper}</p>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="rounded-lg border border-muted/40 p-4">
+                <p className="text-sm text-muted-foreground">Plan status</p>
+                <p className="text-lg font-semibold text-foreground">{subscriptionStatusLabel}</p>
+                <p className="text-sm text-muted-foreground">{subscriptionStatusHelper}</p>
+              </div>
               <div className="rounded-lg border border-muted/40 p-4">
                 <p className="text-sm text-muted-foreground">Selected services</p>
                 <p className="text-lg font-semibold text-foreground">{vendorCategoryCount}</p>
@@ -623,24 +624,24 @@ export default function SettingsContent() {
             {showPaymentAlert && (
               <Alert className="border-primary/30">
                 <AlertTriangle className="size-4 text-primary" />
-                <AlertTitle>Complete activation</AlertTitle>
-                <AlertDescription>Finish payment or submit required documents to unlock bookings.</AlertDescription>
+                <AlertTitle>Action needed</AlertTitle>
+                <AlertDescription>Finish payment to unlock bookings.</AlertDescription>
               </Alert>
             )}
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm text-muted-foreground">
-                Canceling pauses marketplace visibility and billing from the next cycle. You can reactivate anytime.
-              </p>
-              <Button
-                variant="outline"
-                onClick={handleCancelSubscription}
-                disabled={!canCancelSubscription || isCancelLoading}
-              >
-                {isCancelLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Cancel subscription
-              </Button>
-            </div>
           </CardContent>
+          <CardFooter className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-muted-foreground">
+              Canceling hides your listings from the next cycle. Reactivate anytime.
+            </p>
+            <Button
+              variant="outline"
+              onClick={handleCancelSubscription}
+              disabled={!canCancelSubscription || isCancelLoading}
+            >
+              {isCancelLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Cancel subscription
+            </Button>
+          </CardFooter>
         </Card>
       )}
 

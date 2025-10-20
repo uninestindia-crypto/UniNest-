@@ -9,7 +9,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';
-import { Search, ListFilter, Library, Utensils, Laptop, Bed, Book, Package, X, Loader2, Plus, MapPin, ShieldCheck, Sparkles, LayoutGrid, Rows3 } from 'lucide-react';
+import { Search, ListFilter, Library, Utensils, Laptop, Bed, Book, Package, X, Loader2, Plus, MapPin, ShieldCheck, Sparkles } from 'lucide-react';
 import type { Product } from '@/lib/types';
 import Link from 'next/link';
 import { useEffect, useState, useMemo, useCallback } from 'react';
@@ -192,31 +192,6 @@ export default function MarketplaceContent() {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 0]);
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
   const [sortOption, setSortOption] = useState<SortOption>('featured');
-  const [layoutMode, setLayoutMode] = useState<'grid' | 'list'>('grid');
-
-  const layoutToggle = useMemo(() => (
-    <div className="flex items-center gap-1 rounded-full border bg-card/80 p-1 text-muted-foreground">
-      <Button
-        type="button"
-        variant={layoutMode === 'grid' ? 'default' : 'ghost'}
-        size="icon"
-        className="size-9 rounded-full"
-        onClick={() => setLayoutMode('grid')}
-      >
-        <LayoutGrid className="size-4" />
-      </Button>
-      <Button
-        type="button"
-        variant={layoutMode === 'list' ? 'default' : 'ghost'}
-        size="icon"
-        className="size-9 rounded-full"
-        onClick={() => setLayoutMode('list')}
-      >
-        <Rows3 className="size-4" />
-      </Button>
-    </div>
-  ), [layoutMode]);
-
   const selectedCategory = searchParams.get('category');
 
   const priceBounds = useMemo(() => {
@@ -521,8 +496,8 @@ export default function MarketplaceContent() {
 return (
     <div className="space-y-8">
         {/* Marketplace Header */}
-        <section className="rounded-2xl border bg-card p-6 shadow-sm space-y-5">
-            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <section className="rounded-2xl border bg-card p-5 shadow-sm space-y-4">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-primary">Marketplace</h1>
                     <p className="mt-1 text-muted-foreground">Buy, Sell & Support – by Students, for Students.</p>
@@ -536,15 +511,15 @@ return (
                 )}
             </div>
             <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground sm:text-sm">
-                <span className="flex items-center gap-2 rounded-xl bg-muted px-3 py-2">
+                <span className="flex items-center gap-2 rounded-xl bg-muted px-3 py-1.5">
                     <MapPin className="size-4 text-primary" />
                     Delivering to campus & hostels
                 </span>
-                <span className="flex items-center gap-2 rounded-xl bg-muted px-3 py-2">
+                <span className="flex items-center gap-2 rounded-xl bg-muted px-3 py-1.5">
                     <ShieldCheck className="size-4 text-primary" />
                     Verified vendors only
                 </span>
-                <span className="flex items-center gap-2 rounded-xl bg-muted px-3 py-2">
+                <span className="flex items-center gap-2 rounded-xl bg-muted px-3 py-1.5">
                     <Sparkles className="size-4 text-primary" />
                     Fresh listings every day
                 </span>
@@ -598,7 +573,7 @@ return (
                     </Sheet>
                 </div>
             </div>
-            <div className="-mx-1 flex items-center gap-2 overflow-x-auto pb-1 px-1">
+            <div className="flex flex-wrap items-center gap-2">
                 <span className="shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Categories</span>
                 {categories.map(category => {
                     const Icon = category.icon;
@@ -608,7 +583,7 @@ return (
                             asChild
                             variant={selectedCategory === category.name ? 'default' : 'outline'}
                             size="sm"
-                            className="rounded-full gap-2 whitespace-nowrap"
+                            className="rounded-full gap-2"
                         >
                             <Link href={createCategoryLink(category.name)}>
                                 <Icon className="size-4" />
@@ -671,7 +646,6 @@ return (
                     <SelectItem value="price-high">Price: High to Low</SelectItem>
                   </SelectContent>
                 </Select>
-                {layoutToggle}
               </div>
             </div>
             {loading ? (
@@ -679,12 +653,9 @@ return (
                     <Loader2 className="size-8 animate-spin text-muted-foreground" />
                 </div>
             ) : sortedProducts.length > 0 ? (
-                <div className={layoutMode === 'grid' ? 'grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5' : 'space-y-4'}>
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5">
                   {sortedProducts.map((product) => (
-                    <div
-                      key={product.id}
-                      className={layoutMode === 'list' ? 'rounded-2xl border bg-card p-4 shadow-sm hover:shadow-md transition-shadow' : undefined}
-                    >
+                    <div key={product.id}>
                       <ProductCard
                         product={product}
                         user={user}
@@ -692,7 +663,6 @@ return (
                         onChat={handleChat}
                         isBuying={purchasingProductId === product.id}
                         isRazorpayLoaded={isLoaded}
-                        layout={layoutMode}
                       />
                     </div>
                   ))}

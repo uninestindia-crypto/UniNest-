@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import LibraryDetailClient from '@/components/marketplace/library-detail-client';
 import type { Product } from '@/lib/types';
+import { recordSupabaseAdminGetUserFailure } from '@/lib/monitoring';
 
 type LibraryDetailPageProps = {
     params: { id: string };
@@ -69,7 +70,11 @@ export default async function LibraryDetailPage({ params }: LibraryDetailPagePro
         sellerUserMetadata = data.user.user_metadata;
       }
     } catch (error) {
-      console.error('Failed to load seller metadata for library', { libraryId: libraryData.id, error });
+      recordSupabaseAdminGetUserFailure({
+        error,
+        libraryId: libraryData.id,
+        sellerId: libraryData.seller_id,
+      });
     }
 
     const library = {

@@ -313,12 +313,6 @@ export default function WorkspaceClient() {
                       <Trophy className="size-4" />
                     </Link>
                   </Button>
-                  <Button size="sm" variant="outline" asChild className="rounded-full">
-                    <Link href="/workspace/competitions/new" className="gap-2">
-                      Host a challenge
-                      <PlusCircle className="size-4" />
-                    </Link>
-                  </Button>
                 </div>
               </div>
               <div className="overflow-x-auto pt-3">
@@ -417,12 +411,6 @@ export default function WorkspaceClient() {
                     <Link href="/workspace/internships" className="gap-2">
                       Browse internships
                       <Briefcase className="size-4" />
-                    </Link>
-                  </Button>
-                  <Button size="sm" variant="outline" asChild className="rounded-full">
-                    <Link href="/workspace/internships/post" className="gap-2">
-                      Post an internship
-                      <PlusCircle className="size-4" />
                     </Link>
                   </Button>
                 </div>
