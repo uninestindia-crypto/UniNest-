@@ -325,20 +325,22 @@ export default function WorkspaceClient() {
           </div>
 
           <TabsContent value="competitions" className="space-y-6">
-            <section className="bg-muted/40 border rounded-3xl p-6 md:p-8 grid gap-6 md:grid-cols-[1.5fr_minmax(0,1fr)] items-center">
-              <div className="space-y-4">
-                <h2 className="text-3xl font-semibold leading-tight">Step into leaderboards with UniNest challenges</h2>
-                <p className="text-muted-foreground text-base md:text-lg">
-                  Join hackathons, ideathons, and creativity sprints. Win prizes, earn certificates, and level up your resume.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
-                  <Button size="lg" asChild className="rounded-full">
+            <section className="rounded-2xl border bg-card/70 p-4 md:p-6">
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div className="space-y-2">
+                  <h2 className="text-2xl font-semibold text-primary">Step into leaderboards with UniNest challenges</h2>
+                  <p className="text-sm text-muted-foreground md:max-w-xl">
+                    Join hackathons, ideathons, and creativity sprints. Win prizes, earn certificates, and level up your resume.
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button size="sm" asChild className="rounded-full">
                     <Link href="/workspace/competitions" className="gap-2">
                       Explore competitions
                       <Trophy className="size-4" />
                     </Link>
                   </Button>
-                  <Button size="lg" variant="outline" asChild className="rounded-full">
+                  <Button size="sm" variant="outline" asChild className="rounded-full">
                     <Link href="/workspace/competitions/new" className="gap-2">
                       Host a challenge
                       <PlusCircle className="size-4" />
@@ -346,26 +348,22 @@ export default function WorkspaceClient() {
                   </Button>
                 </div>
               </div>
-              <Card className="shadow-sm border-primary/10">
-                <CardHeader>
-                  <CardTitle className="text-xl">Why join?</CardTitle>
-                  <CardDescription>Students unlocked ₹3.2L+ in rewards last quarter.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-3">
-                    <Badge variant="secondary">Top rewards</Badge>
-                    Up to ₹1L prize pools every month.
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Badge variant="outline">Mentored</Badge>
-                    Industry mentors & alumni jury panels.
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Badge variant="secondary">Certificates</Badge>
-                    Shareable badges for LinkedIn and resumes.
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="overflow-x-auto pt-3">
+                <div className="flex min-w-max items-center gap-3 text-xs sm:text-sm text-muted-foreground">
+                  <span className="flex items-center gap-2 rounded-full border border-muted/40 bg-background/80 px-3 py-1">
+                    <ShieldCheck className="size-4 text-primary" />
+                    Verified partners
+                  </span>
+                  <span className="flex items-center gap-2 rounded-full border border-muted/40 bg-background/80 px-3 py-1">
+                    <Clock className="size-4 text-primary" />
+                    Deadlines updated daily
+                  </span>
+                  <span className="flex items-center gap-2 rounded-full border border-muted/40 bg-background/80 px-3 py-1">
+                    <Sparkles className="size-4 text-primary" />
+                    New drops every week
+                  </span>
+                </div>
+              </div>
             </section>
 
             {competitionsLoading ? (
@@ -408,23 +406,47 @@ export default function WorkspaceClient() {
                 </CardContent>
               </Card>
             )}
+            {!competitionsLoading && (
+              <Card className="border-dashed">
+                <CardHeader>
+                  <CardTitle className="text-lg">Why join?</CardTitle>
+                  <CardDescription>Students unlocked ₹3.2L+ in rewards last quarter.</CardDescription>
+                </CardHeader>
+                <CardContent className="grid gap-3 text-sm text-muted-foreground md:grid-cols-3">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary">Top rewards</Badge>
+                    Up to ₹1L prize pools monthly.
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline">Mentored</Badge>
+                    Industry mentors & alumni jury panels.
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary">Certificates</Badge>
+                    Shareable badges for LinkedIn and resumes.
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="internships" className="space-y-6">
-            <section className="bg-muted/40 border rounded-3xl p-6 md:p-8 grid gap-6 md:grid-cols-[1.5fr_minmax(0,1fr)] items-center">
-              <div className="space-y-4">
-                <h2 className="text-3xl font-semibold leading-tight">Unlock paid internships and resume-worthy roles</h2>
-                <p className="text-muted-foreground text-base md:text-lg">
-                  From startups to national brands, apply faster with curated opportunities tailored for students.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
-                  <Button size="lg" asChild className="rounded-full">
+            <section className="rounded-2xl border bg-card/70 p-4 md:p-6">
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div className="space-y-2">
+                  <h2 className="text-2xl font-semibold text-primary">Unlock paid internships and resume-worthy roles</h2>
+                  <p className="text-sm text-muted-foreground md:max-w-xl">
+                    From startups to national brands, apply faster with curated opportunities tailored for students.
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button size="sm" asChild className="rounded-full">
                     <Link href="/workspace/internships" className="gap-2">
                       Browse internships
                       <Briefcase className="size-4" />
                     </Link>
                   </Button>
-                  <Button size="lg" variant="outline" asChild className="rounded-full">
+                  <Button size="sm" variant="outline" asChild className="rounded-full">
                     <Link href="/workspace/internships/post" className="gap-2">
                       Post an internship
                       <PlusCircle className="size-4" />
@@ -432,26 +454,22 @@ export default function WorkspaceClient() {
                   </Button>
                 </div>
               </div>
-              <Card className="shadow-sm border-primary/10">
-                <CardHeader>
-                  <CardTitle className="text-xl">Why apply?</CardTitle>
-                  <CardDescription>Average stipends grew 38% last semester.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-3">
+              <div className="overflow-x-auto pt-3">
+                <div className="flex min-w-max items-center gap-3 text-xs sm:text-sm text-muted-foreground">
+                  <span className="flex items-center gap-2 rounded-full border border-muted/40 bg-background/80 px-3 py-1">
                     <Badge variant="secondary">Paid roles</Badge>
-                    Transparent stipend details across roles.
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Badge variant="outline">Ready in 5</Badge>
-                    Quick apply forms with resume autofill.
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Badge variant="secondary">Mentors</Badge>
-                    Learn from founders, VPs, and alumni coaches.
-                  </div>
-                </CardContent>
-              </Card>
+                    Transparent stipend details.
+                  </span>
+                  <span className="flex items-center gap-2 rounded-full border border-muted/40 bg-background/80 px-3 py-1">
+                    <Clock className="size-4 text-primary" />
+                    Apply in minutes
+                  </span>
+                  <span className="flex items-center gap-2 rounded-full border border-muted/40 bg-background/80 px-3 py-1">
+                    <Sparkles className="size-4 text-primary" />
+                    Mentor-backed journeys
+                  </span>
+                </div>
+              </div>
             </section>
 
             {internshipsLoading ? (
@@ -499,6 +517,28 @@ export default function WorkspaceClient() {
               <Card>
                 <CardContent className="py-12 text-center text-muted-foreground">
                   No internships match your filters. Try adjusting your search.
+                </CardContent>
+              </Card>
+            )}
+            {!internshipsLoading && (
+              <Card className="border-dashed">
+                <CardHeader>
+                  <CardTitle className="text-lg">Why apply?</CardTitle>
+                  <CardDescription>Average stipends grew 38% last semester.</CardDescription>
+                </CardHeader>
+                <CardContent className="grid gap-3 text-sm text-muted-foreground md:grid-cols-3">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary">Paid roles</Badge>
+                    Transparent stipend details across roles.
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline">Ready in 5</Badge>
+                    Quick apply forms with resume autofill.
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary">Mentors</Badge>
+                    Learn from founders, VPs, and alumni coaches.
+                  </div>
                 </CardContent>
               </Card>
             )}

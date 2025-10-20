@@ -158,7 +158,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
               </div>
           </header>
           <main className={cn(
-              "flex-1 overflow-y-auto p-8", 
+              "flex-1 overflow-y-auto overflow-x-hidden p-8", 
               isMobile && isHomePage && "p-0 py-4",
               isMobile && !isHomePage && "p-4",
               isMobile && "pb-24"

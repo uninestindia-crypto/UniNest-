@@ -85,7 +85,7 @@ export default async function LibraryDetailPage({ params }: LibraryDetailPagePro
     const { data: orders } = seatProductIds.length > 0
       ? await supabase
           .from('orders')
-          .select('id, status, order_items!inner(product_id)')
+          .select('id, status, created_at, booking_slot, booking_date, order_items!inner(product_id)')
           .eq('vendor_id', library.seller_id)
           .in('order_items.product_id', seatProductIds)
           .in('status', ['pending_approval', 'approved'])

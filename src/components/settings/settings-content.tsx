@@ -233,6 +233,8 @@ export default function SettingsContent() {
         const order = await response.json();
         if (!response.ok) throw new Error(order.error || 'Failed to create payment order.');
   
+        const paidAmount = order.amount / 100;
+
         const options = {
           key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
           amount: order.amount,
@@ -240,12 +242,58 @@ export default function SettingsContent() {
           name: 'UniNest Vendor Subscription',
           description: `Monthly access for ${values.vendorCategories?.length ?? 0} service${(values.vendorCategories?.length ?? 0) === 1 ? '' : 's'}.`,
           order_id: order.id,
-          handler: async (response: any) => {
-            // On successful payment, save the profile with active status
-            await saveProfile(values, {
-              activateVendor: true,
-              paymentId: response.razorpay_payment_id,
-            });
+          handler: async (paymentResponse: any, accessToken: string) => {
+            if (!accessToken) {
+              toast({ variant: 'destructive', title: 'Authentication Error', description: 'Session expired. Please log in again and retry payment.' });
+              setIsProfileLoading(false);
+              return;
+            }
+
+            const billingStart = new Date();
+            const billingEnd = new Date(billingStart);
+            billingEnd.setMonth(billingEnd.getMonth() + 1);
+
+            try {
+              const verificationResponse = await fetch('/api/verify-payment', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${accessToken}`,
+                },
+                body: JSON.stringify({
+                  orderId: paymentResponse.razorpay_order_id,
+                  razorpay_payment_id: paymentResponse.razorpay_payment_id,
+                  razorpay_signature: paymentResponse.razorpay_signature,
+                  type: 'vendor_subscription',
+                  amount: paidAmount,
+                  servicesCount: values.vendorCategories?.length ?? 0,
+                  categories: values.vendorCategories ?? [],
+                  currency: order.currency,
+                  billingPeriodStart: billingStart.toISOString(),
+                  billingPeriodEnd: billingEnd.toISOString(),
+                }),
+              });
+
+              const verificationResult = await verificationResponse.json();
+              if (!verificationResponse.ok) {
+                throw new Error(verificationResult.error || 'Failed to verify payment.');
+              }
+
+              const subscriptionPeriod = {
+                billingPeriodStart: verificationResult.subscription?.billingPeriodStart ?? billingStart.toISOString(),
+                billingPeriodEnd: verificationResult.subscription?.billingPeriodEnd ?? billingEnd.toISOString(),
+              };
+
+              await saveProfile(values, {
+                activateVendor: true,
+                paymentId: paymentResponse.razorpay_payment_id,
+                subscription: subscriptionPeriod,
+              });
+            } catch (error) {
+              const message = error instanceof Error ? error.message : 'Failed to verify payment.';
+              toast({ variant: 'destructive', title: 'Payment Verification Failed', description: message });
+              setIsProfileLoading(false);
+            }
           },
           modal: { ondismiss: () => setIsProfileLoading(false) },
           prefill: { name: user.user_metadata?.full_name || '', email: user.email || '' },
@@ -271,6 +319,10 @@ export default function SettingsContent() {
       startedAt: string;
       expiresAt: string;
     };
+    subscription?: {
+      billingPeriodStart: string;
+      billingPeriodEnd: string;
+    };
   };
 
   async function saveProfile(values: z.infer<typeof profileFormSchema>, options: SaveProfileOptions = {}) {
@@ -291,6 +343,8 @@ export default function SettingsContent() {
         last_payment_id: options.paymentId || user.user_metadata?.last_payment_id,
         vendor_trial_started_at: options.trial?.startedAt || user.user_metadata?.vendor_trial_started_at,
         vendor_trial_expires_at: options.trial?.expiresAt || user.user_metadata?.vendor_trial_expires_at,
+        vendor_subscription_start_at: options.subscription?.billingPeriodStart || user.user_metadata?.vendor_subscription_start_at,
+        vendor_subscription_end_at: options.subscription?.billingPeriodEnd || user.user_metadata?.vendor_subscription_end_at,
     };
     
     const { error: authError } = await supabase.auth.updateUser({ data: userData });
@@ -339,6 +393,8 @@ export default function SettingsContent() {
       vendor_trial_started_at: null,
       vendor_trial_expires_at: null,
       last_payment_id: null,
+      vendor_subscription_start_at: null,
+      vendor_subscription_end_at: null,
     };
     const { error: authError } = await supabase.auth.updateUser({ data: updatedMetadata });
     if (authError) {
