@@ -10,7 +10,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -72,7 +71,6 @@ export default function SettingsContent() {
   const [isPhotoLoading, setIsPhotoLoading] = useState(false);
   const [isBannerLoading, setIsBannerLoading] = useState(false);
   const [monetizationSettings, setMonetizationSettings] = useState<any>(null);
-  const [isCancelLoading, setIsCancelLoading] = useState(false);
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -116,30 +114,6 @@ export default function SettingsContent() {
   const isChargeEnabled = Boolean(vendorMonetization?.charge_for_platform_access && monetizationHasStarted);
   const shouldCharge = selectedRole === 'vendor' && isChargeEnabled && vendorCategoryCount > 0;
   const requiresImmediatePayment = shouldCharge && !isTrialEligible && !isTrialActive && !isVendorActive && totalCost > 0;
-  const showPaymentAlert =
-    selectedRole === 'vendor' &&
-    isChargeEnabled &&
-    !isVendorActive &&
-    vendorCategoryCount > 0;
-  const formattedTrialEnd = vendorTrialExpiresAt
-    ? vendorTrialExpiresAt.toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })
-    : null;
-  const subscriptionStatusLabel = (() => {
-    if (isVendorActive) return 'Active subscription';
-    if (isTrialActive) return formattedTrialEnd ? `Trial active until ${formattedTrialEnd}` : 'Trial active';
-    if (showPaymentAlert) return 'Activation pending';
-    if (isTrialEligible) return 'Free trial available';
-    return 'Inactive';
-  })();
-  const subscriptionStatusHelper = (() => {
-    if (isVendorActive && hasRecordedPayment) return 'Auto-renews monthly.';
-    if (isVendorActive && isTrialActive) return 'Trial live with full access.';
-    if (isTrialActive && !isVendorActive) return 'Finish setup to unlock your trial.';
-    if (showPaymentAlert) return 'Complete payment to go live.';
-    if (isTrialEligible) return 'Start a free trial after adding services.';
-    return 'Reactivate from here anytime.';
-  })();
-  const canCancelSubscription = isVendorActive || isTrialActive;
   const submitLabel = (() => {
     if (selectedRole !== 'vendor') return 'Save Changes';
     if (shouldCharge && isTrialEligible) return 'Activate Free Trial';
@@ -385,38 +359,6 @@ export default function SettingsContent() {
     setIsPasswordLoading(false);
   }
 
-  const handleCancelSubscription = async () => {
-    if (!user || !supabase || !canCancelSubscription) return;
-    setIsCancelLoading(true);
-    const updatedMetadata = {
-      ...(user.user_metadata || {}),
-      is_vendor_active: false,
-      vendor_trial_started_at: null,
-      vendor_trial_expires_at: null,
-      last_payment_id: null,
-      vendor_subscription_start_at: null,
-      vendor_subscription_end_at: null,
-    };
-    const { error: authError } = await supabase.auth.updateUser({ data: updatedMetadata });
-    if (authError) {
-      toast({ variant: 'destructive', title: 'Cancellation failed', description: authError.message });
-      setIsCancelLoading(false);
-      return;
-    }
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .update({ role: 'vendor' })
-      .eq('id', user.id);
-    if (profileError) {
-      toast({ variant: 'destructive', title: 'Cancellation failed', description: profileError.message });
-      setIsCancelLoading(false);
-      return;
-    }
-    toast({ title: 'Subscription cancelled', description: 'Your vendor access will remain available until the current period ends.' });
-    setIsCancelLoading(false);
-    window.location.reload();
-  };
-
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>, type: 'avatar' | 'banner') => {
     const file = event.target.files?.[0];
     if (file) {
@@ -594,54 +536,6 @@ export default function SettingsContent() {
                     </Button>
                 </div>
             </CardContent>
-        </Card>
-      )}
-
-      {selectedRole === 'vendor' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Vendor Subscription</CardTitle>
-            <CardDescription>Manage your plan and keep access active.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-3 sm:grid-cols-3">
-              <div className="rounded-lg border border-muted/40 p-4">
-                <p className="text-sm text-muted-foreground">Plan status</p>
-                <p className="text-lg font-semibold text-foreground">{subscriptionStatusLabel}</p>
-                <p className="text-sm text-muted-foreground">{subscriptionStatusHelper}</p>
-              </div>
-              <div className="rounded-lg border border-muted/40 p-4">
-                <p className="text-sm text-muted-foreground">Selected services</p>
-                <p className="text-lg font-semibold text-foreground">{vendorCategoryCount}</p>
-              </div>
-              <div className="rounded-lg border border-muted/40 p-4">
-                <p className="text-sm text-muted-foreground">Monthly cost</p>
-                <p className="text-lg font-semibold text-foreground">
-                  {shouldCharge && pricePerService > 0 ? `₹${totalCost.toLocaleString('en-IN')}` : 'Included in plan'}
-                </p>
-              </div>
-            </div>
-            {showPaymentAlert && (
-              <Alert className="border-primary/30">
-                <AlertTriangle className="size-4 text-primary" />
-                <AlertTitle>Action needed</AlertTitle>
-                <AlertDescription>Finish payment to unlock bookings.</AlertDescription>
-              </Alert>
-            )}
-          </CardContent>
-          <CardFooter className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted-foreground">
-              Canceling hides your listings from the next cycle. Reactivate anytime.
-            </p>
-            <Button
-              variant="outline"
-              onClick={handleCancelSubscription}
-              disabled={!canCancelSubscription || isCancelLoading}
-            >
-              {isCancelLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Cancel subscription
-            </Button>
-          </CardFooter>
         </Card>
       )}
 
