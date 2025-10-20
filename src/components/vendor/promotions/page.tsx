@@ -12,7 +12,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { CalendarRange, Megaphone, Percent, Sparkles, Timer, Users, Wand2 } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { CalendarRange, Info, Megaphone, Percent, Sparkles, Timer, Users, Wand2 } from 'lucide-react';
 
 const promotionStatuses = [
   { id: 'active', title: 'Active', description: 'Campaigns running right now' },
@@ -52,6 +53,7 @@ export default function VendorPromotionsContent() {
   const [discount, setDiscount] = useState<number[]>([15]);
   const [budget, setBudget] = useState('5000');
   const [useCountdown, setUseCountdown] = useState(true);
+  const [showQuickStart, setShowQuickStart] = useState(true);
 
   const stepIndex = useMemo(() => creationSteps.findIndex((item) => item.id === step), [step]);
   const progress = useMemo(() => ((stepIndex + 1) / creationSteps.length) * 100, [stepIndex]);
@@ -67,6 +69,22 @@ export default function VendorPromotionsContent() {
 
   return (
     <div className="space-y-8">
+      {showQuickStart && (
+        <Alert className="flex flex-col gap-2 border-primary/40 bg-primary/5 text-foreground md:flex-row md:items-center md:justify-between">
+          <div className="flex items-start gap-3">
+            <Info className="size-5 text-primary" />
+            <div>
+              <AlertTitle>Quick start tip</AlertTitle>
+              <AlertDescription>
+                Review existing campaigns before launching new ones so budgets and audiences dont overlap.
+              </AlertDescription>
+            </div>
+          </div>
+          <Button variant="ghost" size="sm" onClick={() => setShowQuickStart(false)} className="self-end md:self-center">
+            Got it
+          </Button>
+        </Alert>
+      )}
       <section className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h1 className="text-2xl font-semibold md:text-3xl">Promotions hub</h1>

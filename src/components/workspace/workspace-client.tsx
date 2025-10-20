@@ -6,7 +6,12 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Briefcase, Trophy, PlusCircle, Calendar, IndianRupee, MapPin, ArrowUpRight, Loader2, Building } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';
+import { Slider } from '@/components/ui/slider';
+import { Label } from '@/components/ui/label';
+import { Briefcase, Trophy, PlusCircle, Calendar, IndianRupee, MapPin, ArrowUpRight, Loader2, Building, Search, Filter, Sparkles, ShieldCheck, Clock, Rows3, Rows } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 
 type CompetitionPreview = {
@@ -29,6 +34,7 @@ type InternshipPreview = {
 };
 
 type LayoutMode = 'grid' | 'list';
+type SortOption = 'deadline' | 'prize-high' | 'stipend-high';
 
 export default function WorkspaceClient() {
   const { user, supabase } = useAuth();
@@ -39,26 +45,31 @@ export default function WorkspaceClient() {
   const [competitionsLoading, setCompetitionsLoading] = useState(true);
   const [internshipsLoading, setInternshipsLoading] = useState(true);
   const [layoutMode, setLayoutMode] = useState<LayoutMode>('grid');
+  const [query, setQuery] = useState('');
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [sortOption, setSortOption] = useState<SortOption>('deadline');
+  const [feeRange, setFeeRange] = useState<[number, number]>([0, 0]);
+  const [stipendRange, setStipendRange] = useState<[number, number]>([0, 0]);
 
   const layoutToggle = useMemo(() => (
     <div className="inline-flex items-center gap-2 rounded-full border bg-card px-2 py-1 text-sm">
-      <span className="text-muted-foreground">Layout</span>
+      <span className="text-muted-foreground">View</span>
       <div className="flex rounded-full bg-muted p-1">
         <Button
-          size="sm"
+          size="icon"
           variant={layoutMode === 'grid' ? 'default' : 'ghost'}
-          className="rounded-full px-3"
+          className="rounded-full"
           onClick={() => setLayoutMode('grid')}
         >
-          Grid
+          <Rows3 className="size-4" />
         </Button>
         <Button
-          size="sm"
+          size="icon"
           variant={layoutMode === 'list' ? 'default' : 'ghost'}
-          className="rounded-full px-3"
+          className="rounded-full"
           onClick={() => setLayoutMode('list')}
         >
-          List
+          <Rows className="size-4" />
         </Button>
       </div>
     </div>
@@ -107,27 +118,133 @@ export default function WorkspaceClient() {
     };
   }, [supabase]);
 
+  const competitionsWithFilters = useMemo(() => {
+    const trimmed = query.trim().toLowerCase();
+    return competitions.filter(comp => {
+      if (trimmed && !comp.title.toLowerCase().includes(trimmed) && !comp.description.toLowerCase().includes(trimmed)) {
+        return false;
+      }
+      if (feeRange[1] > 0 && (comp.entry_fee < feeRange[0] || comp.entry_fee > feeRange[1])) {
+        return false;
+      }
+      return true;
+    }).sort((a, b) => {
+      if (sortOption === 'deadline') {
+        return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
+      }
+      if (sortOption === 'prize-high') {
+        return b.prize - a.prize;
+      }
+      return 0;
+    });
+  }, [competitions, feeRange, query, sortOption]);
+
+  const internshipsWithFilters = useMemo(() => {
+    const trimmed = query.trim().toLowerCase();
+    return internships.filter(intern => {
+      if (trimmed && !intern.role.toLowerCase().includes(trimmed) && !intern.company.toLowerCase().includes(trimmed)) {
+        return false;
+      }
+      if (stipendRange[1] > 0 && (intern.stipend < stipendRange[0] || intern.stipend > stipendRange[1])) {
+        return false;
+      }
+      return true;
+    }).sort((a, b) => {
+      if (sortOption === 'deadline') {
+        return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
+      }
+      if (sortOption === 'stipend-high') {
+        return (b.stipend ?? 0) - (a.stipend ?? 0);
+      }
+      return 0;
+    });
+  }, [internships, query, sortOption, stipendRange]);
+
+  useEffect(() => {
+    if (!competitions.length) {
+      setFeeRange([0, 0]);
+    } else {
+      const fees = competitions.map(c => c.entry_fee || 0);
+      const min = Math.min(...fees);
+      const max = Math.max(...fees);
+      setFeeRange([min, max]);
+    }
+  }, [competitions]);
+
+  useEffect(() => {
+    if (!internships.length) {
+      setStipendRange([0, 0]);
+    } else {
+      const stipends = internships.map(i => i.stipend || 0);
+      const min = Math.min(...stipends);
+      const max = Math.max(...stipends);
+      setStipendRange([min, max]);
+    }
+  }, [internships]);
+
+  const FilterSheet = () => (
+    <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+      <SheetTrigger asChild>
+        <Button variant="outline" className="gap-2 rounded-full">
+          <Filter className="size-4" />
+          Filters
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="right" className="w-full sm:max-w-sm space-y-6">
+        <SheetHeader>
+          <SheetTitle>Refine workspace</SheetTitle>
+        </SheetHeader>
+        <div className="space-y-6">
+          <div className="space-y-3">
+            <Label className="text-sm font-semibold">Competition fee range</Label>
+            <Slider
+              value={feeRange}
+              min={0}
+              max={Math.max(feeRange[1], 1000)}
+              step={100}
+              onValueChange={(value) => setFeeRange([value[0], value[1]])}
+            />
+            <p className="text-sm text-muted-foreground">₹{feeRange[0]} – ₹{feeRange[1]}</p>
+          </div>
+          <div className="space-y-3">
+            <Label className="text-sm font-semibold">Stipend range</Label>
+            <Slider
+              value={stipendRange}
+              min={0}
+              max={Math.max(stipendRange[1], 20000)}
+              step={500}
+              onValueChange={(value) => setStipendRange([value[0], value[1]])}
+            />
+            <p className="text-sm text-muted-foreground">₹{stipendRange[0]} – ₹{stipendRange[1]}</p>
+          </div>
+        </div>
+        <SheetClose asChild>
+          <Button className="w-full">Apply filters</Button>
+        </SheetClose>
+      </SheetContent>
+    </Sheet>
+  );
+
   return (
     <div className="space-y-12">
-      <section className="text-center">
-        <h1 className="text-4xl font-bold tracking-tight text-primary sm:text-5xl">Workspace</h1>
-        <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">
-          Compete. Learn. Grow. – Unlock your potential with UniNest.
-        </p>
-         <div className="mt-8 flex justify-center">
-          <Button asChild>
-            <Link href="/workspace/suggest">
-              Have a listing to suggest?
-            </Link>
-          </Button>
-        </div>
-      </section>
-
-      <section className="bg-muted/40 border rounded-3xl p-8 lg:p-10 grid gap-6 md:grid-cols-[1.5fr_minmax(0,1fr)] items-center">
-        <div className="space-y-4">
-          <h2 className="text-3xl font-semibold leading-tight">Build your journey with the UniNest Marketplace</h2>
-          <p className="text-muted-foreground text-base md:text-lg">
-            Discover hostels, library seats, food plans, and student-made products in one destination. List your own offers and reach the UniNest community instantly.
+      <section className="rounded-3xl border bg-card p-6 shadow-md space-y-6">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-4xl font-bold tracking-tight text-primary sm:text-5xl">Workspace</h1>
+            <p className="mt-2 text-muted-foreground">Discover competitions, internships, and campus gigs curated for UniNest students.</p>
+            <div className="mt-4 flex flex-wrap items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+              <span className="flex items-center gap-2 rounded-full bg-muted px-3 py-1">
+                <ShieldCheck className="size-4 text-primary" />
+                Verified partners
+              </span>
+              <span className="flex items-center gap-2 rounded-full bg-muted px-3 py-1">
+                <Clock className="size-4 text-primary" />
+                Deadlines updated daily
+              </span>
+              <span className="flex items-center gap-2 rounded-full bg-muted px-3 py-1">
+                <Sparkles className="size-4 text-primary" />
+                New drops every week
+              </span>
           </p>
           <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
             <Button size="lg" asChild>

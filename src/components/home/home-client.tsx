@@ -16,7 +16,22 @@ import {
 } from '@/components/ui/carousel';
 import Autoplay from 'embla-carousel-autoplay';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowRight, BookOpen, GraduationCap, Rocket, Users, Building, Sparkles, Library, Search, Package } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { 
+  ArrowRight, 
+  BookOpen, 
+  GraduationCap, 
+  Rocket, 
+  Users, 
+  Building, 
+  Sparkles, 
+  Library, 
+  Search, 
+  Package, 
+  Gift, 
+  BadgePercent, 
+  MapPin 
+} from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import StatCard from '@/components/home/stat-card';
 import DonationModal from './donation-modal';
@@ -24,91 +39,32 @@ import Image from 'next/image';
 import type { HomePosterConfig } from '@/lib/types';
 import { defaultHomePosterConfig } from '@/lib/home-poster';
 
-const stats = [
-  { value: 10000, label: 'Students Connected', icon: GraduationCap, isPlus: true },
-  { value: 200, label: 'Vendors Onboarded', icon: Building, isPlus: true },
-  { value: 50, label: 'Libraries Managed', icon: Library, isPlus: true },
-];
+const iconLibrary: Record<string, LucideIcon> = {
+  package: Package,
+  users: Users,
+  'book-open': BookOpen,
+  bookopen: BookOpen,
+  'arrow-right': ArrowRight,
+  arrowright: ArrowRight,
+  rocket: Rocket,
+  sparkles: Sparkles,
+  'graduation-cap': GraduationCap,
+  graduationcap: GraduationCap,
+  building: Building,
+  library: Library,
+  search: Search,
+  mapPin: MapPin,
+  gift: Gift,
+  badgePercent: BadgePercent,
+};
 
-const testimonials = [
-  {
-    quote: "UniNest completely changed how I find study materials. The note sharing is a lifesaver, and I've connected with so many peers!",
-    name: "Fatima Khan",
-    school: "Jamia Millia Islamia",
-    avatar: "https://picsum.photos/seed/testimonial1/100"
-  },
-  {
-    quote: "The marketplace is brilliant. I sold all my old textbooks in a week and found a great deal on a used bike. It's so much better than other platforms.",
-    name: "John Mathew",
-    school: "St. Stephen's College",
-    avatar: "https://picsum.photos/seed/testimonial2/100"
-  },
-  {
-    quote: "As a fresher, UniNest helped me feel connected to the campus community instantly. The social feed is always buzzing with useful info.",
-    name: "Jaspreet Kaur",
-    school: "Guru Nanak Dev University",
-    avatar: "https://picsum.photos/seed/testimonial3/100"
-  },
-];
-
-const timeline = [
-  { year: "2024", title: "The Vision", description: "Founded with a mission to simplify student life.", icon: Sparkles },
-  { year: "2024 Q2", title: "First 1,000 Users", description: "Our community begins to take shape.", icon: Users },
-  { year: "2025 Q1", title: "10,000 Strong", description: "Crossed 10k students & 200 vendors.", icon: Rocket },
-  { year: "Future", title: "Global Expansion", description: "Connecting 100,000+ learners worldwide.", icon: GraduationCap },
-];
-
-const quickAccess = [
-  {
-    title: 'Marketplace deals',
-    description: 'Fresh finds under ₹199',
-    icon: Package,
-    href: '/marketplace',
-    image: 'https://placehold.co/400x220/ffe2cc/31220c?text=Marketplace',
-  },
-  {
-    title: 'Peer study rooms',
-    description: 'Start a collaborative session',
-    icon: Users,
-    href: '/workspace',
-    image: 'https://placehold.co/400x220/d6e6ff/0a1f44?text=Study+Hub',
-  },
-  {
-    title: 'Download fresh notes',
-    description: 'Expert summaries & solved papers',
-    icon: BookOpen,
-    href: '/notes',
-    image: 'https://placehold.co/400x220/e4f7d7/143a04?text=Notes',
-  },
-  {
-    title: 'Join the social buzz',
-    description: 'Trending conversations from campuses',
-    icon: ArrowRight,
-    href: '/feed',
-    image: 'https://placehold.co/400x220/f4e2ff/240835?text=Social+Feed',
-  },
-];
-
-const curatedCollections = [
-  {
-    title: 'Last-minute competition prep',
-    description: 'Register for top hackathons and contests closing soon.',
-    href: '/workspace/competitions',
-    image: 'https://placehold.co/500x300/fff0f0/661111?text=Competitions',
-  },
-  {
-    title: 'Internships ready to apply',
-    description: 'Handpicked roles from verified partners for UniNest students.',
-    href: '/workspace/internships',
-    image: 'https://placehold.co/500x300/ebfff4/0b3d24?text=Internships',
-  },
-  {
-    title: 'Upgrade your hostel life',
-    description: 'Comfort essentials and gadgets from verified vendors.',
-    href: '/marketplace?category=hostel',
-    image: 'https://placehold.co/500x300/eff3ff/172152?text=Hostel+Essentials',
-  },
-];
+const getQuickAccessIcon = (iconName?: string): LucideIcon => {
+  if (!iconName) {
+    return ArrowRight;
+  }
+  const key = iconName.toLowerCase().replace(/\s+/g, '-');
+  return iconLibrary[key] ?? ArrowRight;
+};
 
 type HomeClientProps = {
   posterConfig: HomePosterConfig;
@@ -147,6 +103,12 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
   };
 
   const heroSlides = posterConfig?.heroSlides?.length ? posterConfig.heroSlides : defaultHomePosterConfig.heroSlides;
+  const quickAccessCards =
+    posterConfig?.quickAccessCards?.length ? posterConfig.quickAccessCards : defaultHomePosterConfig.quickAccessCards;
+  const curatedCollections =
+    posterConfig?.curatedCollections?.length
+      ? posterConfig.curatedCollections
+      : defaultHomePosterConfig.curatedCollections;
 
   return (
     <>
@@ -174,6 +136,10 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
                         <div className="absolute inset-0 bg-gradient-to-r from-background/85 via-background/60 to-background/20" />
                         <div className="absolute inset-0 flex flex-col justify-between p-6 md:p-10">
                           <div className="space-y-4 max-w-2xl">
+                            <div className="flex items-center gap-2 text-background/90 text-sm font-medium md:hidden">
+                              <MapPin className="h-4 w-4" />
+                              <span>Delivering to Siwan 841227</span>
+                            </div>
                             {slide.tag && (
                               <span className="inline-flex rounded-full bg-primary/10 px-4 py-1 text-sm font-medium text-primary">
                                 {slide.tag}
@@ -213,41 +179,57 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
                 )}
               </Carousel>
               <div className="absolute bottom-4 left-4 right-4 sm:left-6 sm:right-6">
-                <div className="relative">
-                  <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <div className="relative flex items-center gap-2 rounded-full bg-background/95 pl-4 pr-2 shadow-lg">
+                  <Search className="h-5 w-5 text-muted-foreground" />
                   <Input
-                    placeholder="Search for products, peers, or posts"
-                    className="w-full rounded-full bg-background/95 py-5 pl-12 text-base shadow-lg"
+                    placeholder="Search UniNest"
+                    className="w-full border-0 bg-transparent px-0 py-4 text-base focus-visible:ring-0"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={handleSearchKeyDown}
                   />
+                  <Button size="icon" variant="ghost" className="hidden rounded-full md:flex">
+                    <Sparkles className="h-5 w-5 text-primary" />
+                  </Button>
                 </div>
               </div>
             </div>
             <div className="space-y-4">
               <Card className="h-full rounded-2xl bg-background/90 shadow-xl">
-                <CardHeader>
-                  <CardTitle className="text-xl">For your best experience</CardTitle>
-                  <CardDescription>Pick up where you left off across UniNest.</CardDescription>
+                <CardHeader className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-xl">Hello, {user ? user.user_metadata?.full_name?.split(' ')[0] || 'friend' : 'guest'}</CardTitle>
+                    {!user && (
+                      <Button size="sm" asChild>
+                        <Link href="/login">Sign in</Link>
+                      </Button>
+                    )}
+                  </div>
+                  <CardDescription>Personalised picks and updates across UniNest.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  <div className="flex items-center gap-3 rounded-xl bg-primary/10 px-3 py-2 text-sm">
+                    <MapPin className="h-4 w-4 text-primary" />
+                    <span className="text-primary font-medium">Delivering to Siwan 841227</span>
+                  </div>
                   {user ? (
-                    <div className="space-y-2">
-                      <p className="text-sm text-muted-foreground">Signed in as</p>
-                      <p className="text-lg font-semibold">{user.user_metadata?.full_name || user.email}</p>
-                      <Button asChild className="w-full mt-4">
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3 rounded-xl bg-muted/60 px-3 py-2 text-sm">
+                        <Sparkles className="h-4 w-4 text-primary" />
+                        <span>Continue your journey with fresh campus updates.</span>
+                      </div>
+                      <Button asChild className="w-full">
                         <Link href="/feed">Go to your dashboard</Link>
                       </Button>
                     </div>
                   ) : (
-                    <div className="space-y-4">
-                      <p className="text-sm text-muted-foreground">Hello, guest</p>
+                    <div className="space-y-3">
+                      <div className="text-sm text-muted-foreground">Access exclusive campus deals and resources.</div>
                       <Button className="w-full" asChild>
-                        <Link href="/login">Sign in securely</Link>
+                        <Link href="/signup">Create your UniNest account</Link>
                       </Button>
                       <Button variant="outline" className="w-full" asChild>
-                        <Link href="/signup">Create your UniNest account</Link>
+                        <Link href="/vendor/register">Register as a vendor</Link>
                       </Button>
                     </div>
                   )}
@@ -259,36 +241,91 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
             </div>
           </section>
 
-          <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {quickAccess.map((item) => (
-              <Link key={item.title} href={item.href} className="group">
-                <Card className="overflow-hidden rounded-2xl shadow-lg transition-transform duration-300 group-hover:-translate-y-1">
-                  <div className="relative h-40 w-full">
-                    <Image src={item.image} alt={item.title} fill className="object-cover" />
-                  </div>
-                  <CardHeader className="space-y-1">
-                    <div className="flex items-center gap-2 text-primary">
-                      <item.icon className="size-5" />
-                      <span className="text-sm font-semibold uppercase tracking-wide">Explore</span>
+          <section className="space-y-3">
+            <div className="flex items-center justify-between md:hidden">
+              <h2 className="text-lg font-semibold">Explore UniNest</h2>
+              <Link href="/marketplace" className="text-sm font-medium text-primary">See all</Link>
+            </div>
+            <div className="flex gap-3 overflow-x-auto pb-1 md:hidden">
+              {quickAccessCards.map((item) => {
+                const IconComponent = getQuickAccessIcon(item.icon);
+                return (
+                  <Link
+                    key={`${item.title}-mobile`}
+                    href={item.href}
+                    className="flex min-w-[96px] flex-col items-center gap-2 rounded-2xl bg-background px-4 py-3 text-center shadow"
+                  >
+                    <div className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                      <IconComponent className="size-6" />
                     </div>
-                    <CardTitle className="text-xl">{item.title}</CardTitle>
-                    <CardDescription>{item.description}</CardDescription>
-                  </CardHeader>
-                </Card>
-              </Link>
-            ))}
+                    <p className="text-xs font-semibold uppercase tracking-wide">{item.title.split(' ')[0]}</p>
+                    <p className="text-[11px] text-muted-foreground">{item.description}</p>
+                  </Link>
+                );
+              })}
+            </div>
+            <div className="hidden md:grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              {quickAccessCards.map((item) => {
+                const IconComponent = getQuickAccessIcon(item.icon);
+                return (
+                  <Link key={item.id} href={item.href} className="group">
+                    <Card className="overflow-hidden rounded-2xl shadow-lg transition-transform duration-300 group-hover:-translate-y-1">
+                      <div className="relative h-40 w-full">
+                        <Image src={item.imageUrl} alt={item.title} fill className="object-cover" />
+                      </div>
+                      <CardHeader className="space-y-1">
+                        <div className="flex items-center gap-2 text-primary">
+                          <IconComponent className="size-5" />
+                          <span className="text-sm font-semibold uppercase tracking-wide">Explore</span>
+                        </div>
+                        <CardTitle className="text-xl">{item.title}</CardTitle>
+                        <CardDescription>{item.description}</CardDescription>
+                      </CardHeader>
+                    </Card>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+
+          <section className="space-y-3 md:hidden">
+            <h2 className="text-lg font-semibold">Deals just for you</h2>
+            <div className="grid grid-cols-2 gap-3">
+              {posterConfig?.mobileDeals?.length ? posterConfig.mobileDeals : defaultHomePosterConfig.mobileDeals.map((deal) => (
+                <Link key={deal.title} href={deal.href} className="group">
+                  <Card className="relative overflow-hidden rounded-2xl bg-gradient-to-br p-4 text-background shadow-lg transition-transform duration-300 group-active:scale-95 group-hover:-translate-y-1">
+                    <div className={`absolute inset-0 opacity-80 bg-gradient-to-br ${deal.gradient}`} />
+                    <div className="relative space-y-2">
+                      <div className="flex size-12 items-center justify-center rounded-full bg-background/15 text-background">
+                        <deal.icon className="size-6" />
+                      </div>
+                      <p className="text-sm font-semibold leading-tight">{deal.title}</p>
+                      <p className="text-xs text-background/80">{deal.subtitle}</p>
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold uppercase">
+                        Shop now
+                        <ArrowRight className="h-3 w-3" />
+                      </span>
+                    </div>
+                  </Card>
+                </Link>
+              ))}
+            </div>
           </section>
         </div>
       </div>
 
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 space-y-12 sm:space-y-16 lg:space-y-20 xl:space-y-24 py-10 sm:py-12">
-        <section>
-          <div className="grid gap-6 lg:grid-cols-3">
+        <section className="space-y-4">
+          <div className="flex items-center justify-between md:justify-start md:gap-6">
+            <h2 className="text-2xl font-semibold md:text-3xl">UniNest picks for you</h2>
+            <Link href="/workspace" className="text-sm font-medium text-primary">Browse all</Link>
+          </div>
+          <div className="space-y-4 md:grid md:grid-cols-3 md:gap-6 md:space-y-0">
             {curatedCollections.map((collection) => (
-              <Link key={collection.title} href={collection.href} className="group">
+              <Link key={collection.id} href={collection.href} className="group">
                 <Card className="overflow-hidden rounded-2xl border shadow-md transition-transform duration-300 group-hover:-translate-y-1">
                   <div className="relative h-56 w-full">
-                    <Image src={collection.image} alt={collection.title} fill className="object-cover" />
+                    <Image src={collection.imageUrl} alt={collection.title} fill className="object-cover" />
                   </div>
                   <CardHeader>
                     <CardTitle className="text-2xl font-semibold tracking-tight">{collection.title}</CardTitle>
@@ -309,15 +346,15 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
         </section>
 
         <section>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {stats.map((stat, index) => (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3 gap-6">
+            {posterConfig?.stats?.length ? posterConfig.stats : defaultHomePosterConfig.stats.map((stat, index) => (
               <StatCard key={index} {...stat} />
             ))}
           </div>
         </section>
 
         <section>
-          <h2 className="text-3xl font-headline font-bold text-center mb-12">Loved by Students Everywhere</h2>
+          <h2 className="text-3xl font-headline font-bold text-center mb-8 md:mb-12">Loved by Students Everywhere</h2>
           <Carousel
             opts={{ align: 'start', loop: true }}
             plugins={[Autoplay({ delay: 5000 })]}
@@ -350,7 +387,7 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
         </section>
 
         <section>
-          <h2 className="text-3xl font-headline font-bold text-center mb-12">Our Journey So Far</h2>
+          <h2 className="text-3xl font-headline font-bold text-center mb-8 md:mb-12">Our Journey So Far</h2>
           <div className="grid md:grid-cols-4 gap-x-6 gap-y-10 max-w-5xl mx-auto">
             {timeline.map((item) => (
               <div key={item.title} className="text-center">
@@ -367,14 +404,17 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
           </div>
         </section>
 
-        <section className="text-center bg-card p-8 md:p-12 rounded-2xl shadow-xl">
-          <h2 className="text-3xl font-bold font-headline primary-gradient bg-clip-text text-transparent">Don’t Miss Out.</h2>
-          <p className="mt-2 max-w-2xl mx-auto text-muted-foreground">
+        <section className="text-center rounded-2xl bg-gradient-to-r from-primary via-primary/90 to-primary/80 p-8 text-primary-foreground shadow-xl md:p-12">
+          <h2 className="text-3xl font-bold font-headline">Don’t Miss Out.</h2>
+          <p className="mt-2 max-w-2xl mx-auto text-primary-foreground/90">
             Be part of the fastest-growing student movement and supercharge your campus life.
           </p>
-          <div className="mt-8 flex justify-center gap-4">
-            <Button size="lg" className="text-lg" asChild>
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Button size="lg" variant="secondary" className="text-lg" asChild>
               <Link href="/signup">Get Started Now 🚀</Link>
+            </Button>
+            <Button size="lg" variant="ghost" className="text-lg text-primary-foreground hover:bg-primary-foreground/10" asChild>
+              <Link href="/about">Learn more about UniNest</Link>
             </Button>
           </div>
         </section>

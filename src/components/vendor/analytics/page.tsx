@@ -9,7 +9,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Progress } from '@/components/ui/progress';
 import StatsCard from '@/components/vendor/stats-card';
 import SalesChart from '@/components/vendor/sales-chart';
-import { ArrowUpRight, BarChart3, CalendarRange, CheckCircle2, Flame, Layers, LineChart, LaptopMinimalCheck, TrendingUp } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { ArrowUpRight, BarChart3, CalendarRange, CheckCircle2, Flame, Info, Layers, LineChart, LaptopMinimalCheck, TrendingUp } from 'lucide-react';
 
 const timeRanges = [
   { id: '7d', label: 'Last 7 days' },
@@ -134,6 +135,7 @@ type VendorAnalyticsContentProps = {
 export default function VendorAnalyticsContent({ userName }: VendorAnalyticsContentProps) {
   const [timeRange, setTimeRange] = useState<(typeof timeRanges)[number]['id']>('7d');
   const [segment, setSegment] = useState<(typeof propertySegments)[number]['id']>('all');
+  const [showQuickStart, setShowQuickStart] = useState(true);
 
   const kpis = useMemo(() => kpiByRange[timeRange], [timeRange]);
   const chartData = useMemo(() => salesByRange[timeRange], [timeRange]);
@@ -164,6 +166,22 @@ export default function VendorAnalyticsContent({ userName }: VendorAnalyticsCont
 
   return (
     <div className="space-y-8">
+      {showQuickStart && (
+        <Alert className="flex flex-col gap-2 border-primary/40 bg-primary/5 text-foreground md:flex-row md:items-center md:justify-between">
+          <div className="flex items-start gap-3">
+            <Info className="size-5 text-primary" />
+            <div>
+              <AlertTitle>Quick start tip</AlertTitle>
+              <AlertDescription>
+                Use time range and service filters before drilling into tables so insights match your goals.
+              </AlertDescription>
+            </div>
+          </div>
+          <Button variant="ghost" size="sm" onClick={() => setShowQuickStart(false)} className="self-end md:self-center">
+            Got it
+          </Button>
+        </Alert>
+      )}
       <section className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-2xl font-semibold md:text-3xl">Analytics overview</h1>

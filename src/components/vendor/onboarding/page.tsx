@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { ArrowRight, CheckCircle2, FileText, ShieldCheck, UploadCloud, Users } from 'lucide-react';
+import { ArrowRight, CheckCircle2, FileText, ShieldCheck, UploadCloud, Users, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,6 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const onboardingSteps = [
   {
@@ -174,6 +175,7 @@ export default function VendorOnboardingContent() {
   const [activeStep, setActiveStep] = useState<OnboardingStep['id']>(onboardingSteps[0].id);
   const activeIndex = useMemo(() => onboardingSteps.findIndex((step) => step.id === activeStep), [activeStep]);
   const progressValue = useMemo(() => ((activeIndex + 1) / onboardingSteps.length) * 100, [activeIndex]);
+  const [showQuickStart, setShowQuickStart] = useState(true);
 
   const goToStep = (direction: 'next' | 'prev') => {
     if (direction === 'next' && activeIndex < onboardingSteps.length - 1) {
@@ -186,6 +188,22 @@ export default function VendorOnboardingContent() {
 
   return (
     <div className="space-y-8">
+      {showQuickStart && (
+        <Alert className="flex flex-col gap-2 border-primary/40 bg-primary/5 text-foreground md:flex-row md:items-center md:justify-between">
+          <div className="flex items-start gap-3">
+            <Info className="size-5 text-primary" />
+            <div>
+              <AlertTitle>Quick start tip</AlertTitle>
+              <AlertDescription>
+                Complete steps in order and upload all required documents to unlock payouts within 24 hours.
+              </AlertDescription>
+            </div>
+          </div>
+          <Button variant="ghost" size="sm" onClick={() => setShowQuickStart(false)} className="self-end md:self-center">
+            Got it
+          </Button>
+        </Alert>
+      )}
       <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <Card className="border-2 border-primary/10 shadow-sm">
           <CardHeader className="gap-2">

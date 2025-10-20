@@ -28,6 +28,7 @@ const categories = [
 ];
 
 type LayoutMode = 'grid' | 'list';
+type SortOption = 'featured' | 'price-low' | 'price-high' | 'newest';
 
 const MARKETPLACE_LAYOUT_KEY = 'uninest_marketplace_layout';
 
@@ -47,7 +48,7 @@ export default function MarketplaceContent() {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 0]);
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
   const [layoutMode, setLayoutMode] = useState<LayoutMode>('grid');
-  const [sortOption, setSortOption] = useState<'featured' | 'price-low' | 'price-high' | 'newest'>('featured');
+  const [sortOption, setSortOption] = useState<SortOption>('featured');
 
   const selectedCategory = searchParams.get('category');
 
@@ -176,19 +177,6 @@ export default function MarketplaceContent() {
     }
   }, [priceBounds.max, priceBounds.min, products.length]);
 
-  const sortedProducts = useMemo(() => {
-    const items = [...filteredProducts];
-    switch (sortOption) {
-      case 'price-low':
-        return items.sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
-      case 'price-high':
-        return items.sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
-      case 'newest':
-        return items.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-      default:
-        return items;
-    }
-  }, [filteredProducts, sortOption]);
 
   const FilterControls = () => (
     <div className="space-y-6">
@@ -492,6 +480,20 @@ export default function MarketplaceContent() {
     });
   }, [priceRange, products, searchQuery, selectedLocation, selectedType]);
 
+  const sortedProducts = useMemo(() => {
+    const items = [...filteredProducts];
+    switch (sortOption) {
+      case 'price-low':
+        return items.sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
+      case 'price-high':
+        return items.sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
+      case 'newest':
+        return items.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      default:
+        return items;
+    }
+  }, [filteredProducts, sortOption]);
+
   return (
     <div className="space-y-8">
        {/* New Header Section */}
@@ -597,7 +599,7 @@ export default function MarketplaceContent() {
                 <div className="text-sm text-muted-foreground">Showing {sortedProducts.length} listings</div>
               )}
               <div className="flex items-center gap-3">
-                <Select value={sortOption} onValueChange={(value) => setSortOption(value as typeof sortOption)}>
+                <Select value={sortOption} onValueChange={(value) => setSortOption(value as SortOption)}>
                   <SelectTrigger className="w-[200px] rounded-full">
                     <SelectValue placeholder="Sort by" />
                   </SelectTrigger>

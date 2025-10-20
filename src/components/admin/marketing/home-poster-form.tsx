@@ -684,6 +684,232 @@ export default function HomePosterForm({ initialConfig }: HomePosterFormProps) {
               );
             })}
           </Accordion>
+
+          <div className="space-y-4">
+            <div className="flex flex-col gap-2">
+              <h3 className="text-lg font-semibold">Quick access cards</h3>
+              <p className="text-sm text-muted-foreground">These cards appear below the hero carousel to highlight key areas.</p>
+            </div>
+            <div className="grid gap-6">
+              {quickAccessCards.map((card, index) => {
+                const issues = getQuickAccessIssues(card);
+                return (
+                  <div key={card.id} className="rounded-xl border p-4">
+                    <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge variant="secondary">Card {index + 1}</Badge>
+                        {issues.length === 0 ? (
+                          <Badge variant="outline">Ready</Badge>
+                        ) : (
+                          issues.map((issue) => (
+                            <Badge key={issue} variant="destructive">
+                              {issue}
+                            </Badge>
+                          ))
+                        )}
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => handleMoveQuickAccess(index, 'up')}
+                          disabled={index === 0}
+                        >
+                          <ArrowUp className="mr-2 size-4" /> Move up
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => handleMoveQuickAccess(index, 'down')}
+                          disabled={index === quickAccessCards.length - 1}
+                        >
+                          <ArrowDown className="mr-2 size-4" /> Move down
+                        </Button>
+                        {quickAccessCards.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemoveQuickAccess(index)}
+                            className="text-destructive"
+                          >
+                            <Trash2 className="mr-2 size-4" /> Remove
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                    <div className="mt-4 grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor={`quick-${index}-title`}>Title</Label>
+                        <Input
+                          id={`quick-${index}-title`}
+                          value={card.title}
+                          onChange={(event) => updateQuickAccessAt(index, { title: event.target.value })}
+                          placeholder="Marketplace deals"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor={`quick-${index}-href`}>Link</Label>
+                        <Input
+                          id={`quick-${index}-href`}
+                          value={card.href}
+                          onChange={(event) => updateQuickAccessAt(index, { href: event.target.value })}
+                          placeholder="/marketplace"
+                        />
+                      </div>
+                      <div className="md:col-span-2 space-y-2">
+                        <Label htmlFor={`quick-${index}-description`}>Description</Label>
+                        <Textarea
+                          id={`quick-${index}-description`}
+                          value={card.description}
+                          onChange={(event) => updateQuickAccessAt(index, { description: event.target.value })}
+                          placeholder="Fresh finds under ₹199"
+                          rows={2}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor={`quick-${index}-imageUrl`}>Image URL</Label>
+                        <Input
+                          id={`quick-${index}-imageUrl`}
+                          value={card.imageUrl}
+                          onChange={(event) => updateQuickAccessAt(index, { imageUrl: event.target.value })}
+                          placeholder="https://..."
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor={`quick-${index}-icon`}>Icon (optional)</Label>
+                        <Input
+                          id={`quick-${index}-icon`}
+                          value={card.icon ?? ''}
+                          onChange={(event) => updateQuickAccessAt(index, { icon: event.target.value })}
+                          placeholder="package"
+                        />
+                        <p className="text-xs text-muted-foreground">Provide a Lucide icon name if you want to override the default.</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleAddQuickAccess}
+              disabled={quickAccessCards.length >= MAX_QUICK_ACCESS}
+            >
+              <Plus className="mr-2 size-4" /> Add quick access card
+            </Button>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex flex-col gap-2">
+              <h3 className="text-lg font-semibold">Curated collections</h3>
+              <p className="text-sm text-muted-foreground">Showcase featured content blocks near the bottom of the home page.</p>
+            </div>
+            <div className="grid gap-6">
+              {curatedCollections.map((collection, index) => {
+                const issues = getCollectionIssues(collection);
+                return (
+                  <div key={collection.id} className="rounded-xl border p-4">
+                    <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge variant="secondary">Collection {index + 1}</Badge>
+                        {issues.length === 0 ? (
+                          <Badge variant="outline">Ready</Badge>
+                        ) : (
+                          issues.map((issue) => (
+                            <Badge key={issue} variant="destructive">
+                              {issue}
+                            </Badge>
+                          ))
+                        )}
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => handleMoveCollection(index, 'up')}
+                          disabled={index === 0}
+                        >
+                          <ArrowUp className="mr-2 size-4" /> Move up
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => handleMoveCollection(index, 'down')}
+                          disabled={index === curatedCollections.length - 1}
+                        >
+                          <ArrowDown className="mr-2 size-4" /> Move down
+                        </Button>
+                        {curatedCollections.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemoveCollection(index)}
+                            className="text-destructive"
+                          >
+                            <Trash2 className="mr-2 size-4" /> Remove
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                    <div className="mt-4 grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor={`collection-${index}-title`}>Title</Label>
+                        <Input
+                          id={`collection-${index}-title`}
+                          value={collection.title}
+                          onChange={(event) => updateCollectionAt(index, { title: event.target.value })}
+                          placeholder="Upgrade your hostel life"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor={`collection-${index}-href`}>Link</Label>
+                        <Input
+                          id={`collection-${index}-href`}
+                          value={collection.href}
+                          onChange={(event) => updateCollectionAt(index, { href: event.target.value })}
+                          placeholder="/marketplace?category=hostel"
+                        />
+                      </div>
+                      <div className="md:col-span-2 space-y-2">
+                        <Label htmlFor={`collection-${index}-description`}>Description</Label>
+                        <Textarea
+                          id={`collection-${index}-description`}
+                          value={collection.description}
+                          onChange={(event) => updateCollectionAt(index, { description: event.target.value })}
+                          placeholder="Comfort essentials and gadgets from verified vendors."
+                          rows={2}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor={`collection-${index}-imageUrl`}>Image URL</Label>
+                        <Input
+                          id={`collection-${index}-imageUrl`}
+                          value={collection.imageUrl}
+                          onChange={(event) => updateCollectionAt(index, { imageUrl: event.target.value })}
+                          placeholder="https://..."
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleAddCollection}
+              disabled={curatedCollections.length >= MAX_CURATED}
+            >
+              <Plus className="mr-2 size-4" /> Add curated collection
+            </Button>
+          </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex gap-2">

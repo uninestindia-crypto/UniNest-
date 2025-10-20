@@ -22,7 +22,7 @@ export default async function MarketingPage() {
   }
 
   let posterConfig = defaultHomePosterConfig;
-  
+
   try {
     const supabase = createClient();
     const { data, error } = await supabase
@@ -35,8 +35,22 @@ export default async function MarketingPage() {
       console.error('Error fetching home poster config:', error);
     } else if (data?.value) {
       const rawValue = data.value as HomePosterConfig;
-      if (rawValue && Array.isArray(rawValue.heroSlides)) {
-        posterConfig = rawValue;
+      if (rawValue) {
+        const heroSlides = Array.isArray(rawValue.heroSlides) && rawValue.heroSlides.length > 0
+          ? rawValue.heroSlides
+          : defaultHomePosterConfig.heroSlides;
+        const quickAccessCards = Array.isArray(rawValue.quickAccessCards) && rawValue.quickAccessCards.length > 0
+          ? rawValue.quickAccessCards
+          : defaultHomePosterConfig.quickAccessCards;
+        const curatedCollections = Array.isArray(rawValue.curatedCollections) && rawValue.curatedCollections.length > 0
+          ? rawValue.curatedCollections
+          : defaultHomePosterConfig.curatedCollections;
+
+        posterConfig = {
+          heroSlides,
+          quickAccessCards,
+          curatedCollections,
+        };
       }
     }
   } catch (error) {
