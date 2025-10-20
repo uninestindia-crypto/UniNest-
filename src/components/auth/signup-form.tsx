@@ -82,6 +82,48 @@ export default function SignupForm() {
 
   const userType = form.watch('userType');
 
+  const slugifyHandle = (input: string) => {
+    return input
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .replace(/_{2,}/g, '_');
+  };
+
+  const generateUniqueHandle = async (values: FormValues) => {
+    const nameBase = slugifyHandle(values.fullName);
+    const emailBase = slugifyHandle(values.email.split('@')[0] || '');
+    const base = nameBase || emailBase || `uninest_user_${Math.random().toString(36).slice(2, 6)}`;
+
+    if (!supabase) {
+      return base;
+    }
+
+    let candidate = base;
+    let counter = 1;
+
+    while (counter <= 5) {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('handle', candidate)
+        .maybeSingle();
+
+      if (error) {
+        break;
+      }
+
+      if (!data) {
+        return candidate;
+      }
+
+      candidate = `${base}_${counter}`;
+      counter += 1;
+    }
+
+    return `${base}_${Math.random().toString(36).slice(2, 6)}`;
+  };
+
   async function onSubmit(values: FormValues) {
     setIsLoading(true);
     if (!supabase) {
@@ -89,8 +131,9 @@ export default function SignupForm() {
         setIsLoading(false);
         return;
     }
-    
+
     const role = values.userType;
+    const generatedHandle = await generateUniqueHandle(values);
     const { error } = await supabase.auth.signUp({
       email: values.email,
       password: values.password,
@@ -98,6 +141,7 @@ export default function SignupForm() {
         data: {
           role: role,
           full_name: values.fullName,
+          handle: generatedHandle,
           vendor_categories: role === 'vendor' ? values.vendorCategories.map(c => c.replace('-', ' ')) : undefined
         }
       }

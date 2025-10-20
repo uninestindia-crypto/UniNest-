@@ -33,7 +33,35 @@ export default function MainLayout({ children }: { children: ReactNode }) {
 
   // Redirect admin users away from the main site.
   useEffect(() => {
-    if (!loading && role === 'admin' && !pathname.startsWith('/admin')) {
+    if (loading || role !== 'admin') {
+      return;
+    }
+
+    if (pathname.startsWith('/admin') || pathname.startsWith('/vendor')) {
+      return;
+    }
+
+    const allowedPublicPrefixes = [
+      '/',
+      '/marketplace',
+      '/workspace',
+      '/notes',
+      '/social',
+      '/donate',
+      '/support',
+      '/about',
+      '/search',
+      '/profile',
+      '/hostels',
+      '/booking',
+      '/feed',
+    ];
+
+    const isAllowedPublicRoute = allowedPublicPrefixes.some(prefix =>
+      prefix === '/' ? pathname === '/' : pathname === prefix || pathname.startsWith(`${prefix}/`)
+    );
+
+    if (!isAllowedPublicRoute) {
       router.push('/admin/dashboard');
     }
   }, [loading, role, pathname, router]);
