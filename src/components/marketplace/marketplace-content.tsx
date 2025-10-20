@@ -27,10 +27,8 @@ const categories = [
   { name: 'Other Products', icon: Package },
 ];
 
-type LayoutMode = 'grid' | 'list';
 type SortOption = 'featured' | 'price-low' | 'price-high' | 'newest';
-
-const MARKETPLACE_LAYOUT_KEY = 'uninest_marketplace_layout';
+type LayoutMode = 'grid' | 'list';
 
 type FilterControlsProps = {
   selectedLocation: string;
@@ -194,48 +192,11 @@ export default function MarketplaceContent() {
   const [selectedType, setSelectedType] = useState('all');
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 0]);
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
-  const [layoutMode, setLayoutMode] = useState<LayoutMode>('grid');
   const [sortOption, setSortOption] = useState<SortOption>('featured');
 
+  const layoutMode: LayoutMode = 'grid';
+
   const selectedCategory = searchParams.get('category');
-
-  useEffect(() => {
-    const storedLayout = typeof window !== 'undefined' ? window.sessionStorage.getItem(MARKETPLACE_LAYOUT_KEY) : null;
-    if (storedLayout === 'grid' || storedLayout === 'list') {
-      setLayoutMode(storedLayout);
-    }
-  }, []);
-
-  const handleLayoutChange = useCallback((mode: LayoutMode) => {
-    setLayoutMode(mode);
-    if (typeof window !== 'undefined') {
-      window.sessionStorage.setItem(MARKETPLACE_LAYOUT_KEY, mode);
-    }
-  }, []);
-
-  const layoutToggle = useMemo(() => (
-    <div className="inline-flex items-center gap-2 rounded-full border bg-card px-2 py-1 text-sm">
-      <span className="text-muted-foreground">Layout</span>
-      <div className="flex rounded-full bg-muted p-1">
-        <Button
-          size="sm"
-          variant={layoutMode === 'grid' ? 'default' : 'ghost'}
-          className="rounded-full px-2"
-          onClick={() => handleLayoutChange('grid')}
-        >
-          <Rows3 className="size-4" />
-        </Button>
-        <Button
-          size="sm"
-          variant={layoutMode === 'list' ? 'default' : 'ghost'}
-          className="rounded-full px-2"
-          onClick={() => handleLayoutChange('list')}
-        >
-          <Rows className="size-4" />
-        </Button>
-      </div>
-    </div>
-  ), [handleLayoutChange, layoutMode]);
 
   const priceBounds = useMemo(() => {
     if (!products.length) return { min: 0, max: 0 };
@@ -602,6 +563,7 @@ export default function MarketplaceContent() {
                 </SheetContent>
               </Sheet>
             </div>
+          </div>
             <div className="flex items-center gap-2 overflow-x-auto pb-1 pl-2 pr-4">
               <span className="shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Categories</span>
               {categories.map((category) => (
@@ -688,7 +650,6 @@ export default function MarketplaceContent() {
                     <SelectItem value="price-high">Price: High to Low</SelectItem>
                   </SelectContent>
                 </Select>
-                {layoutToggle}
               </div>
             </div>
             {loading ? (
@@ -696,9 +657,9 @@ export default function MarketplaceContent() {
                     <Loader2 className="size-8 animate-spin text-muted-foreground" />
                 </div>
             ) : sortedProducts.length > 0 ? (
-                <div className={layoutMode === 'grid' ? 'grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5' : 'space-y-4'}>
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5">
                   {sortedProducts.map((product) => (
-                    <div key={product.id} className={layoutMode === 'list' ? 'rounded-2xl border bg-card p-4 shadow-sm hover:shadow-md transition-shadow' : undefined}>
+                    <div key={product.id}>
                       <ProductCard
                         product={product}
                         user={user}
@@ -706,7 +667,7 @@ export default function MarketplaceContent() {
                         onChat={handleChat}
                         isBuying={purchasingProductId === product.id}
                         isRazorpayLoaded={isLoaded}
-                        layout={layoutMode}
+                        layout="grid"
                       />
                     </div>
                   ))}
