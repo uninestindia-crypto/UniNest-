@@ -77,13 +77,13 @@ export default function LibraryDetailClient({ library, initialSeatProducts, init
                 id: product.name.split(' ')[1] || product.id.toString(), // e.g., "Seat 24" -> "24"
                 productId: product.id,
                 status,
-                floor: 'Ground Floor',
-                section: 'Quiet Zone',
-                seatType: 'quiet',
+                floor: 'Ground Floor' as const,
+                section: 'Quiet Zone' as const,
+                seatType: 'quiet' as const,
                 label: `Seat ${numericId}`,
                 row: Math.floor((numericId - 1) / 10) + 1,
                 column: ((numericId - 1) % 10) + 1,
-            }
+            } satisfies Seat;
         }).sort((a, b) => parseInt(a.id) - parseInt(b.id));
 
         setSeats(newSeats);
