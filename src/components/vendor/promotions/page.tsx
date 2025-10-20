@@ -15,7 +15,6 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { CalendarRange, Info, Megaphone, Percent, Sparkles, Timer, Users, Wand2 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 const promotionStatuses = [
   { id: 'active', title: 'Active', description: 'Campaigns running right now' },
@@ -44,6 +43,24 @@ const creationSteps = [
 ] as const;
 
 const discountMarks = [5, 10, 15, 20, 25, 30];
+
+type PlaybookCardProps = {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+};
+
+const PlaybookCard = ({ icon: Icon, title, description }: PlaybookCardProps) => (
+  <div className="flex items-start gap-3 rounded-lg border border-muted/40 p-4">
+    <div className="rounded-full bg-primary/10 p-2 text-primary">
+      <Icon className="size-4" />
+    </div>
+    <div className="space-y-1">
+      <h3 className="text-sm font-semibold">{title}</h3>
+      <p className="text-xs text-muted-foreground">{description}</p>
+    </div>
+  </div>
+);
 
 type StepId = (typeof creationSteps)[number]['id'];
 
@@ -78,7 +95,7 @@ export default function VendorPromotionsContent() {
             <div>
               <AlertTitle>Quick start tip</AlertTitle>
               <AlertDescription>
-                Review existing campaigns before launching new ones so budgets and audiences dont overlap.
+                Review existing campaigns before launching new ones so budgets and audiences don't overlap.
               </AlertDescription>
             </div>
           </div>
@@ -178,7 +195,7 @@ export default function VendorPromotionsContent() {
             <Progress value={progress} className="h-2" />
           </CardHeader>
           <CardContent className="space-y-6">
-            <Tabs value={step} onValueChange={(value) => setStep(value as StepId)} className="space-y-4">
+            <Tabs value={step} onValueChange={(value) => setStep(value as StepId)} className="space-y-6">
               <div className="grid gap-4 md:grid-cols-4">
                 {creationSteps.map((item, index) => (
                   <Button
@@ -193,3 +210,141 @@ export default function VendorPromotionsContent() {
                   </Button>
                 ))}
               </div>
+
+              <TabsContent value="audience" className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="promotion-audience" className="text-sm font-medium">Target audience</Label>
+                    <Input id="promotion-audience" placeholder="e.g. Hostel residents" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="promotion-goal" className="text-sm font-medium">Primary goal</Label>
+                    <Input id="promotion-goal" placeholder="Increase bookings by 15%" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="promotion-message" className="text-sm font-medium">Key message</Label>
+                  <Textarea id="promotion-message" rows={4} placeholder="Describe the offer and the call to action." />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="offer" className="space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-medium">Discount</Label>
+                    <Badge variant="outline">{discount[0]}%</Badge>
+                  </div>
+                  <Slider value={discount} min={5} max={30} step={5} onValueChange={setDiscount} />
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    {discountMarks.map((mark) => (
+                      <span key={mark}>{mark}%</span>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="promotion-offer" className="text-sm font-medium">Offer details</Label>
+                  <Textarea id="promotion-offer" rows={4} placeholder="Outline eligibility, add-ons, and upsell hooks." />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="schedule" className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="promotion-budget" className="text-sm font-medium">Budget (₹)</Label>
+                    <Input id="promotion-budget" value={budget} onChange={(event) => setBudget(event.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="promotion-window" className="text-sm font-medium">Schedule window</Label>
+                    <Input id="promotion-window" placeholder="10 Oct – 24 Oct" />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between rounded-lg border border-dashed border-muted-foreground/40 p-4">
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">Enable countdown timer</p>
+                    <p className="text-xs text-muted-foreground">Adds urgency widget to your listing page.</p>
+                  </div>
+                  <Switch checked={useCountdown} onCheckedChange={setUseCountdown} />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="review" className="space-y-4">
+                <div className="space-y-3 rounded-lg border border-muted/40 p-4 text-sm">
+                  <div className="flex items-start gap-3">
+                    <Users className="mt-0.5 size-4 text-muted-foreground" />
+                    <div>
+                      <p className="font-semibold">Audience</p>
+                      <p className="text-muted-foreground">Hostel leads · Primary goal: boost mid-semester occupancy.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Percent className="mt-0.5 size-4 text-muted-foreground" />
+                    <div>
+                      <p className="font-semibold">Incentive</p>
+                      <p className="text-muted-foreground">{discount[0]}% savings plus complimentary add-ons.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CalendarRange className="mt-0.5 size-4 text-muted-foreground" />
+                    <div>
+                      <p className="font-semibold">Schedule</p>
+                      <p className="text-muted-foreground">Launch window: 10–24 Oct · Budget ₹{Number(budget || 0).toLocaleString()}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Wand2 className="mt-0.5 size-4 text-muted-foreground" />
+                    <div>
+                      <p className="font-semibold">Automation</p>
+                      <p className="text-muted-foreground">Countdown timer {useCountdown ? 'enabled' : 'disabled'} for landing page urgency.</p>
+                    </div>
+                  </div>
+                </div>
+                <Textarea rows={3} placeholder="Add final reviewer notes or handoff instructions." />
+              </TabsContent>
+            </Tabs>
+
+            <div className="flex flex-col gap-3 border-t border-muted/40 pt-4 sm:flex-row sm:items-center sm:justify-between">
+              <span className="text-xs text-muted-foreground">Step {stepIndex + 1} of {creationSteps.length}</span>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => goStep('prev')} disabled={stepIndex === 0}>Back</Button>
+                {step === 'review' ? (
+                  <Button>Publish promotion</Button>
+                ) : (
+                  <Button onClick={() => goStep('next')}>Continue</Button>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="self-start border border-muted-foreground/20 shadow-sm">
+          <CardHeader>
+            <CardTitle>Optimization tips</CardTitle>
+            <CardDescription>Quick wins to maximise your campaign impact.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4 text-sm">
+            <div className="flex items-start gap-3">
+              <Megaphone className="mt-0.5 size-4 text-primary" />
+              <div>
+                <p className="font-semibold">Align messaging</p>
+                <p className="text-muted-foreground">Use action verbs in headlines and reinforce scarcity in the first sentence.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <Sparkles className="mt-0.5 size-4 text-primary" />
+              <div>
+                <p className="font-semibold">Highlight add-ons</p>
+                <p className="text-muted-foreground">Bundle laundry or meal upgrades to increase average order value.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <Timer className="mt-0.5 size-4 text-primary" />
+              <div>
+                <p className="font-semibold">Act on urgency</p>
+                <p className="text-muted-foreground">Schedule nudges 48 hours before expiry to capture undecided leads.</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+    </div>
+  );
+}

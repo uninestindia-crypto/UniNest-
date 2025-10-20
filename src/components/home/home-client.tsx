@@ -17,15 +17,15 @@ import {
 import Autoplay from 'embla-carousel-autoplay';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { LucideIcon } from 'lucide-react';
-import { ArrowRight, BookOpen, GraduationCap, Rocket, Users, Building, Sparkles, Library, Search, Package, MapPin } from 'lucide-react';
+import { ArrowRight, BookOpen, GraduationCap, Rocket, Users, Building, Sparkles, Library, Search, Package, Gift, BadgePercent, MapPin } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import StatCard from '@/components/home/stat-card';
 import DonationModal from './donation-modal';
 import Image from 'next/image';
-import type { HomePosterConfig } from '@/lib/types';
+import type { HomePosterConfig, HomeMobileDeal, HomeStat, HomeTestimonial, HomeTimelineItem } from '@/lib/types';
 import { defaultHomePosterConfig } from '@/lib/home-poster';
 
-const quickAccessIconMap: Record<string, LucideIcon> = {
+const iconLibrary: Record<string, LucideIcon> = {
   package: Package,
   users: Users,
   'book-open': BookOpen,
@@ -39,48 +39,19 @@ const quickAccessIconMap: Record<string, LucideIcon> = {
   building: Building,
   library: Library,
   search: Search,
+  gift: Gift,
+  badgepercent: BadgePercent,
+  'badge-percent': BadgePercent,
+  mappin: MapPin,
+  'map-pin': MapPin,
 };
-
-const stats = [
-  { value: 10000, label: 'Students Connected', icon: GraduationCap, isPlus: true },
-  { value: 200, label: 'Vendors Onboarded', icon: Building, isPlus: true },
-  { value: 50, label: 'Libraries Managed', icon: Library, isPlus: true },
-];
-
-const testimonials = [
-  {
-    quote: "UniNest completely changed how I find study materials. The note sharing is a lifesaver, and I've connected with so many peers!",
-    name: 'Fatima Khan',
-    school: 'Jamia Millia Islamia',
-    avatar: 'https://picsum.photos/seed/testimonial1/100',
-  },
-  {
-    quote: "The marketplace is brilliant. I sold all my old textbooks in a week and found a great deal on a used bike. It's so much better than other platforms.",
-    name: 'John Mathew',
-    school: "St. Stephen's College",
-    avatar: 'https://picsum.photos/seed/testimonial2/100',
-  },
-  {
-    quote: 'As a fresher, UniNest helped me feel connected to the campus community instantly. The social feed is always buzzing with useful info.',
-    name: 'Jaspreet Kaur',
-    school: 'Guru Nanak Dev University',
-    avatar: 'https://picsum.photos/seed/testimonial3/100',
-  },
-];
-
-const timeline = [
-  { year: '2024', title: 'The Vision', description: 'Founded with a mission to simplify student life.', icon: Sparkles },
-  { year: '2024 Q2', title: 'First 1,000 Users', description: 'Our community begins to take shape.', icon: Users },
-  { year: '2025 Q1', title: '10,000 Strong', description: 'Crossed 10k students & 200 vendors.', icon: Rocket },
-  { year: 'Future', title: 'Global Expansion', description: 'Connecting 100,000+ learners worldwide.', icon: GraduationCap },
-];
 
 const getQuickAccessIcon = (iconName?: string | null): LucideIcon => {
   if (!iconName) {
     return ArrowRight;
   }
   const key = iconName.toLowerCase().replace(/\s+/g, '-');
-  return quickAccessIconMap[key] ?? ArrowRight;
+  return iconLibrary[key] ?? ArrowRight;
 };
 
 type HomeClientProps = {
@@ -126,6 +97,13 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
     posterConfig?.curatedCollections?.length
       ? posterConfig.curatedCollections
       : defaultHomePosterConfig.curatedCollections;
+  const mobileDeals: HomeMobileDeal[] =
+    posterConfig?.mobileDeals?.length ? posterConfig.mobileDeals : defaultHomePosterConfig.mobileDeals ?? [];
+  const stats: HomeStat[] = posterConfig?.stats?.length ? posterConfig.stats : defaultHomePosterConfig.stats ?? [];
+  const testimonials: HomeTestimonial[] =
+    posterConfig?.testimonials?.length ? posterConfig.testimonials : defaultHomePosterConfig.testimonials ?? [];
+  const timeline: HomeTimelineItem[] =
+    posterConfig?.timeline?.length ? posterConfig.timeline : defaultHomePosterConfig.timeline ?? [];
 
   return (
     <>

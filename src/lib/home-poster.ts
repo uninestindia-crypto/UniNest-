@@ -1,4 +1,5 @@
 import type { HomePosterConfig } from '@/lib/types';
+import { Gift, Package, Sparkles, GraduationCap, Users, Building, Library, Rocket, Globe, Store } from 'lucide-react';
 
 export const defaultHomePosterConfig: HomePosterConfig = {
   heroSlides: [
@@ -69,6 +70,102 @@ export const defaultHomePosterConfig: HomePosterConfig = {
       description: 'Comfort essentials and gadgets from verified vendors.',
       href: '/marketplace?category=hostel',
       imageUrl: 'https://placehold.co/500x300/eff3ff/172152?text=Hostel+Essentials',
+    },
+  ],
+  mobileDeals: [
+    {
+      title: 'Hostel Essentials',
+      subtitle: 'Comfort upgrades under ₹999',
+      href: '/marketplace?category=Hostels',
+      gradient: 'from-[#7928CA] via-[#FF0080] to-[#FF4D4D]',
+      icon: Gift,
+    },
+    {
+      title: 'Campus Notes',
+      subtitle: 'Verified notes & guides',
+      href: '/notes',
+      gradient: 'from-[#1FA2FF] via-[#12D8FA] to-[#A6FFCB]',
+      icon: Package,
+    },
+    {
+      title: 'Internship Leads',
+      subtitle: 'Top roles closing soon',
+      href: '/workspace/internships',
+      gradient: 'from-[#F7971E] via-[#FFD200] to-[#FF512F]',
+      icon: Sparkles,
+    },
+    {
+      title: 'Learning Booster',
+      subtitle: 'Skill programs for students',
+      href: '/workspace/competitions',
+      gradient: 'from-[#8360C3] via-[#2EBF91] to-[#36D1DC]',
+      icon: GraduationCap,
+    },
+  ],
+  stats: [
+    {
+      value: 12000,
+      label: 'Students empowered',
+      icon: Users,
+      isPlus: true,
+    },
+    {
+      value: 260,
+      label: 'Verified campus partners',
+      icon: Building,
+      isPlus: true,
+    },
+    {
+      value: 80,
+      label: 'Libraries & study hubs',
+      icon: Library,
+      isPlus: true,
+    },
+  ],
+  testimonials: [
+    {
+      name: 'Ananya Verma',
+      quote: 'UniNest helped me discover internships I never knew existed. The community keeps me motivated.',
+      school: 'Delhi University',
+      avatar: 'https://i.pravatar.cc/160?img=48',
+    },
+    {
+      name: 'Rahul Mehta',
+      quote: 'From study material to hostel essentials, everything I need is now in one place.',
+      school: 'IIT Bombay',
+      avatar: 'https://i.pravatar.cc/160?img=12',
+    },
+    {
+      name: 'Sara Khan',
+      quote: 'The competitions board keeps our entire club up to date with the best opportunities.',
+      school: 'BITS Pilani',
+      avatar: 'https://i.pravatar.cc/160?img=30',
+    },
+  ],
+  timeline: [
+    {
+      year: '2024',
+      title: 'Launch on campus',
+      description: 'Started with a small community of passionate students.',
+      icon: Sparkles,
+    },
+    {
+      year: '2024 Q3',
+      title: 'Marketplace expansion',
+      description: 'Onboarded 100+ verified vendors and service partners.',
+      icon: Store,
+    },
+    {
+      year: '2025',
+      title: 'Learning ecosystem',
+      description: 'Brought internships, competitions, and study resources under one roof.',
+      icon: Rocket,
+    },
+    {
+      year: 'Next',
+      title: 'Global student network',
+      description: 'Connecting campuses worldwide for shared growth.',
+      icon: Globe,
     },
   ],
 };
