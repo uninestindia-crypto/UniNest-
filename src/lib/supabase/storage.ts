@@ -28,3 +28,30 @@ export const ensureBucketExists = async (
 
   return { error: null };
 };
+
+export const extractObjectPathFromPublicUrl = (publicUrl: string | null | undefined, bucket: string): string | null => {
+  if (!publicUrl) {
+    return null;
+  }
+
+  try {
+    const url = new URL(publicUrl);
+    const pattern = `/storage/v1/object/public/${bucket}/`;
+    const index = url.pathname.indexOf(pattern);
+
+    if (index === -1) {
+      return null;
+    }
+
+    const relativePath = url.pathname.slice(index + pattern.length);
+
+    if (!relativePath) {
+      return null;
+    }
+
+    return decodeURIComponent(relativePath);
+  } catch (error) {
+    console.error('Failed to parse public URL for storage path extraction.', error);
+    return null;
+  }
+};
