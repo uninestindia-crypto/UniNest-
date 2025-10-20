@@ -21,7 +21,6 @@ import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { Button } from '../ui/button';
 import { Heart, Instagram, Loader2 } from 'lucide-react';
-import Head from 'next/head';
 import NotificationsDropdown from './notifications-dropdown';
 import UserDropdown from './user-dropdown';
 
@@ -66,6 +65,28 @@ export default function MainLayout({ children }: { children: ReactNode }) {
     }
   }, [loading, role, pathname, router]);
 
+  useEffect(() => {
+    const preconnectUrls = [
+      'https://fonts.googleapis.com',
+      'https://fonts.gstatic.com',
+      'https://picsum.photos',
+    ];
+
+    preconnectUrls.forEach((href) => {
+      if (document.querySelector(`link[rel="preconnect"][href="${href}"]`)) {
+        return;
+      }
+
+      const link = document.createElement('link');
+      link.rel = 'preconnect';
+      link.href = href;
+      if (href.includes('gstatic')) {
+        link.crossOrigin = 'anonymous';
+      }
+      document.head.appendChild(link);
+    });
+  }, []);
+
   const isAdminPage = pathname.startsWith('/admin');
   const isVendorPage = pathname.startsWith('/vendor');
   const isHomePage = pathname === '/';
@@ -87,11 +108,6 @@ export default function MainLayout({ children }: { children: ReactNode }) {
 
   return (
     <>
-      <Head>
-          <link rel="preconnect" href="https://fonts.googleapis.com" />
-          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-          <link rel="preconnect" href="https://picsum.photos" />
-      </Head>
       <SidebarProvider>
         <Sidebar className="hidden md:flex flex-col">
           <SidebarHeader>

@@ -377,15 +377,17 @@ const SidebarMenuButton = React.forwardRef<
     ref
   ) => {
     const Comp = asChild ? Slot : "button"
-    const { isMobile, state, setOpenMobile } = useSidebar()
-    const displayState = isMobile ? 'expanded' : state;
+    const sidebar = useSidebarContext()
+    const isMobile = sidebar?.isMobile ?? false
+    const state = sidebar?.state ?? "expanded"
+    const displayState = isMobile ? "expanded" : state
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
       if (props.onClick) {
         props.onClick(event);
       }
       if (isMobile) {
-        setOpenMobile(false);
+        sidebar?.setOpenMobile?.(false);
       }
     };
 

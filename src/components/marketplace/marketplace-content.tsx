@@ -9,7 +9,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';
-import { Search, ListFilter, Library, Utensils, Laptop, Bed, Book, Package, X, Loader2, Plus, MessageSquare, Rows3, Rows, MapPin, ShieldCheck, Sparkles } from 'lucide-react';
+import { Search, ListFilter, Library, Utensils, Laptop, Bed, Book, Package, X, Loader2, Plus, MapPin, ShieldCheck, Sparkles } from 'lucide-react';
 import type { Product } from '@/lib/types';
 import Link from 'next/link';
 import { useEffect, useState, useMemo, useCallback } from 'react';
@@ -28,7 +28,6 @@ const categories = [
 ];
 
 type SortOption = 'featured' | 'price-low' | 'price-high' | 'newest';
-type LayoutMode = 'grid' | 'list';
 
 type FilterControlsProps = {
   selectedLocation: string;
@@ -193,8 +192,6 @@ export default function MarketplaceContent() {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 0]);
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
   const [sortOption, setSortOption] = useState<SortOption>('featured');
-
-  const layoutMode: LayoutMode = 'grid';
 
   const selectedCategory = searchParams.get('category');
 
@@ -563,7 +560,6 @@ export default function MarketplaceContent() {
                 </SheetContent>
               </Sheet>
             </div>
-          </div>
             <div className="flex items-center gap-2 overflow-x-auto pb-1 pl-2 pr-4">
               <span className="shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Categories</span>
               {categories.map((category) => (
@@ -583,6 +579,7 @@ export default function MarketplaceContent() {
               ))}
             </div>
           </div>
+        </div>
         </div>
         <div className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-3 sm:text-sm">
           <span className="flex items-center gap-2 rounded-xl bg-muted px-3 py-2">
