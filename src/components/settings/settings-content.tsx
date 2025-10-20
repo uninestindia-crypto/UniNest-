@@ -107,21 +107,23 @@ export default function SettingsContent() {
   const isTrialEligible = !vendorTrialStartedAt;
 
   const vendorMonetization = monetizationSettings?.vendor;
-  const planPrice = vendorMonetization?.price_per_service_per_month ?? 100;
-  const discountedPrice = 100;
-  const originalPrice = 1000;
-  const shouldCharge = selectedRole === 'vendor' && vendorMonetization?.charge_for_platform_access && vendorCategoryCount > 0;
-  const requiresImmediatePayment = shouldCharge && !isTrialEligible && !isTrialActive && !isVendorActive && planPrice > 0;
-  const totalCost = vendorCategoryCount * (vendorMonetization?.price_per_service_per_month ?? 0);
+  const monetizationStartDate = monetizationSettings?.start_date ? new Date(monetizationSettings.start_date) : null;
+  const monetizationHasStarted = !monetizationStartDate || new Date() >= monetizationStartDate;
+  const pricePerService = vendorMonetization?.price_per_service_per_month ?? 0;
+  const totalCost = vendorCategoryCount * pricePerService;
+  const isChargeEnabled = Boolean(vendorMonetization?.charge_for_platform_access && monetizationHasStarted);
+  const shouldCharge = selectedRole === 'vendor' && isChargeEnabled && vendorCategoryCount > 0;
+  const requiresImmediatePayment = shouldCharge && !isTrialEligible && !isTrialActive && !isVendorActive && totalCost > 0;
   const showPaymentAlert =
     selectedRole === 'vendor' &&
-    vendorMonetization?.charge_for_platform_access &&
+    isChargeEnabled &&
     !isVendorActive &&
     vendorCategoryCount > 0;
   const submitLabel = (() => {
     if (selectedRole !== 'vendor') return 'Save Changes';
     if (shouldCharge && isTrialEligible) return 'Activate Free Trial';
-    if (requiresImmediatePayment) return `Pay ₹${discountedPrice}/mo (₹${originalPrice}/mo) and Save`;
+    if (requiresImmediatePayment) return `Pay ₹${totalCost.toLocaleString('en-IN')}/mo`;
+    if (shouldCharge && totalCost > 0) return `Pay ₹${totalCost.toLocaleString('en-IN')}/mo`;
     return 'Save Changes';
   })();
   
@@ -167,13 +169,18 @@ export default function SettingsContent() {
     if (!user) return;
   
     const vendorSettings = monetizationSettings?.vendor;
+    const monetizationStartDate = monetizationSettings?.start_date ? new Date(monetizationSettings.start_date) : null;
+    const monetizationHasStarted = !monetizationStartDate || new Date() >= monetizationStartDate;
     const wantsVendorRole = values.role === 'vendor';
     const hasSelectedServices = (values.vendorCategories?.length ?? 0) > 0;
-    const planActive = wantsVendorRole && vendorSettings?.charge_for_platform_access && hasSelectedServices;
-    const planPriceForSubmission = vendorSettings?.price_per_service_per_month ?? discountedPrice;
-    const requiresPayment = planActive && !isTrialEligible && !isTrialActive && !isVendorActive;
+    const pricePerService = vendorSettings?.price_per_service_per_month ?? 0;
+    const totalSelectedCost = (values.vendorCategories?.length ?? 0) * pricePerService;
+    const chargeEnabled = Boolean(vendorSettings?.charge_for_platform_access && monetizationHasStarted);
+    const shouldCharge = wantsVendorRole && chargeEnabled && hasSelectedServices;
+    const requiresPayment = shouldCharge && !isTrialEligible && !isTrialActive && !isVendorActive && totalSelectedCost > 0;
+    const canActivateVendor = wantsVendorRole && hasSelectedServices;
 
-    if (planActive && isTrialEligible) {
+    if (shouldCharge && isTrialEligible) {
       const trialStart = new Date();
       const trialEnd = new Date(trialStart);
       trialEnd.setMonth(trialEnd.getMonth() + 3);
@@ -188,19 +195,19 @@ export default function SettingsContent() {
     }
 
     if (requiresPayment) {
-      const totalCost = planPriceForSubmission;
-
-      if (totalCost <= 0) {
+      if (totalSelectedCost <= 0) {
         // If cost is zero, just activate them
         await saveProfile(values, { activateVendor: true });
         return;
       }
-  
+
+      setIsProfileLoading(true);
+
       try {
         const response = await fetch('/api/create-order', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ amount: totalCost * 100, currency: 'INR' }),
+          body: JSON.stringify({ amount: totalSelectedCost * 100, currency: 'INR' }),
         });
   
         const order = await response.json();
@@ -211,7 +218,7 @@ export default function SettingsContent() {
           amount: order.amount,
           currency: order.currency,
           name: 'UniNest Vendor Subscription',
-          description: `Monthly access at ₹${discountedPrice} (₹${originalPrice} value).`,
+          description: `Monthly access for ${values.vendorCategories?.length ?? 0} service${(values.vendorCategories?.length ?? 0) === 1 ? '' : 's'}.`,
           order_id: order.id,
           handler: async (response: any) => {
             // On successful payment, save the profile with active status
@@ -233,7 +240,7 @@ export default function SettingsContent() {
       }
     } else {
       // No payment required, just save the profile
-      await saveProfile(values, { activateVendor: isVendorActive });
+      await saveProfile(values, { activateVendor: canActivateVendor });
     }
   };
 

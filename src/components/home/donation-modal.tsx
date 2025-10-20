@@ -20,7 +20,6 @@ import { Loader2, Medal, Sparkles, Target, Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '../ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 
 type DonationModalProps = {
   isOpen: boolean;
@@ -157,20 +156,8 @@ export default function DonationModal({ isOpen, onOpenChange }: DonationModalPro
   };
 
   const amountValue = Number(donationAmount) || 0;
-  const impactLevels = [
-    { threshold: 0, title: 'Spark Starter', reward: 'Welcomes a fresher with essentials' },
-    { threshold: 200, title: 'Hive Hero', reward: 'Keeps innovation lab nights open' },
-    { threshold: 500, title: 'Campus Champion', reward: 'Unlocks a mentorship sprint' },
-    { threshold: 1000, title: 'Future Builder', reward: 'Launches a micro-scholarship' },
-  ];
-  const currentLevel = impactLevels.reduce((prev, level) => (amountValue >= level.threshold ? level : prev), impactLevels[0]);
-  const nextLevel = impactLevels.find((level) => amountValue < level.threshold);
-  const levelFloor = currentLevel.threshold;
-  const levelCeil = nextLevel ? nextLevel.threshold : amountValue || 1;
-  const levelProgress = nextLevel ? Math.min(100, Math.round(((amountValue - levelFloor) / (levelCeil - levelFloor)) * 100)) : 100;
   const monthlyGoal = 10000;
   const goalProgress = monthlyGoal ? Math.min(100, Math.round((totalRaised / monthlyGoal) * 100)) : 0;
-  const supportersNeeded = nextLevel ? Math.max(1, Math.ceil((nextLevel.threshold - amountValue) / Math.max(50, amountValue || 50))) : 0;
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -198,28 +185,14 @@ export default function DonationModal({ isOpen, onOpenChange }: DonationModalPro
               <div className="flex items-center justify-center gap-2">
                 <Badge className="flex items-center gap-1 bg-primary/90 text-primary-foreground">
                   <Sparkles className="h-4 w-4" />
-                  {currentLevel.title}
+                  Quick gift
                 </Badge>
               </div>
-              <DialogTitle className="text-3xl font-bold font-headline">Keep the Hive Buzzing!</DialogTitle>
+              <DialogTitle className="text-3xl font-bold font-headline">Keep UniNest Alive</DialogTitle>
               <DialogDescription className="text-base text-muted-foreground">
-                Every rupee keeps UniNest experiences vibrant and student-led.
+                Chip in and help students run bold ideas with ease.
               </DialogDescription>
             </DialogHeader>
-
-            <div className="grid gap-3 rounded-2xl border border-primary/20 bg-white/80 p-5 text-left shadow-sm backdrop-blur">
-              <div className="flex items-center justify-between text-sm text-muted-foreground">
-                <span>Tier progress</span>
-                <span>{nextLevel ? `${levelProgress}% to ${nextLevel.title}` : 'Maxed out!'}</span>
-              </div>
-              <Progress value={levelProgress} className="h-3" />
-              <div className="flex items-center justify-between text-sm">
-                <span className="font-medium text-foreground">{currentLevel.reward}</span>
-                <span className="text-muted-foreground">
-                  {nextLevel ? `₹${nextLevel.threshold - amountValue} to unlock ${nextLevel.title}` : 'You unlocked every perk'}
-                </span>
-              </div>
-            </div>
 
             {topDonor && (
               <div className="flex flex-wrap items-center justify-center gap-2 rounded-full bg-amber-50 px-4 py-2 text-sm font-medium text-amber-700 shadow-inner dark:bg-amber-500/20 dark:text-amber-100">
@@ -236,22 +209,22 @@ export default function DonationModal({ isOpen, onOpenChange }: DonationModalPro
                     Supporters
                   </div>
                   <div className="mt-2 text-2xl font-bold">{supporterCount || '—'}</div>
-                  <div className="text-xs text-muted-foreground">Cheering with you</div>
+                  <div className="text-xs text-muted-foreground">Friends already in</div>
                 </div>
                 <div className="rounded-2xl border border-primary/20 bg-white/60 p-4 shadow-sm backdrop-blur">
                   <div className="flex items-center gap-2 text-xs font-medium text-primary">
                     <Target className="h-4 w-4" />
-                    Monthly goal
+                    Raised this month
                   </div>
                   <div className="mt-2 text-2xl font-bold">₹{totalRaised.toLocaleString()}</div>
                   <div className="text-xs text-muted-foreground">{goalProgress}% of ₹{monthlyGoal.toLocaleString()}</div>
                 </div>
                 <div className="rounded-2xl border border-primary/20 bg-white/60 p-4 shadow-sm backdrop-blur sm:col-span-2">
-                  <div className="text-xs font-medium text-primary">Next unlock</div>
+                  <div className="text-xs font-medium text-primary">Why it matters</div>
                   <div className="mt-2 text-lg font-semibold text-foreground">
-                    {nextLevel ? `${supportersNeeded} more supporter${supportersNeeded > 1 ? 's' : ''} to reach ${nextLevel.title}` : 'All community perks unlocked'}
+                    Each donation keeps events open, kits stocked, and mentors on call.
                   </div>
-                  <div className="text-xs text-muted-foreground">Share the buzz and bring a friend into the hive.</div>
+                  <div className="text-xs text-muted-foreground">Share the buzz with a friend if you can.</div>
                 </div>
               </div>
 
@@ -273,8 +246,8 @@ export default function DonationModal({ isOpen, onOpenChange }: DonationModalPro
                 </div>
                 <div className="rounded-2xl border border-primary/20 bg-white/70 p-4 text-left shadow-sm backdrop-blur">
                   <div className="flex items-center justify-between text-sm font-medium text-primary">
-                    <span>Custom boost</span>
-                    <span>Tell us your power-up</span>
+                    <span>Choose your amount</span>
+                    <span>Minimum ₹10</span>
                   </div>
                   <div className="mt-3 flex items-center gap-3">
                     <Input
@@ -286,7 +259,6 @@ export default function DonationModal({ isOpen, onOpenChange }: DonationModalPro
                       className="h-12 rounded-xl border-primary/30 bg-white/90 text-lg"
                       placeholder="₹250"
                     />
-                    <div className="text-xs text-muted-foreground">Minimum ₹10</div>
                   </div>
                 </div>
               </div>
@@ -295,10 +267,10 @@ export default function DonationModal({ isOpen, onOpenChange }: DonationModalPro
             <div className="flex flex-col gap-3">
               <Button size="lg" className="w-full rounded-xl bg-primary text-lg font-semibold shadow-lg shadow-primary/30 transition hover:shadow-primary/50" onClick={handleDonate} disabled={isLoaded === false || isDonating}>
                 {isDonating ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Sparkles className="mr-2 h-5 w-5" />}
-                {isDonating ? 'Processing...' : `Fuel the Future — ₹${amountValue || 0}`}
+                {isDonating ? 'Processing...' : `Donate ₹${amountValue || 0}`}
               </Button>
               <Button variant="ghost" className="text-muted-foreground" onClick={() => onOpenChange(false)}>
-                Maybe Later
+                Not now
               </Button>
             </div>
           </div>
