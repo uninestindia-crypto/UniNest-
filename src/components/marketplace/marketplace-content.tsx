@@ -516,110 +516,110 @@ export default function MarketplaceContent() {
       default:
         return items;
     }
-  }, [filteredProducts, sortOption]);
+}, [filteredProducts, sortOption]);
 
-  return (
+return (
     <div className="space-y-8">
-       {/* New Header Section */}
-      <section className="space-y-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-primary">Marketplace</h1>
-            <p className="mt-1 text-muted-foreground">Buy, Sell & Support – by Students, for Students.</p>
-          </div>
-          {user && (
-            <Button asChild className="self-start sm:self-auto">
-              <Link href="/marketplace/new">
-                <Plus className="mr-2" /> Create Listing
-              </Link>
-            </Button>
-          )}
-        </div>
-        <div className="sticky top-20 z-20">
-          <div className="flex flex-wrap items-center gap-3 rounded-full border bg-card/90 px-4 py-3 shadow-sm backdrop-blur">
-            <div className="relative flex-1 min-w-0 sm:min-w-[220px]">
-              <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
-              <Input
-                placeholder="Search for textbooks, notes, bikes..."
-                className="h-11 rounded-full border border-transparent bg-background/80 pl-10 pr-4 text-sm focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/30"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>
-              <SheetTrigger asChild>
-                <Button variant="outline" className="h-11 rounded-full w-full sm:w-fit lg:hidden">
-                  <ListFilter className="size-5" />
-                  <span className="font-semibold">Filters{activeFilterCount ? ` (${activeFilterCount})` : ''}</span>
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-full sm:max-w-sm overflow-y-auto">
-                <SheetHeader>
-                  <SheetTitle>Filters</SheetTitle>
-                </SheetHeader>
-                <div className="mt-6 space-y-6">
-                  <FilterControls
-                    selectedLocation={selectedLocation}
-                    onLocationChange={setSelectedLocation}
-                    availableLocations={availableLocations}
-                    selectedType={selectedType}
-                    onTypeChange={setSelectedType}
-                    availableTypes={availableTypes}
-                    priceRange={priceRange}
-                    onPriceRangeChange={setPriceRange}
-                    priceBounds={priceBounds}
-                    sliderStep={sliderStep}
-                    hasProducts={products.length > 0}
-                    resetFilters={resetFilters}
-                    hasPriceFilter={hasPriceFilter}
-                    activeFilterCount={activeFilterCount}
-                  />
-                  <SheetClose asChild>
-                    <Button className="w-full" onClick={() => setIsFilterSheetOpen(false)}>
-                      Show results
-                    </Button>
-                  </SheetClose>
+        {/* Marketplace Header */}
+        <section className="rounded-2xl border bg-card p-6 shadow-sm space-y-5">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight text-primary">Marketplace</h1>
+                    <p className="mt-1 text-muted-foreground">Buy, Sell & Support – by Students, for Students.</p>
                 </div>
-              </SheetContent>
-            </Sheet>
-          </div>
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 pl-2 pr-4">
-            <span className="shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Categories</span>
-              {categories.map(category => {
-                const Icon = category.icon;
-                return (
-                  <Button
-                    key={category.name}
-                    asChild
-                    variant={selectedCategory === category.name ? 'default' : 'outline'}
-                    size="sm"
-                    className="rounded-full gap-2 whitespace-nowrap"
-                  >
-                    <Link href={createCategoryLink(category.name)}>
-                      <Icon className="size-4" />
-                      {category.name}
-                      {selectedCategory === category.name && <X className="size-4 -mr-1" />}
-                    </Link>
-                  </Button>
-                );
-              })}
-          </div>
-        </div>
-        <div className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-3 sm:text-sm">
-          <span className="flex items-center gap-2 rounded-xl bg-muted px-3 py-2">
-            <MapPin className="size-4 text-primary" />
-            Delivering to campus & hostels
-          </span>
-          <span className="flex items-center gap-2 rounded-xl bg-muted px-3 py-2">
-            <ShieldCheck className="size-4 text-primary" />
-            Verified vendors only
-          </span>
-          <span className="flex items-center gap-2 rounded-xl bg-muted px-3 py-2">
-            <Sparkles className="size-4 text-primary" />
-            Fresh listings every day
-          </span>
-        </div>
-      </section>
+                {user && (
+                    <Button asChild className="self-start md:self-auto">
+                        <Link href="/marketplace/new">
+                            <Plus className="mr-2" /> Create Listing
+                        </Link>
+                    </Button>
+                )}
+            </div>
+            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground sm:text-sm">
+                <span className="flex items-center gap-2 rounded-xl bg-muted px-3 py-2">
+                    <MapPin className="size-4 text-primary" />
+                    Delivering to campus & hostels
+                </span>
+                <span className="flex items-center gap-2 rounded-xl bg-muted px-3 py-2">
+                    <ShieldCheck className="size-4 text-primary" />
+                    Verified vendors only
+                </span>
+                <span className="flex items-center gap-2 rounded-xl bg-muted px-3 py-2">
+                    <Sparkles className="size-4 text-primary" />
+                    Fresh listings every day
+                </span>
+            </div>
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
+                <div className="relative flex-1 min-w-0">
+                    <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
+                    <Input
+                        placeholder="Search for textbooks, notes, bikes..."
+                        className="h-11 rounded-full border border-input bg-background/80 pl-10 pr-4 text-sm focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/30"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                </div>
+                <div className="flex w-full items-center gap-2 md:w-auto">
+                    <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>
+                        <SheetTrigger asChild>
+                            <Button variant="outline" className="h-11 rounded-full w-full md:w-auto md:px-5">
+                                <ListFilter className="size-5" />
+                                <span className="font-semibold">Filters{activeFilterCount ? ` (${activeFilterCount})` : ''}</span>
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent side="left" className="w-full sm:max-w-sm overflow-y-auto">
+                            <SheetHeader>
+                                <SheetTitle>Filters</SheetTitle>
+                            </SheetHeader>
+                            <div className="mt-6 space-y-6">
+                                <FilterControls
+                                    selectedLocation={selectedLocation}
+                                    onLocationChange={setSelectedLocation}
+                                    availableLocations={availableLocations}
+                                    selectedType={selectedType}
+                                    onTypeChange={setSelectedType}
+                                    availableTypes={availableTypes}
+                                    priceRange={priceRange}
+                                    onPriceRangeChange={setPriceRange}
+                                    priceBounds={priceBounds}
+                                    sliderStep={sliderStep}
+                                    hasProducts={products.length > 0}
+                                    resetFilters={resetFilters}
+                                    hasPriceFilter={hasPriceFilter}
+                                    activeFilterCount={activeFilterCount}
+                                />
+                                <SheetClose asChild>
+                                    <Button className="w-full" onClick={() => setIsFilterSheetOpen(false)}>
+                                        Show results
+                                    </Button>
+                                </SheetClose>
+                            </div>
+                        </SheetContent>
+                    </Sheet>
+                </div>
+            </div>
+            <div className="-mx-1 flex items-center gap-2 overflow-x-auto pb-1 px-1">
+                <span className="shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Categories</span>
+                {categories.map(category => {
+                    const Icon = category.icon;
+                    return (
+                        <Button
+                            key={category.name}
+                            asChild
+                            variant={selectedCategory === category.name ? 'default' : 'outline'}
+                            size="sm"
+                            className="rounded-full gap-2 whitespace-nowrap"
+                        >
+                            <Link href={createCategoryLink(category.name)}>
+                                <Icon className="size-4" />
+                                {category.name}
+                                {selectedCategory === category.name && <X className="size-4 -mr-1" />}
+                            </Link>
+                        </Button>
+                    );
+                })}
+            </div>
+        </section>
       
       {/* Listings Section */}
       <section className="grid gap-6 lg:grid-cols-[280px_1fr]">

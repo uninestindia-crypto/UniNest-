@@ -61,13 +61,22 @@ export default async function LibraryDetailPage({ params }: LibraryDetailPagePro
         notFound();
     }
 
-    // Fetch user_metadata separately, as it's on the auth.users table
-    const { data: sellerAuthData } = await supabase.auth.admin.getUserById(libraryData.seller_id);
+    let sellerUserMetadata: Record<string, unknown> = {};
+
+    try {
+      const { data } = await supabase.auth.admin.getUserById(libraryData.seller_id);
+      if (data?.user?.user_metadata) {
+        sellerUserMetadata = data.user.user_metadata;
+      }
+    } catch (error) {
+      console.error('Failed to load seller metadata for library', { libraryId: libraryData.id, error });
+    }
+
     const library = {
       ...libraryData,
       seller: {
         ...libraryData.seller,
-        user_metadata: sellerAuthData.user?.user_metadata || {},
+        user_metadata: sellerUserMetadata,
       }
     };
     
