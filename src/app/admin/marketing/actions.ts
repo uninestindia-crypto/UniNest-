@@ -11,7 +11,7 @@ import type {
   HomeQuickAccessCard,
   HomeCuratedCollection,
 } from '@/lib/types';
-import { ensureBucketExists } from '@/lib/supabase/storage';
+import { ensureBucketExists, extractObjectPathFromPublicUrl } from '@/lib/supabase/storage';
 
 const slideSchema = z.object({
   id: z.string().optional(),
@@ -104,12 +104,22 @@ export async function updateBrandingAssets(formData: FormData) {
     const removeLogo = formData.get('removeLogo') === 'true';
     const removeFavicon = formData.get('removeFavicon') === 'true';
 
+    const currentLogoPath = extractObjectPathFromPublicUrl(currentAssets.logoUrl ?? null, BRANDING_BUCKET);
+    const currentFaviconPath = extractObjectPathFromPublicUrl(currentAssets.faviconUrl ?? null, BRANDING_BUCKET);
+
+    let logoObjectPathToDelete = removeLogo ? currentLogoPath : null;
+    let faviconObjectPathToDelete = removeFavicon ? currentFaviconPath : null;
+
+    let newLogoObjectPath: string | null = null;
+    let newFaviconObjectPath: string | null = null;
+
     let nextLogoUrl = removeLogo ? null : currentAssets.logoUrl ?? null;
     let nextFaviconUrl = removeFavicon ? null : currentAssets.faviconUrl ?? null;
 
     const logoFile = formData.get('logo');
     if (logoFile instanceof File && logoFile.size > 0) {
       const logoPath = `logo-${Date.now()}-${logoFile.name}`;
+      newLogoObjectPath = logoPath;
       const { error: uploadError } = await supabaseAdmin.storage.from(BRANDING_BUCKET).upload(logoPath, logoFile, {
         contentType: logoFile.type || 'image/png',
         upsert: true,
@@ -121,11 +131,16 @@ export async function updateBrandingAssets(formData: FormData) {
 
       const { data } = supabaseAdmin.storage.from(BRANDING_BUCKET).getPublicUrl(logoPath);
       nextLogoUrl = data.publicUrl;
+
+      if (currentLogoPath) {
+        logoObjectPathToDelete = currentLogoPath;
+      }
     }
 
     const faviconFile = formData.get('favicon');
     if (faviconFile instanceof File && faviconFile.size > 0) {
       const faviconPath = `favicon-${Date.now()}-${faviconFile.name}`;
+      newFaviconObjectPath = faviconPath;
       const { error: uploadError } = await supabaseAdmin.storage.from(BRANDING_BUCKET).upload(faviconPath, faviconFile, {
         contentType: faviconFile.type || 'image/png',
         upsert: true,
@@ -137,6 +152,30 @@ export async function updateBrandingAssets(formData: FormData) {
 
       const { data } = supabaseAdmin.storage.from(BRANDING_BUCKET).getPublicUrl(faviconPath);
       nextFaviconUrl = data.publicUrl;
+
+      if (currentFaviconPath) {
+        faviconObjectPathToDelete = currentFaviconPath;
+      }
+    }
+
+    if (logoObjectPathToDelete && logoObjectPathToDelete !== newLogoObjectPath) {
+      const { error: deleteLogoError } = await supabaseAdmin.storage.from(BRANDING_BUCKET).remove([logoObjectPathToDelete]);
+      if (deleteLogoError) {
+        if (newLogoObjectPath && newLogoObjectPath !== logoObjectPathToDelete) {
+          await supabaseAdmin.storage.from(BRANDING_BUCKET).remove([newLogoObjectPath]).catch(() => {});
+        }
+        throw new Error(`Failed to delete previous logo: ${deleteLogoError.message}`);
+      }
+    }
+
+    if (faviconObjectPathToDelete && faviconObjectPathToDelete !== newFaviconObjectPath) {
+      const { error: deleteFaviconError } = await supabaseAdmin.storage.from(BRANDING_BUCKET).remove([faviconObjectPathToDelete]);
+      if (deleteFaviconError) {
+        if (newFaviconObjectPath && newFaviconObjectPath !== faviconObjectPathToDelete) {
+          await supabaseAdmin.storage.from(BRANDING_BUCKET).remove([newFaviconObjectPath]).catch(() => {});
+        }
+        throw new Error(`Failed to delete previous favicon: ${deleteFaviconError.message}`);
+      }
     }
 
     const assets: BrandingAssets = {
