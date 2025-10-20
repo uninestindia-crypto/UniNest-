@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import HomeClient from '@/components/home/home-client';
-import { createClient } from '@/lib/supabase/server';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import type { HomePosterConfig } from '@/lib/types';
 import { defaultHomePosterConfig } from '@/lib/home-poster';
 
@@ -17,7 +17,11 @@ export default async function HomePage() {
 
   if (supabaseUrl && supabaseAnonKey) {
     try {
-      const supabase = createClient();
+      const supabase = createSupabaseClient(supabaseUrl, supabaseAnonKey, {
+        auth: {
+          persistSession: false,
+        },
+      });
       const { data, error } = await supabase
         .from('platform_settings')
         .select('value')

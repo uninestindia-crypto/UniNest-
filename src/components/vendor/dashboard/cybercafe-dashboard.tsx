@@ -3,7 +3,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Computer, IndianRupee, PlusCircle, Check } from "lucide-react";
+import { Computer, IndianRupee, PlusCircle, Check, Clock, Server, Phone, MessageCircle } from "lucide-react";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import type { Product } from "@/lib/types";
 import Link from "next/link";
@@ -23,8 +23,14 @@ type CybercafeDashboardProps = {
 
 export default function CybercafeDashboard({ products, orders }: CybercafeDashboardProps) {
     const services = products; // products are already filtered for this category
+    const cafeListing = products.find(product => product.category === 'Cyber Café' || product.category === 'Cybercafé');
     const totalRevenue = orders.reduce((sum, order) => sum + (order.total_amount || 0), 0);
     const stats = { revenue: totalRevenue, orders: orders.length };
+    const hourlySlots = cafeListing?.hourly_slots ?? [];
+    const servicesOffered = cafeListing?.services_offered ?? [];
+    const equipmentSpecs = cafeListing?.equipment_specs;
+    const contactPhone = cafeListing?.phone_number;
+    const contactWhatsApp = cafeListing?.whatsapp_number;
 
     return (
         <div className="space-y-8">
@@ -59,6 +65,70 @@ export default function CybercafeDashboard({ products, orders }: CybercafeDashbo
                     <CardContent>
                          <p className="text-3xl font-bold">₹{stats.revenue.toLocaleString()}</p>
                          <p className="text-sm text-muted-foreground">from all-time sales</p>
+                    </CardContent>
+                </Card>
+            </div>
+
+            <div className="grid lg:grid-cols-3 gap-6">
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><Clock className="text-primary"/> Hourly Slots</CardTitle>
+                        <CardDescription>Track availability windows for customers.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-2 text-sm">
+                        {hourlySlots.length > 0 ? (
+                            <div className="flex flex-wrap gap-2">
+                                {hourlySlots.map(slot => (
+                                    <span key={slot} className="rounded-full border px-3 py-1 text-muted-foreground">{slot}</span>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-muted-foreground">Add hourly slots in your listing so walk-ins know when they can book.</p>
+                        )}
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><Server className="text-primary"/> Services & Equipment</CardTitle>
+                        <CardDescription>Highlight the experience your café provides.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3 text-sm">
+                        <div>
+                            <p className="font-semibold mb-1">Services</p>
+                            {servicesOffered.length > 0 ? (
+                                <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                                    {servicesOffered.map(service => (
+                                        <li key={service}>{service}</li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className="text-muted-foreground">Mention services like gaming PCs, printing, scanning, or design stations.</p>
+                            )}
+                        </div>
+                        <div>
+                            <p className="font-semibold mb-1">Equipment Specs</p>
+                            {equipmentSpecs ? (
+                                <p className="text-muted-foreground whitespace-pre-wrap">{equipmentSpecs}</p>
+                            ) : (
+                                <p className="text-muted-foreground">Detail your hardware to attract e-sports teams and freelancers.</p>
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><Phone className="text-primary"/> Contact</CardTitle>
+                        <CardDescription>Keep support lines visible for quick bookings.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-2 text-sm">
+                        <div className="flex items-center gap-2">
+                            <Phone className="size-4 text-primary"/>
+                            {contactPhone ? <span>{contactPhone}</span> : <span className="text-muted-foreground">Add a phone number to your listing.</span>}
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <MessageCircle className="size-4 text-green-500"/>
+                            {contactWhatsApp ? <span>{contactWhatsApp}</span> : <span className="text-muted-foreground">Include a WhatsApp number to confirm slots faster.</span>}
+                        </div>
                     </CardContent>
                 </Card>
             </div>

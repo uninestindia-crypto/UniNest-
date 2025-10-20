@@ -223,13 +223,13 @@ export type HomeMobileDeal = {
   subtitle: string;
   href: string;
   gradient: string;
-  icon?: string;
+  icon: string;
 };
 
 export type HomeStat = {
   value: number;
   label: string;
-  icon?: string;
+  icon: string;
   isPlus?: boolean;
 };
 

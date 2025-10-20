@@ -1,17 +1,16 @@
-
 'use client';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Briefcase, Building, Calendar, IndianRupee, FileText, Share2, MapPin, Users } from 'lucide-react';
-import Image from 'next/image';
-import { format } from 'date-fns';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { OpportunityShareButton } from '@/components/workspace/opportunity-share';
 import { useAuth } from '@/hooks/use-auth';
-import { useToast } from '@/hooks/use-toast';
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import Image from 'next/image';
 import Link from 'next/link';
+import { useState } from 'react';
+import { format } from 'date-fns';
+import { Briefcase, Calendar, IndianRupee, FileText, MapPin, Users } from 'lucide-react';
 
 type Internship = {
     id: number;
@@ -41,35 +40,12 @@ type InternshipDetailClientProps = {
 
 export default function InternshipDetailClient({ internship, initialApplicants }: InternshipDetailClientProps) {
     const { user } = useAuth();
-    const { toast } = useToast();
     const [hasApplied, setHasApplied] = useState(false); // Placeholder state
 
     // In a real app, this should be checked against the database
     // For now, we assume user hasn't applied unless they click.
     // A more robust solution would pass the application status from the server.
     
-    const handleShare = async () => {
-        const shareData = {
-            title: `${internship.role} at ${internship.company}`,
-            text: `Check out this internship on UniNest: ${internship.role} at ${internship.company}`,
-            url: window.location.href,
-        };
-        if (navigator.share) {
-            try {
-                await navigator.share(shareData);
-            } catch (err) {
-                console.log("Share was cancelled or failed", err);
-            }
-        } else {
-            try {
-                await navigator.clipboard.writeText(shareData.url);
-                toast({ title: 'Link Copied!', description: 'Internship link copied to clipboard.' });
-            } catch (err) {
-                toast({ variant: 'destructive', title: 'Failed to copy link' });
-            }
-        }
-    };
-
     return (
         <div className="max-w-4xl mx-auto p-4 space-y-8">
             <div className="space-y-4">
@@ -117,10 +93,15 @@ export default function InternshipDetailClient({ internship, initialApplicants }
                         </a>
                     </Button>
                 )}
-                <Button size="lg" variant="ghost" className="flex-1" onClick={handleShare}>
-                    <Share2 className="mr-2"/>
-                    Share
-                </Button>
+                <OpportunityShareButton
+                    title={`${internship.role} at ${internship.company}`}
+                    description="Invite friends to apply or save this internship."
+                    sharePath={`/workspace/internships/${internship.id}`}
+                    buttonLabel="Share"
+                    buttonVariant="ghost"
+                    buttonSize="lg"
+                    className="flex-1"
+                />
             </div>
             
              <Card>

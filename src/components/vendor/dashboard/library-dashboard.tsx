@@ -10,7 +10,7 @@ import type { Product } from "@/lib/types";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { format } from 'date-fns';
 import { Badge } from "@/components/ui/badge";
 
@@ -32,6 +32,17 @@ export default function LibraryDashboard({ products, orders: initialOrders }: Li
     const pendingApprovals = orders.filter(o => o.status === 'pending_approval');
     const approvedBookings = orders.filter(o => o.status === 'approved');
     const totalSeats = library?.total_seats || 0;
+    const availableSeats = Math.max(totalSeats - approvedBookings.length, 0);
+    const openingHours = library?.opening_hours ?? [];
+    const amenities = library?.amenities ?? [];
+    const contactPhone = library?.phone_number;
+    const contactWhatsApp = library?.whatsapp_number;
+    const specialNotes = library?.special_notes;
+    const libraryPrice = useMemo(() => {
+        if (!library) return null;
+        if (library.subscription_price) return library.subscription_price;
+        return library.price;
+    }, [library]);
 
     const handleApproval = async (orderId: number, newStatus: 'approved' | 'rejected') => {
         if (!supabase) return;
@@ -77,13 +88,69 @@ export default function LibraryDashboard({ products, orders: initialOrders }: Li
                     <CardContent className="space-y-2">
                         <div className="flex justify-between"><span>Total Seats</span><span className="font-bold">{totalSeats}</span></div>
                         <div className="flex justify-between"><span>Booked</span><span className="font-bold text-green-500">{approvedBookings.length}</span></div>
-                        <div className="flex justify-between"><span>Available</span><span className="font-bold">{totalSeats - approvedBookings.length}</span></div>
+                        <div className="flex justify-between"><span>Available</span><span className="font-bold">{availableSeats}</span></div>
                     </CardContent>
                 </Card>
                  <Card>
                     <CardHeader><CardTitle className="flex items-center gap-2"><Users className="text-primary"/> Memberships</CardTitle></CardHeader>
                     <CardContent className="text-center text-muted-foreground pt-4">
                         <p>Membership feature coming soon!</p>
+                    </CardContent>
+                </Card>
+            </div>
+
+            <div className="grid lg:grid-cols-2 gap-6">
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><Clock className="text-primary"/> Opening Hours</CardTitle>
+                        <CardDescription>Shifts currently available for students.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                        {openingHours.length > 0 ? (
+                            <div className="flex flex-wrap gap-2">
+                                {openingHours.map(slot => (
+                                    <Badge key={slot} variant="outline">{slot}</Badge>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-muted-foreground">No shifts configured yet. Update your listing to add them.</p>
+                        )}
+                        {libraryPrice != null && (
+                            <div className="rounded-lg bg-muted/50 p-3 text-sm">
+                                <span className="font-semibold text-foreground">Standard fee:</span> ₹{libraryPrice.toLocaleString('en-IN')}{library.subscription_price ? '/mo' : ''}
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><Book className="text-primary"/> Amenities & Contact</CardTitle>
+                        <CardDescription>Keep students informed about facilities and support channels.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3 text-sm">
+                        <div>
+                            <p className="font-semibold mb-1">Amenities</p>
+                            {amenities.length > 0 ? (
+                                <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                                    {amenities.map(item => (
+                                        <li key={item}>{item}</li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className="text-muted-foreground">Share the amenities you provide to improve conversions.</p>
+                            )}
+                        </div>
+                        <div className="grid gap-1">
+                            {contactPhone && <span><span className="font-semibold">Phone:</span> {contactPhone}</span>}
+                            {contactWhatsApp && <span><span className="font-semibold">WhatsApp:</span> {contactWhatsApp}</span>}
+                            {!contactPhone && !contactWhatsApp && <span className="text-muted-foreground">Add a phone or WhatsApp number so students can reach you quickly.</span>}
+                        </div>
+                        {specialNotes && (
+                            <div className="rounded-lg border p-3 text-muted-foreground">
+                                <p className="font-semibold text-foreground mb-1">Important notes</p>
+                                <p>{specialNotes}</p>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             </div>

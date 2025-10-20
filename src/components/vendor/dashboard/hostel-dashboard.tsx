@@ -9,7 +9,7 @@ import type { Product } from "@/lib/types";
 import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 
 type HostelDashboardProps = {
@@ -32,6 +32,18 @@ export default function HostelDashboard({ products, orders: initialOrders }: Hos
     const uniqueTenants = new Set(orders.map(o => o.buyer_id)).size;
 
     const stats = { revenue: totalRevenue, tenants: uniqueTenants };
+    const utilities = hostel?.utilities_included ?? [];
+    const houseRules = hostel?.house_rules;
+    const contactPhone = hostel?.phone_number;
+    const contactWhatsApp = hostel?.whatsapp_number;
+    const specialNotes = hostel?.special_notes;
+    const roomTypeSummaries = useMemo(() => {
+        if (!hostel?.room_types) return null;
+        return hostel.room_types.map((entry) => {
+            const [label, beds, price] = entry.split(' - ').map(part => part.trim());
+            return { label, beds, price };
+        });
+    }, [hostel?.room_types]);
     
     const handleApproval = async (orderId: number, newStatus: 'approved' | 'rejected') => {
         if (!supabase) return;
@@ -90,6 +102,69 @@ export default function HostelDashboard({ products, orders: initialOrders }: Hos
                     <CardContent>
                         <p className="text-3xl font-bold">₹{stats.revenue.toLocaleString()}</p>
                         <p className="text-sm text-muted-foreground">from all-time bookings</p>
+                    </CardContent>
+                </Card>
+            </div>
+
+            <div className="grid lg:grid-cols-2 gap-6">
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><Bed className="text-primary"/> Room Mix & Occupancy</CardTitle>
+                        <CardDescription>Overview of beds offered and typical pricing.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3 text-sm">
+                        {roomTypeSummaries && roomTypeSummaries.length > 0 ? (
+                            <div className="grid gap-2">
+                                {roomTypeSummaries.map((roomType, index) => (
+                                    <div key={`${roomType.label ?? 'type'}-${index}`} className="rounded-lg border p-3 flex flex-col gap-1">
+                                        <span className="font-semibold text-foreground">{roomType.label || 'Room Type'}</span>
+                                        {roomType.beds && <span className="text-muted-foreground">Beds: {roomType.beds}</span>}
+                                        {roomType.price && <span className="text-muted-foreground">Pricing: {roomType.price}</span>}
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-muted-foreground">Add room type details in your listing to showcase capacity and pricing.</p>
+                        )}
+                        {specialNotes && (
+                            <div className="rounded-lg bg-muted/50 p-3">
+                                <p className="font-semibold text-foreground">Highlights</p>
+                                <p className="text-muted-foreground mt-1">{specialNotes}</p>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><Users className="text-primary"/> Utilities & Rules</CardTitle>
+                        <CardDescription>What residents can expect on move-in.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3 text-sm">
+                        <div>
+                            <p className="font-semibold mb-1">Utilities Included</p>
+                            {utilities.length > 0 ? (
+                                <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                                    {utilities.map(item => (
+                                        <li key={item}>{item}</li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className="text-muted-foreground">List utilities (Wi-Fi, laundry, housekeeping) to build trust.</p>
+                            )}
+                        </div>
+                        <div>
+                            <p className="font-semibold mb-1">House Rules</p>
+                            {houseRules ? (
+                                <p className="text-muted-foreground whitespace-pre-wrap">{houseRules}</p>
+                            ) : (
+                                <p className="text-muted-foreground">Share rules such as curfews or guest policies to set expectations.</p>
+                            )}
+                        </div>
+                        <div className="grid gap-1">
+                            {contactPhone && <span><span className="font-semibold">Phone:</span> {contactPhone}</span>}
+                            {contactWhatsApp && <span><span className="font-semibold">WhatsApp:</span> {contactWhatsApp}</span>}
+                            {!contactPhone && !contactWhatsApp && <span className="text-muted-foreground">Add contact details so prospects can reach you instantly.</span>}
+                        </div>
                     </CardContent>
                 </Card>
             </div>
