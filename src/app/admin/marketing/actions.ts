@@ -4,7 +4,12 @@ import { createClient as createAdminClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
-import type { HomePosterConfig, HomeHeroSlide } from '@/lib/types';
+import type {
+  HomePosterConfig,
+  HomeHeroSlide,
+  HomeQuickAccessCard,
+  HomeCuratedCollection,
+} from '@/lib/types';
 
 const slideSchema = z.object({
   id: z.string().optional(),
@@ -18,8 +23,27 @@ const slideSchema = z.object({
   tag: z.string().optional().nullable(),
 });
 
+const quickAccessSchema = z.object({
+  id: z.string().optional(),
+  title: z.string().min(1),
+  description: z.string().min(1),
+  href: z.string().min(1),
+  imageUrl: z.string().url(),
+  icon: z.string().optional().nullable(),
+});
+
+const curatedCollectionSchema = z.object({
+  id: z.string().optional(),
+  title: z.string().min(1),
+  description: z.string().min(1),
+  href: z.string().min(1),
+  imageUrl: z.string().url(),
+});
+
 const configSchema = z.object({
   heroSlides: z.array(slideSchema).min(1),
+  quickAccessCards: z.array(quickAccessSchema).min(1),
+  curatedCollections: z.array(curatedCollectionSchema).min(1),
 });
 
 const donationMilestoneSchema = z.object({
@@ -136,12 +160,19 @@ export async function updateHomePoster(formData: FormData) {
       throw new Error('Forbidden: Admins only.');
     }
 
-    const slidesJson = formData.get('slides');
-    if (typeof slidesJson !== 'string') {
+    const heroSlidesJson = formData.get('heroSlides');
+    const quickAccessJson = formData.get('quickAccessCards');
+    const curatedCollectionsJson = formData.get('curatedCollections');
+
+    if (typeof heroSlidesJson !== 'string' || typeof quickAccessJson !== 'string' || typeof curatedCollectionsJson !== 'string') {
       throw new Error('Invalid payload.');
     }
 
-    const parsed = configSchema.parse({ heroSlides: JSON.parse(slidesJson) });
+    const parsed = configSchema.parse({
+      heroSlides: JSON.parse(heroSlidesJson),
+      quickAccessCards: JSON.parse(quickAccessJson),
+      curatedCollections: JSON.parse(curatedCollectionsJson),
+    });
 
     const processedSlides: HomeHeroSlide[] = [];
 
@@ -176,8 +207,27 @@ export async function updateHomePoster(formData: FormData) {
       });
     }
 
+    const quickAccessCards: HomeQuickAccessCard[] = parsed.quickAccessCards.map((card, index) => ({
+      id: card.id && card.id.trim().length > 0 ? card.id : `quick-${Date.now()}-${index}`,
+      title: card.title,
+      description: card.description,
+      href: card.href,
+      imageUrl: card.imageUrl,
+      icon: card.icon ?? undefined,
+    }));
+
+    const curatedCollections: HomeCuratedCollection[] = parsed.curatedCollections.map((collection, index) => ({
+      id: collection.id && collection.id.trim().length > 0 ? collection.id : `collection-${Date.now()}-${index}`,
+      title: collection.title,
+      description: collection.description,
+      href: collection.href,
+      imageUrl: collection.imageUrl,
+    }));
+
     const posterConfig: HomePosterConfig = {
       heroSlides: processedSlides,
+      quickAccessCards,
+      curatedCollections,
     };
 
     const supabaseAdmin = getSupabaseAdmin();

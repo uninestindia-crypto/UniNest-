@@ -110,47 +110,131 @@ export default function ProfileClient({ initialProfile, initialContent }: Profil
   const avatarUrl = profile.avatar_url;
   const profileFullName = profile.full_name || 'Anonymous User';
   const followingCount = profile.following_count?.[0]?.count ?? 0;
+  const postsCount = initialContent.posts.length;
+  const listingsCount = initialContent.listings.length;
+  const highlightCandidates = initialContent.listings.slice(0, 5).map((item) => ({
+    id: `listing-${item.id}`,
+    label: item.name || 'Listing',
+    image: item.image_url,
+  }));
+  const displayHighlights = highlightCandidates.length > 0 ? highlightCandidates : [
+    {
+      id: 'profile-highlight',
+      label: profileFullName,
+      image: avatarUrl,
+    },
+  ];
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <Card className="overflow-hidden">
-        <div className="h-32 md:h-48 primary-gradient" />
-        <CardContent className="p-4 md:p-6 pt-0">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:gap-4 -mt-16">
-            <Avatar className="size-24 md:size-32 border-4 border-card">
-              <AvatarImage src={avatarUrl || undefined} />
-              <AvatarFallback className="text-4xl">{profileFullName?.[0]?.toUpperCase() || 'U'}</AvatarFallback>
-            </Avatar>
-            <div className="mt-2 sm:mt-0 flex-grow">
-              <h1 className="text-2xl md:text-3xl font-bold font-headline">{profileFullName}</h1>
-              <p className="text-muted-foreground">@{profile.handle}</p>
-            </div>
-            <div className="mt-2 sm:mt-0 ml-auto">
-              {isMyProfile ? (
-                 <Link href="/settings">
-                    <Button variant="outline">
+        <div className="hidden md:block h-32 md:h-48 primary-gradient" />
+        <CardContent className="p-4 md:p-6 md:pt-0">
+          <div className="md:-mt-16">
+            <div className="flex flex-col gap-4 md:flex-row md:items-end md:gap-6">
+              <div className="flex items-center gap-6 md:items-end md:gap-8">
+                <Avatar className="size-24 md:size-32 border-2 md:border-4 border-card">
+                  <AvatarImage src={avatarUrl || undefined} />
+                  <AvatarFallback className="text-4xl">{profileFullName?.[0]?.toUpperCase() || 'U'}</AvatarFallback>
+                </Avatar>
+                <div className="flex flex-1 items-center justify-around text-center text-xs font-semibold uppercase text-muted-foreground md:hidden">
+                  <div>
+                    <p className="text-lg font-bold text-foreground">{postsCount}</p>
+                    <p>Posts</p>
+                  </div>
+                  <div>
+                    <p className="text-lg font-bold text-foreground">{followerCount}</p>
+                    <p>Followers</p>
+                  </div>
+                  <div>
+                    <p className="text-lg font-bold text-foreground">{followingCount}</p>
+                    <p>Following</p>
+                  </div>
+                </div>
+              </div>
+              <div className="flex-1 space-y-3">
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <h1 className="text-2xl md:text-3xl font-bold font-headline">{profileFullName}</h1>
+                    <p className="text-muted-foreground">@{profile.handle}</p>
+                    <p className="text-sm text-muted-foreground md:hidden">{listingsCount} listings · {postsCount} posts</p>
+                  </div>
+                  <div className="hidden md:flex items-center gap-8 text-sm">
+                    <div className="text-center">
+                      <span className="block text-xl font-semibold text-foreground">{postsCount}</span>
+                      <span className="text-muted-foreground">Posts</span>
+                    </div>
+                    <div className="text-center">
+                      <span className="block text-xl font-semibold text-foreground">{followerCount}</span>
+                      <span className="text-muted-foreground">Followers</span>
+                    </div>
+                    <div className="text-center">
+                      <span className="block text-xl font-semibold text-foreground">{followingCount}</span>
+                      <span className="text-muted-foreground">Following</span>
+                    </div>
+                  </div>
+                  <div className="hidden md:block">
+                    {isMyProfile ? (
+                      <Link href="/settings">
+                        <Button variant="outline">
+                          <Edit className="mr-2 size-4" />
+                          Edit Profile
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Button onClick={handleFollowToggle} disabled={isFollowLoading || !user}>
+                        {isFollowLoading ? <Loader2 className="mr-2 size-4 animate-spin" /> : <UserPlus className="mr-2 size-4" />}
+                        {isFollowing ? 'Unfollow' : 'Follow'}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 gap-2 md:hidden">
+                  {isMyProfile ? (
+                    <Link href="/settings">
+                      <Button variant="outline" className="w-full">
                         <Edit className="mr-2 size-4" />
                         Edit Profile
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Button onClick={handleFollowToggle} disabled={isFollowLoading || !user} className="w-full">
+                      {isFollowLoading ? <Loader2 className="mr-2 size-4 animate-spin" /> : <UserPlus className="mr-2 size-4" />}
+                      {isFollowing ? 'Unfollow' : 'Follow'}
                     </Button>
-                </Link>
-              ) : (
-                <Button onClick={handleFollowToggle} disabled={isFollowLoading || !user}>
-                    {isFollowLoading ? <Loader2 className="mr-2 size-4 animate-spin"/> : <UserPlus className="mr-2 size-4" />}
-                    {isFollowing ? 'Unfollow' : 'Follow'}
-                </Button>
-              )}
+                  )}
+                </div>
+                <p className="text-sm text-muted-foreground">{profile.bio || 'No bio yet.'}</p>
+                <div className="hidden md:flex items-center gap-6 text-sm">
+                  <div className="font-semibold text-foreground">{followingCount}</div>
+                  Following
+                  <div className="font-semibold text-foreground">{followerCount}</div>
+                  Followers
+                </div>
+              </div>
             </div>
-          </div>
-          <p className="mt-4 text-muted-foreground">{profile.bio || "No bio yet."}</p>
-          <div className="mt-4 flex items-center gap-6 text-sm">
-             <span className="font-semibold text-foreground">{followingCount}</span> Following
-             <span className="font-semibold text-foreground">{followerCount}</span> Followers
+            <div className="mt-4 flex gap-4 overflow-x-auto rounded-xl border border-muted/40 bg-muted/30 px-4 py-3 md:hidden">
+              {displayHighlights.map((item) => (
+                <div key={item.id} className="flex min-w-[72px] flex-col items-center gap-2">
+                  <Avatar className="size-16 border border-border">
+                    <AvatarImage src={item.image || undefined} />
+                    <AvatarFallback>{item.label?.[0]?.toUpperCase() || 'H'}</AvatarFallback>
+                  </Avatar>
+                  <span className="max-w-[72px] truncate text-center text-xs font-medium text-foreground">{item.label}</span>
+                </div>
+              ))}
+            </div>
+            {isMyProfile && (
+              <div className="mt-4 rounded-xl border border-muted/40 bg-muted/20 p-3 text-xs text-muted-foreground md:hidden">
+                Professional dashboard previews and insights will appear here once available.
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
       
       <Tabs defaultValue="activity" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-card shadow-sm rounded-full">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 rounded-lg bg-card shadow-sm">
           <TabsTrigger value="activity" className="rounded-full py-2"><Newspaper className="mr-2 size-4" />Feed</TabsTrigger>
           <TabsTrigger value="listings" className="rounded-full py-2"><Package className="mr-2 size-4" />Listings</TabsTrigger>
           <TabsTrigger value="followers" className="rounded-full py-2"><Users className="mr-2 size-4" />Followers</TabsTrigger>

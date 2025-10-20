@@ -12,22 +12,33 @@ import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useToast } from '@/hooks/use-toast';
 import { updateHomePoster } from '@/app/admin/marketing/actions';
-import type { HomePosterConfig, HomeHeroSlide } from '@/lib/types';
+import type {
+  HomePosterConfig,
+  HomeHeroSlide,
+  HomeQuickAccessCard,
+  HomeCuratedCollection,
+} from '@/lib/types';
 import { defaultHomePosterConfig } from '@/lib/home-poster';
 import { Plus, Trash2, ImageIcon, Loader2, ArrowDown, ArrowUp } from 'lucide-react';
 
 const MAX_SLIDES = 5;
+const MAX_QUICK_ACCESS = 6;
+const MAX_CURATED = 6;
 
 type SlideFormState = HomeHeroSlide & {
   imageFile: File | null;
   imagePreview: string | null;
 };
 
+type QuickAccessFormState = HomeQuickAccessCard;
+
+type CuratedCollectionFormState = HomeCuratedCollection;
+
 type HomePosterFormProps = {
   initialConfig: HomePosterConfig;
 };
 
-const mapConfigToState = (config: HomePosterConfig): SlideFormState[] =>
+const mapConfigToSlides = (config: HomePosterConfig): SlideFormState[] =>
   config.heroSlides.map((slide, index) => ({
     id: slide.id ?? `slide-${index}`,
     title: slide.title,
@@ -41,6 +52,35 @@ const mapConfigToState = (config: HomePosterConfig): SlideFormState[] =>
     imageFile: null,
     imagePreview: null,
   }));
+
+const mapConfigToQuickAccess = (config: HomePosterConfig): QuickAccessFormState[] => {
+  const source =
+    Array.isArray(config.quickAccessCards) && config.quickAccessCards.length > 0
+      ? config.quickAccessCards
+      : defaultHomePosterConfig.quickAccessCards;
+  return source.map((card, index) => ({
+    id: card.id && card.id.trim().length > 0 ? card.id : `quick-${index}`,
+    title: card.title,
+    description: card.description,
+    href: card.href,
+    imageUrl: card.imageUrl,
+    icon: card.icon ?? '',
+  }));
+};
+
+const mapConfigToCuratedCollections = (config: HomePosterConfig): CuratedCollectionFormState[] => {
+  const source =
+    Array.isArray(config.curatedCollections) && config.curatedCollections.length > 0
+      ? config.curatedCollections
+      : defaultHomePosterConfig.curatedCollections;
+  return source.map((collection, index) => ({
+    id: collection.id && collection.id.trim().length > 0 ? collection.id : `collection-${index}`,
+    title: collection.title,
+    description: collection.description,
+    href: collection.href,
+    imageUrl: collection.imageUrl,
+  }));
+};
 
 const createEmptySlide = (index: number): SlideFormState => ({
   id: `new-slide-${Date.now()}-${index}`,
@@ -56,6 +96,23 @@ const createEmptySlide = (index: number): SlideFormState => ({
   imagePreview: null,
 });
 
+const createEmptyQuickAccess = (index: number): QuickAccessFormState => ({
+  id: `new-quick-${Date.now()}-${index}`,
+  title: '',
+  description: '',
+  href: '',
+  imageUrl: '',
+  icon: '',
+});
+
+const createEmptyCollection = (index: number): CuratedCollectionFormState => ({
+  id: `new-collection-${Date.now()}-${index}`,
+  title: '',
+  description: '',
+  href: '',
+  imageUrl: '',
+});
+
 const toNullable = (value: string | null | undefined) => {
   if (typeof value !== 'string') {
     return null;
@@ -67,19 +124,34 @@ const toNullable = (value: string | null | undefined) => {
 export default function HomePosterForm({ initialConfig }: HomePosterFormProps) {
   const router = useRouter();
   const { toast } = useToast();
-  const normalizedInitial = useMemo(() => mapConfigToState(initialConfig), [initialConfig]);
-  const [slides, setSlides] = useState<SlideFormState[]>(normalizedInitial);
-  const [activeSlideId, setActiveSlideId] = useState<string | null>(normalizedInitial[0]?.id ?? null);
+  const normalizedInitial = useMemo(
+    () => ({
+      slides: mapConfigToSlides(initialConfig),
+      quickAccess: mapConfigToQuickAccess(initialConfig),
+      curatedCollections: mapConfigToCuratedCollections(initialConfig),
+    }),
+    [initialConfig],
+  );
+  const [slides, setSlides] = useState<SlideFormState[]>(normalizedInitial.slides);
+  const [quickAccessCards, setQuickAccessCards] = useState<QuickAccessFormState[]>(normalizedInitial.quickAccess);
+  const [curatedCollections, setCuratedCollections] = useState<CuratedCollectionFormState[]>(normalizedInitial.curatedCollections);
+  const [activeSlideId, setActiveSlideId] = useState<string | null>(normalizedInitial.slides[0]?.id ?? null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    const nextSlides = mapConfigToState(initialConfig);
-    setSlides(nextSlides);
+    const nextState = {
+      slides: mapConfigToSlides(initialConfig),
+      quickAccess: mapConfigToQuickAccess(initialConfig),
+      curatedCollections: mapConfigToCuratedCollections(initialConfig),
+    };
+    setSlides(nextState.slides);
+    setQuickAccessCards(nextState.quickAccess);
+    setCuratedCollections(nextState.curatedCollections);
     setActiveSlideId((prev) => {
-      if (prev && nextSlides.some((slide) => slide.id === prev)) {
+      if (prev && nextState.slides.some((slide) => slide.id === prev)) {
         return prev;
       }
-      return nextSlides[0]?.id ?? null;
+      return nextState.slides[0]?.id ?? null;
     });
   }, [initialConfig]);
 
@@ -155,9 +227,15 @@ export default function HomePosterForm({ initialConfig }: HomePosterFormProps) {
   };
 
   const handleResetDefaults = () => {
-    const nextSlides = mapConfigToState(defaultHomePosterConfig);
-    setSlides(nextSlides);
-    setActiveSlideId(nextSlides[0]?.id ?? null);
+    const nextState = {
+      slides: mapConfigToSlides(defaultHomePosterConfig),
+      quickAccess: mapConfigToQuickAccess(defaultHomePosterConfig),
+      curatedCollections: mapConfigToCuratedCollections(defaultHomePosterConfig),
+    };
+    setSlides(nextState.slides);
+    setQuickAccessCards(nextState.quickAccess);
+    setCuratedCollections(nextState.curatedCollections);
+    setActiveSlideId(nextState.slides[0]?.id ?? null);
   };
 
   const handleMoveSlide = (index: number, direction: 'up' | 'down') => {
@@ -178,6 +256,84 @@ export default function HomePosterForm({ initialConfig }: HomePosterFormProps) {
     setActiveSlideId(targetId);
   };
 
+  const updateQuickAccessAt = (index: number, patch: Partial<QuickAccessFormState>) => {
+    setQuickAccessCards((prev) =>
+      prev.map((card, idx) =>
+        idx === index
+          ? {
+              ...card,
+              ...patch,
+            }
+          : card,
+      ),
+    );
+  };
+
+  const handleAddQuickAccess = () => {
+    if (quickAccessCards.length >= MAX_QUICK_ACCESS) return;
+    setQuickAccessCards((prev) => [...prev, createEmptyQuickAccess(prev.length)]);
+  };
+
+  const handleRemoveQuickAccess = (index: number) => {
+    if (quickAccessCards.length === 1) {
+      toast({ variant: 'destructive', title: 'At least one quick access card is required.' });
+      return;
+    }
+    setQuickAccessCards((prev) => prev.filter((_, idx) => idx !== index));
+  };
+
+  const handleMoveQuickAccess = (index: number, direction: 'up' | 'down') => {
+    setQuickAccessCards((prev) => {
+      const next = [...prev];
+      const nextIndex = direction === 'up' ? index - 1 : index + 1;
+      if (nextIndex < 0 || nextIndex >= next.length) {
+        return prev;
+      }
+      const [moved] = next.splice(index, 1);
+      next.splice(nextIndex, 0, moved);
+      return next;
+    });
+  };
+
+  const updateCollectionAt = (index: number, patch: Partial<CuratedCollectionFormState>) => {
+    setCuratedCollections((prev) =>
+      prev.map((collection, idx) =>
+        idx === index
+          ? {
+              ...collection,
+              ...patch,
+            }
+          : collection,
+      ),
+    );
+  };
+
+  const handleAddCollection = () => {
+    if (curatedCollections.length >= MAX_CURATED) return;
+    setCuratedCollections((prev) => [...prev, createEmptyCollection(prev.length)]);
+  };
+
+  const handleRemoveCollection = (index: number) => {
+    if (curatedCollections.length === 1) {
+      toast({ variant: 'destructive', title: 'At least one curated collection is required.' });
+      return;
+    }
+    setCuratedCollections((prev) => prev.filter((_, idx) => idx !== index));
+  };
+
+  const handleMoveCollection = (index: number, direction: 'up' | 'down') => {
+    setCuratedCollections((prev) => {
+      const next = [...prev];
+      const nextIndex = direction === 'up' ? index - 1 : index + 1;
+      if (nextIndex < 0 || nextIndex >= next.length) {
+        return prev;
+      }
+      const [moved] = next.splice(index, 1);
+      next.splice(nextIndex, 0, moved);
+      return next;
+    });
+  };
+
   const getSlideIssues = (slide: SlideFormState) => {
     const issues: string[] = [];
     if (!slide.title.trim()) {
@@ -185,6 +341,40 @@ export default function HomePosterForm({ initialConfig }: HomePosterFormProps) {
     }
     if (!slide.imageUrl && !slide.imageFile) {
       issues.push('Image missing');
+    }
+    return issues;
+  };
+
+  const getQuickAccessIssues = (card: QuickAccessFormState) => {
+    const issues: string[] = [];
+    if (!card.title.trim()) {
+      issues.push('Title missing');
+    }
+    if (!card.description.trim()) {
+      issues.push('Description missing');
+    }
+    if (!card.href.trim()) {
+      issues.push('Link missing');
+    }
+    if (!card.imageUrl.trim()) {
+      issues.push('Image URL missing');
+    }
+    return issues;
+  };
+
+  const getCollectionIssues = (collection: CuratedCollectionFormState) => {
+    const issues: string[] = [];
+    if (!collection.title.trim()) {
+      issues.push('Title missing');
+    }
+    if (!collection.description.trim()) {
+      issues.push('Description missing');
+    }
+    if (!collection.href.trim()) {
+      issues.push('Link missing');
+    }
+    if (!collection.imageUrl.trim()) {
+      issues.push('Image URL missing');
     }
     return issues;
   };
@@ -205,9 +395,49 @@ export default function HomePosterForm({ initialConfig }: HomePosterFormProps) {
       }
     }
 
+    for (let i = 0; i < quickAccessCards.length; i += 1) {
+      const card = quickAccessCards[i];
+      if (!card.title.trim()) {
+        toast({ variant: 'destructive', title: `Quick access card ${i + 1} needs a title.` });
+        return;
+      }
+      if (!card.description.trim()) {
+        toast({ variant: 'destructive', title: `Quick access card ${i + 1} needs a description.` });
+        return;
+      }
+      if (!card.href.trim()) {
+        toast({ variant: 'destructive', title: `Quick access card ${i + 1} needs a link.` });
+        return;
+      }
+      if (!card.imageUrl.trim()) {
+        toast({ variant: 'destructive', title: `Quick access card ${i + 1} needs an image URL.` });
+        return;
+      }
+    }
+
+    for (let i = 0; i < curatedCollections.length; i += 1) {
+      const collection = curatedCollections[i];
+      if (!collection.title.trim()) {
+        toast({ variant: 'destructive', title: `Curated collection ${i + 1} needs a title.` });
+        return;
+      }
+      if (!collection.description.trim()) {
+        toast({ variant: 'destructive', title: `Curated collection ${i + 1} needs a description.` });
+        return;
+      }
+      if (!collection.href.trim()) {
+        toast({ variant: 'destructive', title: `Curated collection ${i + 1} needs a link.` });
+        return;
+      }
+      if (!collection.imageUrl.trim()) {
+        toast({ variant: 'destructive', title: `Curated collection ${i + 1} needs an image URL.` });
+        return;
+      }
+    }
+
     setIsSubmitting(true);
     try {
-      const payload = slides.map((slide) => ({
+      const slidePayload = slides.map((slide) => ({
         id: slide.id,
         title: slide.title.trim(),
         subtitle: toNullable(slide.subtitle),
@@ -219,8 +449,30 @@ export default function HomePosterForm({ initialConfig }: HomePosterFormProps) {
         tag: toNullable(slide.tag),
       }));
 
+      const quickAccessPayload = quickAccessCards.map((card, index) => {
+        const icon = toNullable(card.icon);
+        return {
+          id: card.id,
+          title: card.title.trim(),
+          description: card.description.trim(),
+          href: card.href.trim(),
+          imageUrl: card.imageUrl.trim(),
+          icon: icon ?? undefined,
+        };
+      });
+
+      const curatedCollectionsPayload = curatedCollections.map((collection) => ({
+        id: collection.id,
+        title: collection.title.trim(),
+        description: collection.description.trim(),
+        href: collection.href.trim(),
+        imageUrl: collection.imageUrl.trim(),
+      }));
+
       const formData = new FormData();
-      formData.append('slides', JSON.stringify(payload));
+      formData.append('heroSlides', JSON.stringify(slidePayload));
+      formData.append('quickAccessCards', JSON.stringify(quickAccessPayload));
+      formData.append('curatedCollections', JSON.stringify(curatedCollectionsPayload));
       slides.forEach((slide, index) => {
         if (slide.imageFile) {
           formData.append(`slide-${index}-image`, slide.imageFile);

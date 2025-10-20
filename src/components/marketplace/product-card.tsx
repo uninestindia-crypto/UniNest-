@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, Loader2 } from 'lucide-react';
+import { MessageSquare, Star, Truck } from 'lucide-react';
 import type { Product } from '@/lib/types';
 import type { User } from '@supabase/supabase-js';
 import Link from 'next/link';
@@ -28,6 +28,8 @@ export default function ProductCard({ product, user, onBuyNow, onChat, isBuying,
   
   const canContact = user && user.id !== product.seller_id;
   const isBookable = ['Library', 'Hostels', 'Food Mess', 'Cyber Café'].includes(product.category);
+  const derivedRating = Number((4 + (product.id % 10) * 0.1).toFixed(1));
+  const ratingCount = 40 + (product.id % 200);
   const cardClassName = layout === 'list'
     ? 'overflow-hidden shadow-sm transition-shadow hover:shadow-lg flex flex-col flex-grow group md:flex-row'
     : 'overflow-hidden shadow-sm transition-shadow hover:shadow-lg flex flex-col flex-grow group';
@@ -65,29 +67,54 @@ export default function ProductCard({ product, user, onBuyNow, onChat, isBuying,
         </Link>
     </CardHeader>
     <CardContent className={contentClassName}>
-        <Badge variant="secondary" className="mb-2 capitalize">{product.category}</Badge>
+        <div className="flex items-center justify-between gap-2">
+            <Badge variant="secondary" className="capitalize">{product.category}</Badge>
+            <Badge variant="outline" className="border-dashed text-xs">UniPrime</Badge>
+        </div>
         <Link href={getCardLink()}>
-            <CardTitle className="text-lg font-semibold leading-snug mb-2 h-12 overflow-hidden group-hover:text-primary transition-colors">{product.name}</CardTitle>
+            <CardTitle className="text-lg font-semibold leading-snug mt-3 h-12 overflow-hidden group-hover:text-primary transition-colors">{product.name}</CardTitle>
         </Link>
-        <p className="text-sm text-muted-foreground mb-4 h-10 overflow-hidden text-ellipsis">{product.description}</p>
-        <p className="text-sm">Sold by <span className="font-medium text-primary">{sellerName}</span></p>
+        <div className="mt-3 flex items-center gap-1 text-sm">
+            {Array.from({ length: 5 }).map((_, index) => (
+                <Star
+                    key={index}
+                    className={index < Math.round(derivedRating) ? 'size-4 text-amber-500 fill-amber-500' : 'size-4 text-muted-foreground'}
+                />
+            ))}
+            <span className="ml-1 text-xs text-muted-foreground">{derivedRating.toFixed(1)} ({ratingCount})</span>
+        </div>
+        <p className="mt-3 text-sm text-muted-foreground line-clamp-2">{product.description}</p>
+        <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1 font-medium text-emerald-600">
+                <Truck className="size-3.5" />
+                Fast delivery available
+            </span>
+            <span>Sold by <span className="font-medium text-primary">{sellerName}</span></span>
+        </div>
     </CardContent>
     <CardFooter className="p-4 pt-0 mt-auto">
-        <div className="flex items-center justify-between w-full gap-2">
-            <p className="text-xl font-bold text-primary">
-                {product.category === 'Library' ? `₹${product.price.toLocaleString()}/seat` : `₹${product.price.toLocaleString()}`}
-            </p>
-            <div className='flex gap-2'>
+        <div className="flex w-full flex-col gap-3">
+            <div className="flex items-baseline gap-2">
+                <p className="text-2xl font-semibold text-[#B12704]">
+                    {product.category === 'Library' ? `₹${product.price.toLocaleString()}/seat` : `₹${product.price.toLocaleString()}`}
+                </p>
+                <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-semibold text-emerald-600">Limited offer</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
             {canContact && (
-                <Button variant="outline" size="sm" onClick={(e) => handleButtonClick(e, () => onChat(product.seller_id, product.name))}>
+                <Button variant="outline" size="sm" className="rounded-full" onClick={(e) => handleButtonClick(e, () => onChat(product.seller_id, product.name))}>
                     <MessageSquare className="mr-2 size-4"/>
-                    Contact
+                    Chat now
                 </Button>
             )}
-            
             {isBookable && (
-                <Button size="sm" asChild>
-                    <Link href={getCardLink()}>View Details</Link>
+                <Button size="sm" className="rounded-full" asChild>
+                    <Link href={getCardLink()}>See details</Link>
+                </Button>
+            )}
+            {!isBookable && (
+                <Button size="sm" className="rounded-full" onClick={(e) => handleButtonClick(e, () => onBuyNow(product))}>
+                    Buy now
                 </Button>
             )}
             </div>

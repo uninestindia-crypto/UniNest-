@@ -9,7 +9,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';
-import { Search, ListFilter, Library, Utensils, Laptop, Bed, Book, Package, X, Loader2, Plus, MessageSquare, Rows3, Rows } from 'lucide-react';
+import { Search, ListFilter, Library, Utensils, Laptop, Bed, Book, Package, X, Loader2, Plus, MessageSquare, Rows3, Rows, MapPin, ShieldCheck, Sparkles } from 'lucide-react';
 import type { Product } from '@/lib/types';
 import Link from 'next/link';
 import { useEffect, useState, useMemo, useCallback } from 'react';
@@ -47,6 +47,7 @@ export default function MarketplaceContent() {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 0]);
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
   const [layoutMode, setLayoutMode] = useState<LayoutMode>('grid');
+  const [sortOption, setSortOption] = useState<'featured' | 'price-low' | 'price-high' | 'newest'>('featured');
 
   const selectedCategory = searchParams.get('category');
 
@@ -174,6 +175,20 @@ export default function MarketplaceContent() {
       setPriceRange([0, 0]);
     }
   }, [priceBounds.max, priceBounds.min, products.length]);
+
+  const sortedProducts = useMemo(() => {
+    const items = [...filteredProducts];
+    switch (sortOption) {
+      case 'price-low':
+        return items.sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
+      case 'price-high':
+        return items.sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
+      case 'newest':
+        return items.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      default:
+        return items;
+    }
+  }, [filteredProducts, sortOption]);
 
   const FilterControls = () => (
     <div className="space-y-6">
@@ -542,6 +557,20 @@ export default function MarketplaceContent() {
                     </Button>
                 ))}
             </div>
+            <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                <span className="flex items-center gap-2 rounded-full bg-muted px-3 py-1">
+                    <MapPin className="size-4 text-primary" />
+                    Delivering to campus & hostels
+                </span>
+                <span className="flex items-center gap-2 rounded-full bg-muted px-3 py-1">
+                    <ShieldCheck className="size-4 text-primary" />
+                    Verified vendors only
+                </span>
+                <span className="flex items-center gap-2 rounded-full bg-muted px-3 py-1">
+                    <Sparkles className="size-4 text-primary" />
+                    Fresh listings every day
+                </span>
+            </div>
        </section>
       
       {/* Listings Section */}
@@ -552,18 +581,6 @@ export default function MarketplaceContent() {
             </div>
         </aside>
         <div className="space-y-6">
-            {appliedFilters.length > 0 && (
-                <div className="flex flex-wrap items-center gap-2">
-                    {appliedFilters.map(filter => (
-                        <Badge key={filter.id} variant="secondary" className="rounded-full px-3 py-1 text-sm font-medium">
-                            {filter.label}
-                        </Badge>
-                    ))}
-                    <Button variant="ghost" size="sm" onClick={resetFilters}>
-                        Clear all
-                    </Button>
-                </div>
-            )}
             <div className="flex flex-wrap items-center justify-between gap-3">
               {appliedFilters.length > 0 ? (
                 <div className="flex flex-wrap items-center gap-2">
@@ -577,17 +594,30 @@ export default function MarketplaceContent() {
                   </Button>
                 </div>
               ) : (
-                <div className="text-sm text-muted-foreground">Showing {filteredProducts.length} listings</div>
+                <div className="text-sm text-muted-foreground">Showing {sortedProducts.length} listings</div>
               )}
-              {layoutToggle}
+              <div className="flex items-center gap-3">
+                <Select value={sortOption} onValueChange={(value) => setSortOption(value as typeof sortOption)}>
+                  <SelectTrigger className="w-[200px] rounded-full">
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent align="end">
+                    <SelectItem value="featured">Featured</SelectItem>
+                    <SelectItem value="newest">Newest arrivals</SelectItem>
+                    <SelectItem value="price-low">Price: Low to High</SelectItem>
+                    <SelectItem value="price-high">Price: High to Low</SelectItem>
+                  </SelectContent>
+                </Select>
+                {layoutToggle}
+              </div>
             </div>
             {loading ? (
                 <div className="flex justify-center items-center h-64">
                     <Loader2 className="size-8 animate-spin text-muted-foreground" />
                 </div>
-            ) : filteredProducts.length > 0 ? (
+            ) : sortedProducts.length > 0 ? (
                 <div className={layoutMode === 'grid' ? 'grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5' : 'space-y-4'}>
-                  {filteredProducts.map((product) => (
+                  {sortedProducts.map((product) => (
                     <div key={product.id} className={layoutMode === 'list' ? 'rounded-2xl border bg-card p-4 shadow-sm hover:shadow-md transition-shadow' : undefined}>
                       <ProductCard
                         product={product}

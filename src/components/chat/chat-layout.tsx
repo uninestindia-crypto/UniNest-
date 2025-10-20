@@ -1,16 +1,19 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import ChatList from './chat-list';
 import ChatMessages from './chat-messages';
 import type { Room, Message, Profile } from '@/lib/types';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Loader2, Plus } from 'lucide-react';
+import { ArrowLeft, Filter, Loader2, Plus, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { Button } from '../ui/button';
 import NewChatModal from './new-chat-modal';
+import { Input } from '../ui/input';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { cn } from '@/lib/utils';
 
 export default function ChatLayout() {
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -24,6 +27,8 @@ export default function ChatLayout() {
   const router = useRouter();
   const [isNewChatModalOpen, setIsNewChatModalOpen] = useState(false);
   const [hasRedirected, setHasRedirected] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeInboxTab, setActiveInboxTab] = useState<'primary' | 'general' | 'requests'>('primary');
 
   useEffect(() => {
     if (!authLoading && !user && !hasRedirected) {
@@ -282,26 +287,123 @@ export default function ChatLayout() {
     }
   }
 
+  const inboxTabs = [
+    { value: 'primary' as const, label: 'Primary' },
+    { value: 'general' as const, label: 'General' },
+    { value: 'requests' as const, label: 'Requests' },
+  ];
+
+  const filteredRooms = useMemo(() => {
+    if (!searchTerm.trim()) {
+      return rooms;
+    }
+    const query = searchTerm.toLowerCase();
+    return rooms.filter((room) => {
+      const name = room.name?.toLowerCase() ?? '';
+      const lastMessage = room.last_message?.toLowerCase() ?? '';
+      return name.includes(query) || lastMessage.includes(query);
+    });
+  }, [rooms, searchTerm]);
+
+  const highlightRooms = useMemo(() => rooms.slice(0, 8), [rooms]);
+
   const ChatListScreen = () => (
-    <div className="flex flex-col h-full">
-       <header className="p-4 space-y-4 bg-card border-b">
-          <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-bold text-primary">Messages</h1>
-              <Button variant="ghost" size="icon" onClick={() => setIsNewChatModalOpen(true)}>
-                <Plus className="size-6" />
-                <span className="sr-only">New Chat</span>
+    <div className="flex h-full flex-col">
+      <header className="border-b bg-background/95 pb-4 shadow-sm backdrop-blur">
+        <div className="flex items-center justify-between px-4 pt-4">
+          <div className="flex items-center gap-3">
+            {isMobile ? (
+              <Button
+                variant="outline"
+                size="icon"
+                className="rounded-full"
+                onClick={() => router.back()}
+              >
+                <ArrowLeft className="size-5" />
               </Button>
-          </div>
-      </header>
-       {loadingRooms ? (
-            <div className="flex items-center justify-center flex-1">
-                <Loader2 className="size-8 animate-spin text-primary" />
+            ) : null}
+            <div>
+              <h1 className="text-xl font-semibold text-foreground md:text-2xl">Messages</h1>
+              <p className="text-xs text-muted-foreground md:text-sm">Stay on top of your conversations and leads</p>
             </div>
-        ) : (
-          <ChatList rooms={rooms} selectedRoom={selectedRoom} onSelectRoom={handleSelectRoom} />
-        )}
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="icon" className="rounded-full">
+              <Filter className="size-4" />
+              <span className="sr-only">Filter</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="rounded-full border-primary text-primary"
+              onClick={() => setIsNewChatModalOpen(true)}
+            >
+              <Plus className="size-5" />
+              <span className="sr-only">New Chat</span>
+            </Button>
+          </div>
+        </div>
+        <div className="space-y-4 px-4 pt-4">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Search"
+              className="h-10 rounded-full border-none bg-muted pl-10 text-sm"
+            />
+          </div>
+          <div className="flex items-center gap-3 overflow-x-auto pb-1">
+            <button
+              type="button"
+              className="flex shrink-0 flex-col items-center gap-2"
+              onClick={() => setIsNewChatModalOpen(true)}
+            >
+              <span className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed border-primary/60 text-lg text-primary">
+                +
+              </span>
+              <span className="text-xs text-muted-foreground">New note</span>
+            </button>
+            {highlightRooms.map((room) => (
+              <div key={room.id} className="flex shrink-0 flex-col items-center gap-2">
+                <div className="rounded-full border-2 border-primary/60 p-[2px]">
+                  <Avatar className="h-16 w-16">
+                    <AvatarImage src={room.avatar || `https://picsum.photos/seed/${room.id}/80`} alt={room.name || 'Chat'} />
+                    <AvatarFallback>{room.name?.charAt(0) || 'C'}</AvatarFallback>
+                  </Avatar>
+                </div>
+                <span className="w-16 truncate text-center text-xs text-muted-foreground">{room.name || 'Conversation'}</span>
+              </div>
+            ))}
+          </div>
+          <div className="flex gap-2 text-sm font-medium">
+            {inboxTabs.map((tab) => (
+              <button
+                key={tab.value}
+                type="button"
+                onClick={() => setActiveInboxTab(tab.value)}
+                className={cn(
+                  'rounded-full px-4 py-1.5 transition',
+                  activeInboxTab === tab.value
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/70'
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </header>
+      {loadingRooms ? (
+        <div className="flex flex-1 items-center justify-center">
+          <Loader2 className="size-8 animate-spin text-primary" />
+        </div>
+      ) : (
+        <ChatList rooms={filteredRooms} selectedRoom={selectedRoom} onSelectRoom={handleSelectRoom} />
+      )}
     </div>
-  )
+  );
 
   if (authLoading) {
     return (

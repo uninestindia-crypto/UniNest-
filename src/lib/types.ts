@@ -174,6 +174,25 @@ export type HomeHeroSlide = {
   tag?: string;
 };
 
+export type HomeQuickAccessCard = {
+  id: string;
+  title: string;
+  description: string;
+  href: string;
+  imageUrl: string;
+  icon?: string;
+};
+
+export type HomeCuratedCollection = {
+  id: string;
+  title: string;
+  description: string;
+  href: string;
+  imageUrl: string;
+};
+
 export type HomePosterConfig = {
   heroSlides: HomeHeroSlide[];
+  quickAccessCards: HomeQuickAccessCard[];
+  curatedCollections: HomeCuratedCollection[];
 };
