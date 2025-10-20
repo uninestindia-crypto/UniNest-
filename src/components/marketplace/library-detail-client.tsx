@@ -69,9 +69,10 @@ export default function LibraryDetailClient({ library, initialSeatProducts, init
             }
         });
 
-        const newSeats: Seat[] = seatProducts.map(product => {
+        const newSeats: Seat[] = seatProducts.map((product, index) => {
             const statusInfo = seatStatusMap.get(product.id);
             const status: Seat['status'] = statusInfo ?? 'available';
+            const numericId = parseInt(product.name.split(' ')[1] || `${index + 1}`, 10) || index + 1;
             return {
                 id: product.name.split(' ')[1] || product.id.toString(), // e.g., "Seat 24" -> "24"
                 productId: product.id,
@@ -79,6 +80,9 @@ export default function LibraryDetailClient({ library, initialSeatProducts, init
                 floor: 'Ground Floor',
                 section: 'Quiet Zone',
                 seatType: 'quiet',
+                label: `Seat ${numericId}`,
+                row: Math.floor((numericId - 1) / 10) + 1,
+                column: ((numericId - 1) % 10) + 1,
             }
         }).sort((a, b) => parseInt(a.id) - parseInt(b.id));
 
