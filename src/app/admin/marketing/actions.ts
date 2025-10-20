@@ -174,9 +174,6 @@ export async function updateBrandingAssets(formData: FormData) {
   }
 }
 
-  return createAdminClient(supabaseUrl, supabaseServiceKey);
-};
-
 export async function updateDonationSettings(formData: FormData) {
   try {
     const supabase = createClient();

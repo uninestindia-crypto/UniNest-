@@ -218,7 +218,7 @@ export type HomeTimelineItem = {
   year: string;
   title: string;
   description: string;
-  icon: LucideIcon;
+  icon: string;
 };
 
 export type BrandingAssets = {
