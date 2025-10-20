@@ -229,7 +229,7 @@ export type HomeMobileDeal = {
 export type HomeStat = {
   value: number;
   label: string;
-  icon: string;
+  icon: string | LucideIcon;
   isPlus?: boolean;
 };
 

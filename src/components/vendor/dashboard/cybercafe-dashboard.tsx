@@ -7,6 +7,8 @@ import { Computer, IndianRupee, PlusCircle, Check, Clock, Server, Phone, Message
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import type { Product } from "@/lib/types";
 import Link from "next/link";
+import { useMemo } from "react";
+import { buildWeeklyOrderTrend, computeConversionStats } from "@/components/vendor/dashboard/dashboard-analytics";
 
 const usageData = [
   { time: '10 AM', users: 5 }, { time: '11 AM', users: 8 },
@@ -31,6 +33,8 @@ export default function CybercafeDashboard({ products, orders }: CybercafeDashbo
     const equipmentSpecs = cafeListing?.equipment_specs;
     const contactPhone = cafeListing?.phone_number;
     const contactWhatsApp = cafeListing?.whatsapp_number;
+    const conversionStats = useMemo(() => computeConversionStats(orders), [orders]);
+    const weeklyTrend = useMemo(() => buildWeeklyOrderTrend(orders), [orders]);
 
     return (
         <div className="space-y-8">
@@ -65,6 +69,63 @@ export default function CybercafeDashboard({ products, orders }: CybercafeDashbo
                     <CardContent>
                          <p className="text-3xl font-bold">₹{stats.revenue.toLocaleString()}</p>
                          <p className="text-sm text-muted-foreground">from all-time sales</p>
+                    </CardContent>
+                </Card>
+            </div>
+
+            <div className="grid lg:grid-cols-2 gap-6">
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><Check className="text-primary"/> Booking Funnel</CardTitle>
+                        <CardDescription>Track how many enquiries convert into paid sessions.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="grid gap-3 text-sm">
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="rounded-lg border p-3">
+                                <p className="text-muted-foreground">Approved</p>
+                                <p className="text-2xl font-semibold text-emerald-600">{conversionStats.approved}</p>
+                            </div>
+                            <div className="rounded-lg border p-3">
+                                <p className="text-muted-foreground">Pending</p>
+                                <p className="text-2xl font-semibold text-amber-500">{conversionStats.pending}</p>
+                            </div>
+                            <div className="rounded-lg border p-3">
+                                <p className="text-muted-foreground">Rejected</p>
+                                <p className="text-2xl font-semibold text-rose-500">{conversionStats.rejected}</p>
+                            </div>
+                            <div className="rounded-lg border p-3">
+                                <p className="text-muted-foreground">Conversion rate</p>
+                                <p className="text-2xl font-semibold">{(conversionStats.conversionRate * 100).toFixed(1)}%</p>
+                            </div>
+                        </div>
+                        <div className="rounded-lg bg-muted/40 p-3 text-sm">
+                            <span className="font-semibold text-foreground">Avg. ticket:</span> ₹{conversionStats.averageTicket.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                            <span className="ml-4 font-semibold text-foreground">Revenue:</span> ₹{conversionStats.totalRevenue.toLocaleString('en-IN')}
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Weekly Booking Trend</CardTitle>
+                        <CardDescription>Visualise approvals over the past several weeks.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="h-56">
+                        {weeklyTrend.length > 0 ? (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={weeklyTrend}>
+                                    <XAxis dataKey="label" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
+                                    <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
+                                    <Tooltip
+                                        cursor={{ fill: 'rgba(148, 163, 184, 0.12)' }}
+                                        contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
+                                    />
+                                    <Bar dataKey="approved" name="Approved" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
+                                    <Bar dataKey="total" name="Total" fill="hsl(var(--muted-foreground))" radius={[6, 6, 0, 0]} opacity={0.35} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <p className="text-muted-foreground">Charts will populate once bookings start flowing in.</p>
+                        )}
                     </CardContent>
                 </Card>
             </div>

@@ -5,6 +5,8 @@ import { Toaster } from "@/components/ui/toaster";
 import MainLayout from '@/components/layout/main-layout';
 import { AuthProvider } from '@/hooks/use-auth';
 import ClientOnly from '@/components/client-only';
+import { BrandingAssetsProvider } from '@/components/branding/branding-provider';
+import { getBrandingAssets } from '@/lib/branding';
 import { Poppins } from 'next/font/google';
 
 const poppins = Poppins({
@@ -51,11 +53,12 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const brandingAssets = await getBrandingAssets();
   return (
     <html lang="en" suppressHydrationWarning className={poppins.variable}>
       <body className={cn(
@@ -63,9 +66,11 @@ export default function RootLayout({
       )}>
         <ClientOnly>
           <AuthProvider>
-            <MainLayout>
-              {children}
-            </MainLayout>
+            <BrandingAssetsProvider initialAssets={brandingAssets}>
+              <MainLayout>
+                {children}
+              </MainLayout>
+            </BrandingAssetsProvider>
           </AuthProvider>
         </ClientOnly>
         <Toaster />

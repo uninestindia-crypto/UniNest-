@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import HomePosterForm from '@/components/admin/marketing/home-poster-form';
+import BrandingAssetsForm from '@/components/admin/marketing/branding-assets-form';
 import { createClient } from '@/lib/supabase/server';
-import type { HomePosterConfig } from '@/lib/types';
+import type { BrandingAssets, HomePosterConfig } from '@/lib/types';
 import { defaultHomePosterConfig } from '@/lib/home-poster';
 
 export const dynamic = 'force-dynamic';
@@ -22,6 +23,7 @@ export default async function MarketingPage() {
   }
 
   let posterConfig = defaultHomePosterConfig;
+  let brandingAssets: BrandingAssets | null = null;
 
   try {
     const supabase = createClient();
@@ -53,6 +55,22 @@ export default async function MarketingPage() {
         };
       }
     }
+
+    const { data: brandingData, error: brandingError } = await supabase
+      .from('platform_settings')
+      .select('value')
+      .eq('key', 'branding_assets')
+      .maybeSingle();
+
+    if (brandingError) {
+      console.error('Error fetching branding assets:', brandingError);
+    } else if (brandingData?.value) {
+      const rawBranding = brandingData.value as BrandingAssets;
+      brandingAssets = {
+        logoUrl: rawBranding?.logoUrl ?? null,
+        faviconUrl: rawBranding?.faviconUrl ?? null,
+      };
+    }
   } catch (error) {
     console.error('Error in MarketingPage:', error);
     return (
@@ -72,7 +90,10 @@ export default async function MarketingPage() {
           Manage the home page hero poster experience.
         </p>
       </div>
-      <HomePosterForm initialConfig={posterConfig} />
+      <div className="grid gap-6">
+        <BrandingAssetsForm initialAssets={brandingAssets} />
+        <HomePosterForm initialConfig={posterConfig} />
+      </div>
     </div>
   );
 }

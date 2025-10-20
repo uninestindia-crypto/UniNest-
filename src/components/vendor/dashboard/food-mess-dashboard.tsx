@@ -8,6 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { Utensils, PlusCircle, Users, IndianRupee, ChefHat, Phone, MessageCircle } from "lucide-react";
 import Link from 'next/link';
 import type { Product } from "@/lib/types";
+import { useMemo } from "react";
+import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { buildWeeklyOrderTrend, computeConversionStats } from "@/components/vendor/dashboard/dashboard-analytics";
 
 type FoodMessDashboardProps = {
     products: Product[];
@@ -28,6 +31,8 @@ export default function FoodMessDashboard({ products, orders }: FoodMessDashboar
     const contactWhatsApp = messListing?.whatsapp_number;
     const subscriptionPrice = messListing?.subscription_price;
     const specialNotes = messListing?.special_notes;
+    const conversionStats = useMemo(() => computeConversionStats(orders), [orders]);
+    const weeklyTrend = useMemo(() => buildWeeklyOrderTrend(orders), [orders]);
 
     return (
         <div className="space-y-8">
@@ -102,6 +107,63 @@ export default function FoodMessDashboard({ products, orders }: FoodMessDashboar
                                 <span className="text-muted-foreground">Share a WhatsApp contact for faster confirmations.</span>
                             )}
                         </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            <div className="grid lg:grid-cols-2 gap-6">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Ordering Funnel</CardTitle>
+                        <CardDescription>Monitor subscriber intent and confirmed purchases.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="grid gap-3 text-sm">
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="rounded-lg border p-3">
+                                <p className="text-muted-foreground">Approved</p>
+                                <p className="text-2xl font-semibold text-emerald-600">{conversionStats.approved}</p>
+                            </div>
+                            <div className="rounded-lg border p-3">
+                                <p className="text-muted-foreground">Pending</p>
+                                <p className="text-2xl font-semibold text-amber-500">{conversionStats.pending}</p>
+                            </div>
+                            <div className="rounded-lg border p-3">
+                                <p className="text-muted-foreground">Rejected</p>
+                                <p className="text-2xl font-semibold text-rose-500">{conversionStats.rejected}</p>
+                            </div>
+                            <div className="rounded-lg border p-3">
+                                <p className="text-muted-foreground">Conversion rate</p>
+                                <p className="text-2xl font-semibold">{(conversionStats.conversionRate * 100).toFixed(1)}%</p>
+                            </div>
+                        </div>
+                        <div className="rounded-lg bg-muted/40 p-3 text-sm">
+                            <span className="font-semibold text-foreground">Avg. ticket:</span> ₹{conversionStats.averageTicket.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                            <span className="ml-4 font-semibold text-foreground">Revenue:</span> ₹{conversionStats.totalRevenue.toLocaleString('en-IN')}
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Weekly Order Trend</CardTitle>
+                        <CardDescription>How approved orders have changed recently.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="h-56">
+                        {weeklyTrend.length > 0 ? (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={weeklyTrend}>
+                                    <XAxis dataKey="label" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
+                                    <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
+                                    <Tooltip
+                                        cursor={{ fill: 'rgba(148, 163, 184, 0.12)' }}
+                                        contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
+                                    />
+                                    <Bar dataKey="approved" name="Approved" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
+                                    <Bar dataKey="total" name="Total" fill="hsl(var(--muted-foreground))" radius={[6, 6, 0, 0]} opacity={0.35} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <p className="text-muted-foreground">Trend data will appear once orders start rolling in.</p>
+                        )}
                     </CardContent>
                 </Card>
             </div>

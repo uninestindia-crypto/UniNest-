@@ -13,6 +13,8 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { format } from 'date-fns';
 import { Badge } from "@/components/ui/badge";
+import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { buildWeeklyOrderTrend, computeConversionStats } from "@/components/vendor/dashboard/dashboard-analytics";
 
 
 type LibraryDashboardProps = {
@@ -43,6 +45,8 @@ export default function LibraryDashboard({ products, orders: initialOrders }: Li
         if (library.subscription_price) return library.subscription_price;
         return library.price;
     }, [library]);
+    const conversionStats = useMemo(() => computeConversionStats(orders), [orders]);
+    const weeklyTrend = useMemo(() => buildWeeklyOrderTrend(orders), [orders]);
 
     const handleApproval = async (orderId: number, newStatus: 'approved' | 'rejected') => {
         if (!supabase) return;
@@ -95,6 +99,63 @@ export default function LibraryDashboard({ products, orders: initialOrders }: Li
                     <CardHeader><CardTitle className="flex items-center gap-2"><Users className="text-primary"/> Memberships</CardTitle></CardHeader>
                     <CardContent className="text-center text-muted-foreground pt-4">
                         <p>Membership feature coming soon!</p>
+                    </CardContent>
+                </Card>
+            </div>
+
+            <div className="grid lg:grid-cols-2 gap-6">
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><CheckCircle className="text-primary"/> Conversion Snapshot</CardTitle>
+                        <CardDescription>Monitor booking funnel performance.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="grid gap-3 text-sm">
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="rounded-lg border p-3">
+                                <p className="text-muted-foreground">Approved</p>
+                                <p className="text-2xl font-semibold text-emerald-600">{conversionStats.approved}</p>
+                            </div>
+                            <div className="rounded-lg border p-3">
+                                <p className="text-muted-foreground">Pending</p>
+                                <p className="text-2xl font-semibold text-amber-500">{conversionStats.pending}</p>
+                            </div>
+                            <div className="rounded-lg border p-3">
+                                <p className="text-muted-foreground">Rejected</p>
+                                <p className="text-2xl font-semibold text-rose-500">{conversionStats.rejected}</p>
+                            </div>
+                            <div className="rounded-lg border p-3">
+                                <p className="text-muted-foreground">Conversion rate</p>
+                                <p className="text-2xl font-semibold">{(conversionStats.conversionRate * 100).toFixed(1)}%</p>
+                            </div>
+                        </div>
+                        <div className="rounded-lg bg-muted/40 p-3 text-sm">
+                            <span className="font-semibold text-foreground">Avg. ticket:</span> ₹{conversionStats.averageTicket.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                            <span className="ml-4 font-semibold text-foreground">Revenue:</span> ₹{conversionStats.totalRevenue.toLocaleString('en-IN')}
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Bookings Trend</CardTitle>
+                        <CardDescription>Approved reservations over the past weeks.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="h-56">
+                        {weeklyTrend.length > 0 ? (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={weeklyTrend}>
+                                    <XAxis dataKey="label" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
+                                    <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
+                                    <Tooltip
+                                        cursor={{ fill: 'rgba(148, 163, 184, 0.12)' }}
+                                        contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
+                                    />
+                                    <Bar dataKey="approved" name="Approved" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
+                                    <Bar dataKey="total" name="Total" fill="hsl(var(--muted-foreground))" radius={[6, 6, 0, 0]} opacity={0.35} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <p className="text-muted-foreground">Trend data will appear after receiving bookings.</p>
+                        )}
                     </CardContent>
                 </Card>
             </div>
