@@ -56,6 +56,36 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
+  const ensureProfileRecord = useCallback(async (user: User | null) => {
+    if (!user) {
+      return;
+    }
+
+    const { data: existingProfile, error: fetchError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (fetchError) {
+      console.error('Error checking profile record:', fetchError);
+      return;
+    }
+
+    if (!existingProfile) {
+      const { error: insertError } = await supabase.from('profiles').insert({
+        id: user.id,
+        full_name: user.user_metadata?.full_name || null,
+        avatar_url: user.user_metadata?.avatar_url || null,
+        handle: user.user_metadata?.handle || null,
+      });
+
+      if (insertError) {
+        console.error('Error creating profile record:', insertError);
+      }
+    }
+  }, [supabase]);
+
   const fetchNotifications = useCallback(async (userId: string) => {
     const { data, error } = await supabase
       .from('notifications')
@@ -92,12 +122,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setVendorCategories(newCategories);
     if (user) {
       fetchNotifications(user.id);
+      ensureProfileRecord(user).catch(console.error);
     } else {
       setNotifications([]);
       setUnreadCount(0);
     }
     setLoading(false);
-  }, [fetchNotifications]);
+  }, [fetchNotifications, ensureProfileRecord]);
 
 
   useEffect(() => {

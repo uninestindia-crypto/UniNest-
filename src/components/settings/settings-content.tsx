@@ -71,6 +71,7 @@ export default function SettingsContent() {
   const [isPhotoLoading, setIsPhotoLoading] = useState(false);
   const [isBannerLoading, setIsBannerLoading] = useState(false);
   const [monetizationSettings, setMonetizationSettings] = useState<any>(null);
+  const [isCancelLoading, setIsCancelLoading] = useState(false);
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -119,6 +120,25 @@ export default function SettingsContent() {
     isChargeEnabled &&
     !isVendorActive &&
     vendorCategoryCount > 0;
+  const formattedTrialEnd = vendorTrialExpiresAt
+    ? vendorTrialExpiresAt.toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })
+    : null;
+  const subscriptionStatusLabel = (() => {
+    if (isVendorActive) return 'Active subscription';
+    if (isTrialActive) return formattedTrialEnd ? `Trial active until ${formattedTrialEnd}` : 'Trial active';
+    if (showPaymentAlert) return 'Activation pending';
+    if (isTrialEligible) return 'Free trial available';
+    return 'Inactive';
+  })();
+  const subscriptionStatusHelper = (() => {
+    if (isVendorActive && hasRecordedPayment) return 'Billing renews automatically each month.';
+    if (isVendorActive && isTrialActive) return 'Free trial is active with vendor access enabled.';
+    if (isTrialActive && !isVendorActive) return 'Complete onboarding steps to unlock full access during your trial.';
+    if (showPaymentAlert) return 'Complete payment to activate marketplace visibility.';
+    if (isTrialEligible) return 'Start your complimentary trial when you submit vendor details.';
+    return 'Reactivate anytime from this dashboard.';
+  })();
+  const canCancelSubscription = isVendorActive || isTrialActive;
   const submitLabel = (() => {
     if (selectedRole !== 'vendor') return 'Save Changes';
     if (shouldCharge && isTrialEligible) return 'Activate Free Trial';
@@ -310,6 +330,36 @@ export default function SettingsContent() {
     setIsPasswordLoading(false);
   }
 
+  const handleCancelSubscription = async () => {
+    if (!user || !supabase || !canCancelSubscription) return;
+    setIsCancelLoading(true);
+    const updatedMetadata = {
+      ...(user.user_metadata || {}),
+      is_vendor_active: false,
+      vendor_trial_started_at: null,
+      vendor_trial_expires_at: null,
+      last_payment_id: null,
+    };
+    const { error: authError } = await supabase.auth.updateUser({ data: updatedMetadata });
+    if (authError) {
+      toast({ variant: 'destructive', title: 'Cancellation failed', description: authError.message });
+      setIsCancelLoading(false);
+      return;
+    }
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .update({ role: 'vendor' })
+      .eq('id', user.id);
+    if (profileError) {
+      toast({ variant: 'destructive', title: 'Cancellation failed', description: profileError.message });
+      setIsCancelLoading(false);
+      return;
+    }
+    toast({ title: 'Subscription cancelled', description: 'Your vendor access will remain available until the current period ends.' });
+    setIsCancelLoading(false);
+    window.location.reload();
+  };
+
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>, type: 'avatar' | 'banner') => {
     const file = event.target.files?.[0];
     if (file) {
@@ -487,6 +537,54 @@ export default function SettingsContent() {
                     </Button>
                 </div>
             </CardContent>
+        </Card>
+      )}
+
+      {selectedRole === 'vendor' && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Subscription & Billing</CardTitle>
+            <CardDescription>Review your vendor plan status and manage access.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <p className="text-sm text-muted-foreground">Status</p>
+              <p className="text-lg font-semibold text-foreground">{subscriptionStatusLabel}</p>
+              <p className="text-sm text-muted-foreground">{subscriptionStatusHelper}</p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-lg border border-muted/40 p-4">
+                <p className="text-sm text-muted-foreground">Selected services</p>
+                <p className="text-lg font-semibold text-foreground">{vendorCategoryCount}</p>
+              </div>
+              <div className="rounded-lg border border-muted/40 p-4">
+                <p className="text-sm text-muted-foreground">Monthly cost</p>
+                <p className="text-lg font-semibold text-foreground">
+                  {shouldCharge && pricePerService > 0 ? `₹${totalCost.toLocaleString('en-IN')}` : 'Included in plan'}
+                </p>
+              </div>
+            </div>
+            {showPaymentAlert && (
+              <Alert className="border-primary/30">
+                <AlertTriangle className="size-4 text-primary" />
+                <AlertTitle>Complete activation</AlertTitle>
+                <AlertDescription>Finish payment or submit required documents to unlock bookings.</AlertDescription>
+              </Alert>
+            )}
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm text-muted-foreground">
+                Canceling pauses marketplace visibility and billing from the next cycle. You can reactivate anytime.
+              </p>
+              <Button
+                variant="outline"
+                onClick={handleCancelSubscription}
+                disabled={!canCancelSubscription || isCancelLoading}
+              >
+                {isCancelLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Cancel subscription
+              </Button>
+            </div>
+          </CardContent>
         </Card>
       )}
 
