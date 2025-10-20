@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
 import { Share2, Copy, CheckCheck, Send, MessageCircle, Linkedin, Twitter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -129,10 +128,10 @@ export function OpportunityShareButton({
         <div className="grid grid-cols-1 gap-2">
           {socialLinks.map((option) => (
             <Button key={option.label} asChild variant="ghost" className="justify-start gap-2 rounded-full">
-              <Link href={option.href} target="_blank" rel="noopener noreferrer">
+              <a href={option.href} target="_blank" rel="noopener noreferrer">
                 <option.icon className="size-4" />
                 {option.label}
-              </Link>
+              </a>
             </Button>
           ))}
         </div>

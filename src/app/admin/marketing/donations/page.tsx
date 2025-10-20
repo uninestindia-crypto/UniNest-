@@ -13,6 +13,9 @@ const fallbackImpact = {
   librariesDigitized: 2,
 };
 
+const isMissingTableError = (error: unknown) =>
+  typeof error === 'object' && error !== null && 'code' in error && (error as { code?: string }).code === 'PGRST205';
+
 const parseNumber = (value: unknown, fallback = 0) => {
   if (typeof value === 'number' && Number.isFinite(value)) return value;
   if (typeof value === 'string') {
@@ -55,7 +58,16 @@ export default async function DonationSettingsPage() {
     supabase.auth.getUser(),
   ]);
 
-  const configEntries = configResult.data ?? [];
+  const configEntries = (() => {
+    if (!configResult.error) {
+      return configResult.data ?? [];
+    }
+    if (isMissingTableError(configResult.error)) {
+      console.warn('[admin/donations] app_config table missing. Using default configuration.');
+      return [];
+    }
+    throw configResult.error;
+  })();
   const configMap = configEntries.reduce<Record<string, any>>((acc, entry) => {
     acc[entry.key] = entry.value;
     return acc;
