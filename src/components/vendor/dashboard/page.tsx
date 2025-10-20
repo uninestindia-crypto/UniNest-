@@ -1,67 +1,542 @@
 
 'use client';
 
-import PageHeader from '@/components/admin/page-header';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import Link from 'next/link';
-import { Library, Utensils, Bed, Laptop, ArrowRight } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-
-const categoryDashboards = [
-    { id: "library", label: "Library Hub", icon: Library, color: 'text-purple-500' },
-    { id: "food mess", label: "Food Mess Hub", icon: Utensils, color: 'text-orange-500' },
-    { id: "hostels", label: "Hostel Hub", icon: Bed, color: 'text-blue-500' },
-    { id: "cybercafe", label: "Cybercafé Hub", icon: Laptop, color: 'text-green-500' },
-];
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Award,
+  CalendarDays,
+  Coins,
+  Crown,
+  Image,
+  Info,
+  MessageSquare,
+  PhoneCall,
+  ShieldCheck,
+  Sparkles,
+  Star,
+  Target,
+  TrendingUp,
+  UploadCloud,
+  Users,
+  Wallet,
+} from 'lucide-react';
 
 type VendorDashboardContentProps = {
-    userName: string;
-    vendorCategories: string[];
-}
+  userName: string;
+  vendorCategories: string[];
+};
+
+const summaryTrendStyles = {
+  positive: 'bg-emerald-50 text-emerald-600',
+  neutral: 'bg-slate-100 text-slate-600',
+  negative: 'bg-rose-50 text-rose-600',
+} as const;
+
+const leadStatusStyles = {
+  new: 'bg-sky-50 text-sky-600',
+  warm: 'bg-amber-50 text-amber-600',
+  followup: 'bg-violet-50 text-violet-600',
+} as const;
 
 export default function VendorDashboardContent({ userName, vendorCategories }: VendorDashboardContentProps) {
+  const summaryMetrics = [
+    {
+      label: 'Occupancy rate',
+      value: '82%',
+      trend: '+5.4%',
+      tone: 'positive' as const,
+      description: 'Average occupancy across listings (30 days).',
+      icon: TrendingUp,
+    },
+    {
+      label: 'Monthly revenue',
+      value: '₹4.6L',
+      trend: '+₹38K',
+      tone: 'positive' as const,
+      description: 'Net payouts scheduled this month.',
+      icon: Wallet,
+    },
+    {
+      label: 'Active leads',
+      value: '28',
+      trend: '+7 new',
+      tone: 'positive' as const,
+      description: 'Leads in pipeline ready for response.',
+      icon: Users,
+    },
+    {
+      label: 'Avg nightly rate',
+      value: '₹9,200',
+      trend: '+₹450',
+      tone: 'neutral' as const,
+      description: 'Average realized rate across private rooms.',
+      icon: Coins,
+    },
+  ];
 
-  const vendorSpecificDashboards = categoryDashboards.filter(dash => vendorCategories.includes(dash.id));
-  
+  const pricingDays = [
+    { label: 'Mon', occupancy: 78, rate: '₹9,350', demand: 'High', highlight: true },
+    { label: 'Tue', occupancy: 74, rate: '₹9,200', demand: 'Medium', highlight: false },
+    { label: 'Wed', occupancy: 69, rate: '₹8,980', demand: 'Neutral', highlight: false },
+    { label: 'Thu', occupancy: 86, rate: '₹9,650', demand: 'Peak', highlight: true },
+    { label: 'Fri', occupancy: 91, rate: '₹9,780', demand: 'Peak', highlight: true },
+    { label: 'Sat', occupancy: 88, rate: '₹9,720', demand: 'High', highlight: false },
+    { label: 'Sun', occupancy: 72, rate: '₹9,180', demand: 'Medium', highlight: false },
+  ];
+
+  const crmLeads = [
+    { name: 'Ananya Rao', initials: 'AR', note: 'Tour requested for 24 Oct · 3 rooms', status: 'new' as const, time: '2m ago' },
+    { name: 'Rahul Singh', initials: 'RS', note: 'Follow-up on shared brochure', status: 'warm' as const, time: '1h ago' },
+    { name: 'Priya Menon', initials: 'PM', note: 'Asked for group pricing · 12 seats', status: 'followup' as const, time: 'Yesterday' },
+  ];
+
+  const quickReplies = ['Send brochure', 'Share occupancy stats', 'Schedule a call'];
+
+  const bookingCalendar = [
+    { day: 'Mon', occupancy: 85, rate: '₹9,450', status: 'High demand' },
+    { day: 'Tue', occupancy: 78, rate: '₹9,200', status: 'Healthy' },
+    { day: 'Wed', occupancy: 67, rate: '₹8,960', status: 'Room to fill' },
+    { day: 'Thu', occupancy: 92, rate: '₹9,780', status: 'Sold out' },
+    { day: 'Fri', occupancy: 94, rate: '₹9,820', status: 'Peak' },
+    { day: 'Sat', occupancy: 88, rate: '₹9,740', status: 'Peak' },
+    { day: 'Sun', occupancy: 74, rate: '₹9,120', status: 'Moderate' },
+  ];
+
+  const payouts = [
+    { id: 'INV-7842', listing: 'Skyline Premium Dorms', amount: '₹82,400', status: 'Scheduled for 20 Oct' },
+    { id: 'INV-7838', listing: 'UrbanStay Standard Rooms', amount: '₹64,900', status: 'Paid on 14 Oct' },
+    { id: 'INV-7833', listing: 'MetroView Suites', amount: '₹1,12,000', status: 'Processing' },
+  ];
+
+  const marketingBoosters = [
+    { title: 'Diwali week visibility boost', detail: 'Push to top search slots · +28% clicks last year' },
+    { title: 'Lounge event promotion', detail: 'Invite student clubs · includes poster template' },
+    { title: 'Weekend staycation offer', detail: 'Pre-fill 2 nights bundle to drive occupancy' },
+  ];
+
+  const optimizerHighlights = [
+    { title: 'Upload 2 bright lobby photos', detail: 'Listings with refreshed visuals convert 34% faster.' },
+    { title: 'Rewrite title with neighborhood cues', detail: 'Mention "5 mins from Tech Park" to rank higher.' },
+  ];
+
+  const tierMetrics = [
+    { label: 'Response time', value: '1h 12m', progress: 82 },
+    { label: 'Review score', value: '4.7 / 5', progress: 94 },
+    { label: 'Stay extensions', value: '18%', progress: 68 },
+  ];
+
+  const nudges = [
+    { title: 'Your occupancy is 75%', detail: 'Add 2 new photos to improve visibility.', accent: 'bg-blue-50 text-blue-700' },
+    { title: 'Set your pricing to ₹9,500', detail: 'Matches local demand for next weekend.', accent: 'bg-emerald-50 text-emerald-700' },
+  ];
+
   return (
-    <div className="space-y-8">
-      <PageHeader title="Dashboard" description={`Welcome, ${userName}. Here's your main hub.`} />
-
-       {vendorSpecificDashboards.length > 0 ? (
-        <div>
-            <h2 className="text-2xl font-bold tracking-tight mb-4">Your Service Dashboards</h2>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {vendorSpecificDashboards.map(dash => (
-                     <Link key={dash.id} href={`/vendor/dashboard/${dash.id.replace(/\s+/g, '-')}`}>
-                        <Card className="hover:shadow-lg transition-shadow h-full">
-                            <CardHeader className="flex flex-row items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <dash.icon className={`size-8 ${dash.color}`} />
-                                    <CardTitle className="text-xl">{dash.label}</CardTitle>
-                                </div>
-                                <ArrowRight className="size-5 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <CardDescription>
-                                    Click to manage your {dash.label.replace(' Hub', '').toLowerCase()} services, view specific orders, and see detailed analytics.
-                                </CardDescription>
-                            </CardContent>
-                        </Card>
-                    </Link>
+    <TooltipProvider>
+      <div className="mx-auto max-w-7xl space-y-10 px-4 py-8 lg:px-8">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-[0.3em] text-slate-500">Vendor HQ</p>
+            <h1 className="mt-2 text-3xl font-semibold text-slate-900 lg:text-4xl">Welcome back, {userName}</h1>
+            <p className="mt-3 max-w-xl text-sm text-slate-600">
+              Keep occupancy, pricing, conversations, and payouts aligned from a single clean workspace.
+            </p>
+            {vendorCategories.length > 0 && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {vendorCategories.map((category) => (
+                  <Badge key={category} className="rounded-full bg-slate-100 px-3 py-1 text-slate-600">
+                    {category.replace(/-/g, ' ').toUpperCase()}
+                  </Badge>
                 ))}
-            </div>
-        </div>
-       ) : (
-        <Card className="text-center p-8">
-            <CardTitle>Get Started as a Vendor</CardTitle>
-            <CardDescription className="mt-2">You haven't configured any services yet.</CardDescription>
-            <Button asChild className="mt-4">
-                <Link href="/settings">Configure Your Services</Link>
+              </div>
+            )}
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Button size="lg" className="rounded-full px-6 py-2 shadow-sm">
+              <Sparkles className="mr-2 size-4" />
+              Add new listing
             </Button>
-            <p className="text-xs text-muted-foreground mt-4">Go to your settings to select the services you provide (e.g., Library, Hostels).</p>
-        </Card>
-       )}
-    </div>
+            <Button variant="outline" size="lg" className="rounded-full px-6 py-2">
+              <ArrowUpRight className="mr-2 size-4" />
+              Export reports
+            </Button>
+          </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {summaryMetrics.map((metric) => (
+            <Card key={metric.label} className="rounded-2xl border border-slate-100 bg-white shadow-sm transition-shadow hover:shadow-md">
+              <CardHeader className="flex flex-row items-start justify-between space-y-0">
+                <div>
+                  <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-slate-500">
+                    <metric.icon className="size-4 text-blue-500" />
+                    {metric.label}
+                  </p>
+                  <div className="mt-4 flex items-baseline gap-3">
+                    <span className="text-2xl font-semibold text-slate-900">{metric.value}</span>
+                    <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${summaryTrendStyles[metric.tone]}`}>
+                      {metric.trend}
+                    </span>
+                  </div>
+                  <p className="mt-3 text-xs text-slate-500">{metric.description}</p>
+                </div>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="inline-flex size-8 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+                      <Info className="size-4" />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>{metric.description}</TooltipContent>
+                </Tooltip>
+              </CardHeader>
+            </Card>
+          ))}
+        </div>
+
+        <div className="grid gap-6 xl:grid-cols-12">
+          <Card className="rounded-3xl border border-slate-100 bg-white shadow-sm xl:col-span-7">
+            <CardHeader className="space-y-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg font-semibold text-slate-900">Dynamic Pricing & Insights</CardTitle>
+                <Badge className="rounded-full bg-blue-50 text-xs font-semibold text-blue-600">Live</Badge>
+              </div>
+              <p className="text-sm text-slate-600">
+                Occupancy is trending up for the coming weekend. Adjust your rates and watch profitability.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid gap-4 rounded-2xl border border-slate-100 bg-slate-50/60 p-5 sm:grid-cols-3">
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-slate-500">Current occupancy</p>
+                  <div className="mt-3 flex items-baseline gap-2">
+                    <span className="text-3xl font-semibold text-slate-900">78%</span>
+                    <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-600">+4.2%</span>
+                  </div>
+                  <Progress value={78} className="mt-4 h-2 rounded-full bg-slate-200" />
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-slate-500">Market demand</p>
+                  <div className="mt-3 flex items-center gap-2 text-lg font-semibold text-blue-600">
+                    <Target className="size-5" />
+                    High for Thu - Sun
+                  </div>
+                  <p className="mt-2 text-xs text-slate-500">Based on competitor fill rates within 3 km radius.</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-slate-500">Smart suggestion</p>
+                  <div className="mt-3 flex items-center gap-3 rounded-2xl bg-white p-3 shadow-sm">
+                    <span className="text-2xl font-semibold text-slate-900">₹9,500</span>
+                    <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">+₹320</span>
+                  </div>
+                  <p className="mt-2 text-xs text-slate-500">Optimised nightly rate for premium rooms.</p>
+                </div>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
+                {pricingDays.map((day) => (
+                  <Tooltip key={day.label}>
+                    <TooltipTrigger asChild>
+                      <div
+                        className={`rounded-2xl border px-4 py-4 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${
+                          day.highlight ? 'border-blue-200 bg-white' : 'border-slate-100 bg-slate-50'
+                        }`}
+                      >
+                        <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{day.label}</p>
+                        <p className="mt-2 text-xl font-semibold text-slate-900">{day.occupancy}%</p>
+                        <p className="mt-1 text-xs text-slate-500">Occupancy</p>
+                        <p className="mt-3 text-sm font-semibold text-blue-600">{day.rate}</p>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent className="text-xs font-medium text-slate-600">{day.demand}</TooltipContent>
+                  </Tooltip>
+                ))}
+              </div>
+
+              <div className="flex flex-col gap-3 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-slate-900">Smart queue</p>
+                  <p className="text-xs text-slate-600">Apply the suggested rate across 3 listings in two clicks.</p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Button size="sm" className="rounded-full px-4 py-2">
+                    Apply to premium rooms
+                  </Button>
+                  <Button variant="outline" size="sm" className="rounded-full px-4 py-2">
+                    Adjust manually
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="rounded-3xl border border-slate-100 bg-white shadow-sm xl:col-span-5">
+            <CardHeader className="space-y-2">
+              <CardTitle className="text-lg font-semibold text-slate-900">Vendor CRM</CardTitle>
+              <p className="text-sm text-slate-600">Reply to fresh inquiries and keep leads warm without juggling tabs.</p>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <div className="space-y-3">
+                {crmLeads.map((lead) => (
+                  <div key={lead.name} className="flex items-start justify-between rounded-2xl border border-slate-100 bg-slate-50/60 p-4">
+                    <div className="flex items-start gap-4">
+                      <Avatar className="size-10 rounded-xl">
+                        <AvatarFallback className="rounded-xl bg-blue-100 text-sm font-semibold text-blue-700">
+                          {lead.initials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-semibold text-slate-900">{lead.name}</p>
+                          <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${leadStatusStyles[lead.status]}`}>
+                            {lead.status === 'new' ? 'New lead' : lead.status === 'warm' ? 'Warm' : 'Follow-up'}
+                          </span>
+                        </div>
+                        <p className="mt-1 text-xs text-slate-600">{lead.note}</p>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <Button variant="secondary" size="sm" className="rounded-full bg-white px-4 py-2 shadow-sm">
+                            <MessageSquare className="mr-2 size-3.5" />
+                            Send reply
+                          </Button>
+                          <Button variant="ghost" size="sm" className="rounded-full px-4 py-2 text-slate-600 hover:bg-slate-100">
+                            <PhoneCall className="mr-2 size-3.5" />
+                            Schedule call
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-xs text-slate-400">{lead.time}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {quickReplies.map((reply) => (
+                  <Button key={reply} variant="outline" size="sm" className="rounded-full border-dashed px-4 py-2 text-xs text-slate-600">
+                    {reply}
+                  </Button>
+                ))}
+              </div>
+            </CardContent>
+            <CardFooter className="border-t border-slate-100 px-6 py-4">
+              <div className="flex w-full items-center justify-between text-sm text-slate-500">
+                <span>Inbox sorted by newest activity.</span>
+                <Button variant="link" className="text-blue-600">
+                  View all conversations
+                </Button>
+              </div>
+            </CardFooter>
+          </Card>
+        </div>
+
+        <div className="grid gap-6 xl:grid-cols-12">
+          <Card className="rounded-3xl border border-slate-100 bg-white shadow-sm xl:col-span-8">
+            <CardHeader className="space-y-2">
+              <CardTitle className="text-lg font-semibold text-slate-900">Bookings & Payments</CardTitle>
+              <p className="text-sm text-slate-600">Glance through the calendar and keep payouts predictable.</p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <Tabs defaultValue="bookings" className="space-y-4">
+                <TabsList className="grid w-full grid-cols-2 rounded-full bg-slate-100 p-1">
+                  <TabsTrigger value="bookings" className="rounded-full data-[state=active]:bg-white data-[state=active]:shadow">
+                    Calendar view
+                  </TabsTrigger>
+                  <TabsTrigger value="payments" className="rounded-full data-[state=active]:bg-white data-[state=active]:shadow">
+                    Payout summary
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="bookings" className="space-y-4">
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    {bookingCalendar.map((slot) => (
+                      <div key={slot.day} className="rounded-2xl border border-slate-100 bg-slate-50/60 p-4 shadow-sm">
+                        <div className="flex items-center justify-between">
+                          <div className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600">{slot.day}</div>
+                          <CalendarDays className="size-4 text-slate-400" />
+                        </div>
+                        <p className="mt-4 text-2xl font-semibold text-slate-900">{slot.occupancy}%</p>
+                        <p className="text-xs text-slate-500">Occupancy forecast</p>
+                        <p className="mt-3 text-sm font-medium text-blue-600">{slot.rate}</p>
+                        <p className="mt-1 text-xs text-slate-500">{slot.status}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button variant="outline" size="sm" className="rounded-full px-4 py-2 text-xs text-slate-600">
+                      Block maintenance dates
+                    </Button>
+                    <Button size="sm" className="rounded-full px-4 py-2 text-xs">
+                      Add manual booking
+                    </Button>
+                  </div>
+                </TabsContent>
+                <TabsContent value="payments" className="space-y-4">
+                  <div className="space-y-3">
+                    {payouts.map((payout) => (
+                      <div key={payout.id} className="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50/60 p-4 shadow-sm">
+                        <div>
+                          <p className="text-sm font-semibold text-slate-900">{payout.listing}</p>
+                          <p className="text-xs text-slate-500">{payout.id}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-base font-semibold text-slate-900">{payout.amount}</p>
+                          <p className="text-xs text-slate-500">{payout.status}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <Button variant="outline" className="rounded-full px-4 py-2 text-sm text-slate-600">
+                    Download payout summary
+                  </Button>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+
+          <Card className="rounded-3xl border border-slate-100 bg-gradient-to-br from-blue-50 via-white to-blue-50 shadow-sm xl:col-span-4">
+            <CardHeader className="space-y-3">
+              <Badge className="w-fit rounded-full bg-blue-100 text-xs font-semibold text-blue-700">Peak season ready</Badge>
+              <CardTitle className="text-lg font-semibold text-slate-900">Promotion & Marketing Booster</CardTitle>
+              <p className="text-sm text-slate-600">One-click boosts keep you ahead during high-demand weeks.</p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {marketingBoosters.map((item) => (
+                <div key={item.title} className="rounded-2xl border border-blue-100 bg-white p-4 shadow-sm">
+                  <p className="text-sm font-semibold text-slate-900">{item.title}</p>
+                  <p className="mt-1 text-xs text-slate-600">{item.detail}</p>
+                </div>
+              ))}
+            </CardContent>
+            <CardFooter className="px-6 pb-6 pt-4">
+              <Button className="w-full rounded-full px-4 py-2">
+                Boost listing now
+                <ArrowRight className="ml-2 size-4" />
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
+
+        <div className="grid gap-6 xl:grid-cols-12">
+          <Card className="rounded-3xl border border-slate-100 bg-white shadow-sm xl:col-span-5">
+            <CardHeader className="space-y-2">
+              <CardTitle className="text-lg font-semibold text-slate-900">AI Listing Optimizer</CardTitle>
+              <p className="text-sm text-slate-600">Refresh photos and descriptions to climb search rankings.</p>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 px-6 py-10 text-center">
+                <UploadCloud className="size-10 text-blue-500" />
+                <p className="mt-3 text-sm font-semibold text-slate-900">Drop photos or browse files</p>
+                <p className="mt-1 text-xs text-slate-500">We sharpen lighting, fix alignment, and generate captions in seconds.</p>
+                <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+                  <Button size="sm" className="rounded-full px-4 py-2 text-xs">
+                    Upload photo
+                  </Button>
+                  <Button variant="outline" size="sm" className="rounded-full px-4 py-2 text-xs text-slate-600">
+                    Try demo listing
+                  </Button>
+                </div>
+              </div>
+              <div className="space-y-3">
+                {optimizerHighlights.map((item) => (
+                  <div key={item.title} className="flex items-start gap-3 rounded-2xl bg-slate-50 p-4">
+                    <Image className="mt-1 size-5 text-blue-500" />
+                    <div>
+                      <p className="text-sm font-semibold text-slate-900">{item.title}</p>
+                      <p className="mt-1 text-xs text-slate-600">{item.detail}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
+                {nudges.map((nudge) => (
+                  <div key={nudge.title} className={`${nudge.accent} mb-2 flex items-start justify-between rounded-2xl px-4 py-3 last:mb-0`}>
+                    <div>
+                      <p className="text-sm font-semibold">{nudge.title}</p>
+                      <p className="mt-1 text-xs opacity-80">{nudge.detail}</p>
+                    </div>
+                    <Button variant="ghost" size="sm" className="rounded-full px-3 py-1 text-xs text-slate-600 hover:bg-white/80">
+                      Action
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="rounded-3xl border border-slate-100 bg-white shadow-sm xl:col-span-7">
+            <CardHeader className="space-y-3">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <CardTitle className="text-lg font-semibold text-slate-900">Vendor Tier & Badges</CardTitle>
+                  <p className="text-sm text-slate-600">Gold status unlocked · maintain momentum to reach Platinum.</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge className="rounded-full bg-amber-100 text-amber-700">
+                    <Crown className="mr-1 size-3.5" /> Gold partner
+                  </Badge>
+                  <Badge variant="outline" className="rounded-full border-dashed border-blue-200 text-blue-600">
+                    <ShieldCheck className="mr-1 size-3.5" /> Verified
+                  </Badge>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid gap-4 lg:grid-cols-3">
+                {tierMetrics.map((metric) => (
+                  <div key={metric.label} className="rounded-2xl border border-slate-100 bg-slate-50/60 p-4 shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{metric.label}</p>
+                      <Star className="size-4 text-blue-500" />
+                    </div>
+                    <p className="mt-3 text-lg font-semibold text-slate-900">{metric.value}</p>
+                    <Progress value={metric.progress} className="mt-3 h-2 rounded-full bg-slate-200" />
+                  </div>
+                ))}
+              </div>
+              <div className="rounded-2xl border border-slate-100 bg-gradient-to-r from-white via-blue-50 to-white p-5 shadow-sm">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">68% progress towards Platinum badge</p>
+                    <p className="mt-1 text-xs text-slate-600">Complete 5 more five-star reviews and maintain response time under 1 hour.</p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button size="sm" className="rounded-full px-4 py-2 text-xs">
+                      View checklist
+                    </Button>
+                    <Button variant="outline" size="sm" className="rounded-full px-4 py-2 text-xs text-slate-600">
+                      Share badge
+                    </Button>
+                  </div>
+                </div>
+              </div>
+              <div className="grid gap-3 md:grid-cols-3">
+                <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                    <ShieldCheck className="size-4 text-blue-500" /> Verified listing
+                  </div>
+                  <p className="mt-2 text-xs text-slate-600">Documents reviewed · visible badge increases trust by 24%.</p>
+                </div>
+                <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                    <Award className="size-4 text-amber-500" /> Platinum preview
+                  </div>
+                  <p className="mt-2 text-xs text-slate-600">Maintain 30-day satisfaction score above 4.8 to unlock.</p>
+                </div>
+                <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                    <ArrowUpRight className="size-4 text-emerald-500" /> Upsell insights
+                  </div>
+                  <p className="mt-2 text-xs text-slate-600">Offer late checkout and breakfast bundle for weekday stays.</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </TooltipProvider>
   );
 }
