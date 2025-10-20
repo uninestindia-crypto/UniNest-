@@ -6,6 +6,7 @@ import type { User, SupabaseClient } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import type { Notification } from '@/lib/types';
+import { getVendorSubscriptionState } from '@/lib/vendor/access';
 
 type UserRole = 'student' | 'vendor' | 'co-admin' | 'admin' | 'guest';
 
@@ -128,22 +129,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUser(user);
     const newRole = determineRole(user);
     const newCategories = getVendorCategories(user);
-    const metadata = user?.user_metadata ?? {};
-    const rawVendorActive = Boolean(metadata.is_vendor_active);
-    const trialExpiresAt = metadata.vendor_trial_expires_at ? new Date(metadata.vendor_trial_expires_at) : null;
-    const subscriptionEndAt = metadata.vendor_subscription_end_at ? new Date(metadata.vendor_subscription_end_at) : null;
-    const subscriptionStartAt = metadata.vendor_subscription_start_at ? new Date(metadata.vendor_subscription_start_at) : null;
-    const hasRecordedPayment = Boolean(metadata.last_payment_id);
-    const isTrialActive = trialExpiresAt ? new Date() <= trialExpiresAt : false;
-    const hasActiveSubscription = subscriptionEndAt
-      ? new Date() <= subscriptionEndAt
-      : Boolean(subscriptionStartAt) || hasRecordedPayment;
     setRole(newRole);
     setVendorCategories(newCategories);
+    const subscriptionState = getVendorSubscriptionState(user);
     setVendorSubscriptionStatus({
-      isVendorActive: rawVendorActive && (isTrialActive || hasActiveSubscription),
-      isTrialActive,
-      hasActiveSubscription,
+      isVendorActive: subscriptionState.canManageListings,
+      isTrialActive: subscriptionState.trialActive,
+      hasActiveSubscription: subscriptionState.subscriptionWindowActive,
     });
     if (user) {
       fetchNotifications(user.id);
