@@ -5,11 +5,13 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 import type {
+  BrandingAssets,
   HomePosterConfig,
   HomeHeroSlide,
   HomeQuickAccessCard,
   HomeCuratedCollection,
 } from '@/lib/types';
+import { ensureBucketExists } from '@/lib/supabase/storage';
 
 const slideSchema = z.object({
   id: z.string().optional(),
@@ -60,6 +62,8 @@ const donationSettingsSchema = z.object({
   milestones: z.array(donationMilestoneSchema).max(12),
 });
 
+const BRANDING_BUCKET = 'branding';
+
 const getSupabaseAdmin = () => {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
@@ -67,6 +71,108 @@ const getSupabaseAdmin = () => {
   if (!supabaseUrl || !supabaseServiceKey) {
     throw new Error('Supabase service role key is not configured.');
   }
+
+  return createAdminClient(supabaseUrl, supabaseServiceKey);
+};
+
+export async function updateBrandingAssets(formData: FormData) {
+  try {
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user || user.user_metadata?.role !== 'admin') {
+      throw new Error('Forbidden: Admins only.');
+    }
+
+    const supabaseAdmin = getSupabaseAdmin();
+
+    const { error: bucketError } = await ensureBucketExists(supabaseAdmin, BRANDING_BUCKET);
+    if (bucketError) {
+      throw new Error(`Failed to ensure branding bucket: ${bucketError}`);
+    }
+
+    const { data: existingAssetsResponse } = await supabaseAdmin
+      .from('platform_settings')
+      .select('value')
+      .eq('key', 'branding_assets')
+      .maybeSingle();
+
+    const currentAssets = (existingAssetsResponse?.value as Partial<BrandingAssets> | null) ?? {};
+
+    const removeLogo = formData.get('removeLogo') === 'true';
+    const removeFavicon = formData.get('removeFavicon') === 'true';
+
+    let nextLogoUrl = removeLogo ? null : currentAssets.logoUrl ?? null;
+    let nextFaviconUrl = removeFavicon ? null : currentAssets.faviconUrl ?? null;
+
+    const logoFile = formData.get('logo');
+    if (logoFile instanceof File && logoFile.size > 0) {
+      const logoPath = `logo-${Date.now()}-${logoFile.name}`;
+      const { error: uploadError } = await supabaseAdmin.storage.from(BRANDING_BUCKET).upload(logoPath, logoFile, {
+        contentType: logoFile.type || 'image/png',
+        upsert: true,
+      });
+
+      if (uploadError) {
+        throw new Error(`Failed to upload logo: ${uploadError.message}`);
+      }
+
+      const { data } = supabaseAdmin.storage.from(BRANDING_BUCKET).getPublicUrl(logoPath);
+      nextLogoUrl = data.publicUrl;
+    }
+
+    const faviconFile = formData.get('favicon');
+    if (faviconFile instanceof File && faviconFile.size > 0) {
+      const faviconPath = `favicon-${Date.now()}-${faviconFile.name}`;
+      const { error: uploadError } = await supabaseAdmin.storage.from(BRANDING_BUCKET).upload(faviconPath, faviconFile, {
+        contentType: faviconFile.type || 'image/png',
+        upsert: true,
+      });
+
+      if (uploadError) {
+        throw new Error(`Failed to upload favicon: ${uploadError.message}`);
+      }
+
+      const { data } = supabaseAdmin.storage.from(BRANDING_BUCKET).getPublicUrl(faviconPath);
+      nextFaviconUrl = data.publicUrl;
+    }
+
+    const assets: BrandingAssets = {
+      logoUrl: nextLogoUrl,
+      faviconUrl: nextFaviconUrl,
+    };
+
+    const { error: upsertError } = await supabaseAdmin
+      .from('platform_settings')
+      .upsert(
+        {
+          key: 'branding_assets',
+          value: assets,
+        },
+        { onConflict: 'key' },
+      );
+
+    if (upsertError) {
+      throw new Error(upsertError.message);
+    }
+
+    await supabaseAdmin.from('audit_log').insert({
+      admin_id: user.id,
+      action: 'branding_assets_update',
+      details: `Updated branding assets (logo: ${assets.logoUrl ? 'set' : 'cleared'}, favicon: ${assets.faviconUrl ? 'set' : 'cleared'}).`,
+    });
+
+    revalidatePath('/');
+    revalidatePath('/admin/marketing');
+
+    return { success: true, error: null, assets };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return { success: false, error: message };
+  }
+}
 
   return createAdminClient(supabaseUrl, supabaseServiceKey);
 };

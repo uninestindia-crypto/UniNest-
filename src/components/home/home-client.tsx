@@ -17,7 +17,7 @@ import {
 import Autoplay from 'embla-carousel-autoplay';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { LucideIcon } from 'lucide-react';
-import { ArrowRight, BookOpen, GraduationCap, Rocket, Users, Building, Sparkles, Library, Search, Package, Gift, BadgePercent, MapPin } from 'lucide-react';
+import { ArrowRight, BookOpen, GraduationCap, Rocket, Users, Building, Sparkles, Library, Search, Package, Gift, BadgePercent, MapPin, Globe, Store } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import StatCard from '@/components/home/stat-card';
 import DonationModal from './donation-modal';
@@ -44,15 +44,19 @@ const iconLibrary: Record<string, LucideIcon> = {
   'badge-percent': BadgePercent,
   mappin: MapPin,
   'map-pin': MapPin,
+  store: Store,
+  globe: Globe,
 };
 
-const getQuickAccessIcon = (iconName?: string | null): LucideIcon => {
+const resolveIcon = (iconName?: string | null, fallback: LucideIcon = ArrowRight): LucideIcon => {
   if (!iconName) {
-    return ArrowRight;
+    return fallback;
   }
   const key = iconName.toLowerCase().replace(/\s+/g, '-');
-  return iconLibrary[key] ?? ArrowRight;
+  return iconLibrary[key] ?? fallback;
 };
+
+const getQuickAccessIcon = (iconName?: string | null): LucideIcon => resolveIcon(iconName, ArrowRight);
 
 type HomeClientProps = {
   posterConfig: HomePosterConfig;
@@ -319,9 +323,10 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
 
         <section>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {stats.map((stat, index) => (
-              <StatCard key={index} {...stat} />
-            ))}
+            {stats.map(({ icon: iconName, ...stat }, index) => {
+              const IconComponent = resolveIcon(iconName, Users);
+              return <StatCard key={index} {...stat} icon={IconComponent} />;
+            })}
           </div>
         </section>
 
@@ -361,18 +366,21 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
         <section>
           <h2 className="text-3xl font-headline font-bold text-center mb-8 md:mb-12">Our Journey So Far</h2>
           <div className="grid md:grid-cols-4 gap-x-6 gap-y-10 max-w-5xl mx-auto">
-            {timeline.map((item) => (
+            {timeline.map((item) => {
+              const IconComponent = resolveIcon(item.icon, Sparkles);
+              return (
               <div key={item.title} className="text-center">
                 <div className="mb-4 flex justify-center">
                   <div className="bg-primary/10 text-primary rounded-full p-4 border-2 border-primary/20 shadow-sm">
-                    <item.icon className="size-8" />
+                    <IconComponent className="size-8" />
                   </div>
                 </div>
                 <p className="text-muted-foreground text-sm">{item.year}</p>
                 <h3 className="font-headline font-semibold text-xl">{item.title}</h3>
                 <p className="text-muted-foreground">{item.description}</p>
               </div>
-            ))}
+            );
+            })}
           </div>
         </section>
 

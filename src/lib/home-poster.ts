@@ -1,6 +1,4 @@
 import type { HomePosterConfig } from '@/lib/types';
-import { Gift, Package, Sparkles, GraduationCap, Users, Building, Library, Rocket, Globe, Store } from 'lucide-react';
-
 export const defaultHomePosterConfig: HomePosterConfig = {
   heroSlides: [
     {
@@ -78,47 +76,47 @@ export const defaultHomePosterConfig: HomePosterConfig = {
       subtitle: 'Comfort upgrades under ₹999',
       href: '/marketplace?category=Hostels',
       gradient: 'from-[#7928CA] via-[#FF0080] to-[#FF4D4D]',
-      icon: Gift,
+      icon: 'gift',
     },
     {
       title: 'Campus Notes',
       subtitle: 'Verified notes & guides',
       href: '/notes',
       gradient: 'from-[#1FA2FF] via-[#12D8FA] to-[#A6FFCB]',
-      icon: Package,
+      icon: 'package',
     },
     {
       title: 'Internship Leads',
       subtitle: 'Top roles closing soon',
       href: '/workspace/internships',
       gradient: 'from-[#F7971E] via-[#FFD200] to-[#FF512F]',
-      icon: Sparkles,
+      icon: 'sparkles',
     },
     {
       title: 'Learning Booster',
       subtitle: 'Skill programs for students',
       href: '/workspace/competitions',
       gradient: 'from-[#8360C3] via-[#2EBF91] to-[#36D1DC]',
-      icon: GraduationCap,
+      icon: 'graduation-cap',
     },
   ],
   stats: [
     {
       value: 12000,
       label: 'Students empowered',
-      icon: Users,
+      icon: 'users',
       isPlus: true,
     },
     {
       value: 260,
       label: 'Verified campus partners',
-      icon: Building,
+      icon: 'building',
       isPlus: true,
     },
     {
       value: 80,
       label: 'Libraries & study hubs',
-      icon: Library,
+      icon: 'library',
       isPlus: true,
     },
   ],
@@ -147,25 +145,25 @@ export const defaultHomePosterConfig: HomePosterConfig = {
       year: '2024',
       title: 'Launch on campus',
       description: 'Started with a small community of passionate students.',
-      icon: Sparkles,
+      icon: 'sparkles',
     },
     {
       year: '2024 Q3',
       title: 'Marketplace expansion',
       description: 'Onboarded 100+ verified vendors and service partners.',
-      icon: Store,
+      icon: 'store',
     },
     {
       year: '2025',
       title: 'Learning ecosystem',
       description: 'Brought internships, competitions, and study resources under one roof.',
-      icon: Rocket,
+      icon: 'rocket',
     },
     {
       year: 'Next',
       title: 'Global student network',
       description: 'Connecting campuses worldwide for shared growth.',
-      icon: Globe,
+      icon: 'globe',
     },
   ],
 };

@@ -197,13 +197,13 @@ export type HomeMobileDeal = {
   subtitle: string;
   href: string;
   gradient: string;
-  icon: LucideIcon;
+  icon?: string;
 };
 
 export type HomeStat = {
   value: number;
   label: string;
-  icon: LucideIcon;
+  icon?: string;
   isPlus?: boolean;
 };
 
@@ -219,6 +219,11 @@ export type HomeTimelineItem = {
   title: string;
   description: string;
   icon: LucideIcon;
+};
+
+export type BrandingAssets = {
+  logoUrl: string | null;
+  faviconUrl: string | null;
 };
 
 export type HomePosterConfig = {
