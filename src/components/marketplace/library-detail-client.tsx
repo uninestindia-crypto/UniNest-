@@ -56,6 +56,8 @@ export default function LibraryDetailClient({ library, initialSeatProducts, init
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [currentOrders, setCurrentOrders] = useState(initialOrders);
 
+    const sellerProfile = library.seller as Product['seller'] | null | undefined;
+
     const generateSeatStatus = useCallback((orders: any[], seatProducts: {id: number, name: string}[]) => {
         const seatStatusMap = new Map<number, 'booked' | 'pending'>();
         orders.forEach(order => {
@@ -206,7 +208,7 @@ export default function LibraryDetailClient({ library, initialSeatProducts, init
         }
     }
     
-    const timeSlots = library.seller?.user_metadata?.opening_hours?.split('\n').filter((s: string) => s.trim() !== '') || [];
+    const timeSlots = sellerProfile?.user_metadata?.opening_hours?.split('\n').filter((s: string) => s.trim() !== '') || [];
 
 
     return (
@@ -241,16 +243,28 @@ export default function LibraryDetailClient({ library, initialSeatProducts, init
 
                     <Card className="bg-muted/50">
                         <CardContent className="p-4">
-                            <Link href={`/profile/${library.seller.handle}`} className="flex items-center gap-4">
-                                <Avatar className="size-12">
-                                    <AvatarImage src={library.seller.avatar_url || undefined} />
-                                    <AvatarFallback>{library.seller.full_name?.[0]}</AvatarFallback>
-                                </Avatar>
-                                <div>
-                                    <p className="text-sm text-muted-foreground">Managed by</p>
-                                    <p className="font-bold text-lg">{library.seller.full_name}</p>
+                            {sellerProfile ? (
+                                <Link href={`/profile/${sellerProfile.handle}`} className="flex items-center gap-4">
+                                    <Avatar className="size-12">
+                                        <AvatarImage src={sellerProfile.avatar_url || undefined} />
+                                        <AvatarFallback>{sellerProfile.full_name?.[0]}</AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                        <p className="text-sm text-muted-foreground">Managed by</p>
+                                        <p className="font-bold text-lg">{sellerProfile.full_name}</p>
+                                    </div>
+                                </Link>
+                            ) : (
+                                <div className="flex items-center gap-4">
+                                    <Avatar className="size-12">
+                                        <AvatarFallback>{library.name[0]}</AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                        <p className="text-sm text-muted-foreground">Managed by</p>
+                                        <p className="font-bold text-lg">Manager details unavailable</p>
+                                    </div>
                                 </div>
-                            </Link>
+                            )}
                         </CardContent>
                     </Card>
                 </div>
