@@ -3,16 +3,16 @@
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Trophy, Calendar, IndianRupee, Loader2, FileText, Share2, Users } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { useState, useEffect } from 'react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { OpportunityShareButton } from '@/components/workspace/opportunity-share';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/use-auth';
 import Image from 'next/image';
-import { format } from 'date-fns';
-import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { format } from 'date-fns';
+import { Calendar, FileText, IndianRupee, Trophy, Users } from 'lucide-react';
 
 type Competition = {
     id: number;
@@ -45,7 +45,6 @@ type CompetitionDetailClientProps = {
 }
 
 export default function CompetitionDetailClient({ competition: initialCompetition, initialApplicants }: CompetitionDetailClientProps) {
-    const { toast } = useToast();
     const { user, supabase } = useAuth();
     const [applicants, setApplicants] = useState(initialApplicants);
     const [competition, setCompetition] = useState(initialCompetition);
@@ -93,28 +92,6 @@ export default function CompetitionDetailClient({ competition: initialCompetitio
         }
     }, [supabase, competition.id]);
     
-    const handleShare = async () => {
-        const shareData = {
-            title: competition.title,
-            text: `Check out this competition on UniNest: ${competition.title}`,
-            url: window.location.href,
-        };
-        if (navigator.share) {
-            try {
-                await navigator.share(shareData);
-            } catch (err) {
-                console.log("Share was cancelled or failed", err);
-            }
-        } else {
-            try {
-                await navigator.clipboard.writeText(shareData.url);
-                toast({ title: 'Link Copied!', description: 'Competition link copied to clipboard.' });
-            } catch (err) {
-                toast({ variant: 'destructive', title: 'Failed to copy link' });
-            }
-        }
-    };
-
     const isCompetitionOver = new Date(competition.deadline) < new Date();
 
     return (
@@ -166,10 +143,15 @@ export default function CompetitionDetailClient({ competition: initialCompetitio
                                 </a>
                             </Button>
                         )}
-                        <Button size="lg" variant="ghost" className="flex-1" onClick={handleShare}>
-                            <Share2 className="mr-2"/>
-                            Share
-                        </Button>
+                        <OpportunityShareButton
+                            title={competition.title}
+                            description="Invite peers to join this competition."
+                            sharePath={`/workspace/competitions/${competition.id}`}
+                            buttonLabel="Share"
+                            buttonVariant="ghost"
+                            buttonSize="lg"
+                            className="flex-1"
+                        />
                     </div>
                 </TabsContent>
                 <TabsContent value="applicants" className="mt-6">

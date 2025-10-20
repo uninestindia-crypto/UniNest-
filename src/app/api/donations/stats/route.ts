@@ -55,6 +55,9 @@ const parseNumber = (value: string | null | undefined, fallback = 0) => {
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
+const isMissingTableError = (error: unknown) =>
+  typeof error === 'object' && error !== null && 'code' in error && (error as { code?: string }).code === 'PGRST205';
+
 const computeImpactFromRaised = (raised: number) => {
   const studentsHelped = Math.max(
     DEFAULT_IMPACT.studentsHelped,
@@ -100,15 +103,27 @@ export async function GET() {
         ]),
     ]);
 
-    if (donationsResult.error) {
+    const donations = (() => {
+      if (!donationsResult.error) {
+        return (donationsResult.data ?? []) as unknown as DonationRow[];
+      }
+      if (isMissingTableError(donationsResult.error)) {
+        console.warn('[donations/stats] donations table missing. Returning empty donations list.');
+        return [] as DonationRow[];
+      }
       throw donationsResult.error;
-    }
-    if (configResult.error) {
-      throw configResult.error;
-    }
+    })();
 
-    const donations = (donationsResult.data ?? []) as unknown as DonationRow[];
-    const configEntries = (configResult.data ?? []) as AppConfigRow[];
+    const configEntries = (() => {
+      if (!configResult.error) {
+        return (configResult.data ?? []) as AppConfigRow[];
+      }
+      if (isMissingTableError(configResult.error)) {
+        console.warn('[donations/stats] app_config table missing. Using default configuration.');
+        return [] as AppConfigRow[];
+      }
+      throw configResult.error;
+    })();
 
     const configMap = configEntries.reduce<Record<string, string | null>>((acc, curr) => {
       acc[curr.key] = curr.value;

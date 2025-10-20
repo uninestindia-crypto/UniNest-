@@ -51,13 +51,35 @@ export default async function DonatePage() {
             .single()
     ]);
 
-    const { data: donations, error: donorsError } = donationsResult;
-    const { data: goalData, error: goalError } = goalResult;
+    const isMissingTableError = (error: any) => error?.code === 'PGRST205';
 
-    if (donorsError) console.error('Error fetching donors:', donorsError.message);
-    if (goalError) console.error('Error fetching goal amount:', goalError.message);
+    const donations = (() => {
+        if (!donationsResult.error) {
+            return (donationsResult.data || []) as DonationWithProfile[];
+        }
+        if (isMissingTableError(donationsResult.error)) {
+            console.warn('[donate/page] donations table missing. Rendering empty donors list.');
+            return [] as DonationWithProfile[];
+        }
+        console.error('Error fetching donors:', donationsResult.error.message);
+        return [] as DonationWithProfile[];
+    })();
 
-    const aggregatedDonorsMap = ((donations || []) as DonationWithProfile[]).reduce((map, current) => {
+    const goalAmount = (() => {
+        if (!goalResult.error && goalResult.data) {
+            return Number(goalResult.data.value) || 50000;
+        }
+        if (isMissingTableError(goalResult.error)) {
+            console.warn('[donate/page] app_config table missing. Using default donation goal.');
+            return 50000;
+        }
+        if (goalResult.error) {
+            console.error('Error fetching goal amount:', goalResult.error.message);
+        }
+        return 50000;
+    })();
+
+    const aggregatedDonorsMap = donations.reduce((map, current) => {
         const profile = Array.isArray(current.profiles) ? current.profiles[0] : current.profiles;
         const userId = current.user_id;
         if (!userId) return map;
@@ -88,8 +110,7 @@ export default async function DonatePage() {
 
     const aggregatedDonors: AggregatedDonor[] = Array.from(aggregatedDonorsMap.values()).sort((a, b) => b.amount - a.amount);
 
-    const goalAmount = goalData ? Number(goalData.value) : 50000;
-    const initialRaisedAmount = (donations || []).reduce((sum, d) => sum + d.amount, 0);
+    const initialRaisedAmount = donations.reduce((sum, d) => sum + d.amount, 0);
 
     return <DonateContent 
         initialDonors={aggregatedDonors as any[] || []}
