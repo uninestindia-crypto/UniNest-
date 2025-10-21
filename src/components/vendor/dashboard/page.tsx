@@ -29,9 +29,11 @@ import {
   Wallet,
 } from 'lucide-react';
 
+type VendorCategoryInput = string | { id?: string | null; label?: string | null } | null | undefined;
+
 type VendorDashboardContentProps = {
   userName: string;
-  vendorCategories: string[];
+  vendorCategories: VendorCategoryInput[];
 };
 
 const summaryTrendStyles = {
@@ -47,6 +49,25 @@ const leadStatusStyles = {
 } as const;
 
 export default function VendorDashboardContent({ userName, vendorCategories }: VendorDashboardContentProps) {
+  const normalizedVendorCategories = Array.isArray(vendorCategories)
+    ? vendorCategories
+        .map((category) => {
+          if (typeof category === 'string') {
+            return category;
+          }
+          if (category && typeof category === 'object') {
+            if (category.id && typeof category.id === 'string') {
+              return category.id;
+            }
+            if (category.label && typeof category.label === 'string') {
+              return category.label;
+            }
+          }
+          return null;
+        })
+        .filter((category): category is string => Boolean(category))
+    : [];
+
   const summaryMetrics = [
     {
       label: 'Occupancy rate',
@@ -148,9 +169,9 @@ export default function VendorDashboardContent({ userName, vendorCategories }: V
             <p className="mt-3 max-w-xl text-sm text-slate-600">
               Keep occupancy, pricing, conversations, and payouts aligned from a single clean workspace.
             </p>
-            {vendorCategories.length > 0 && (
+            {normalizedVendorCategories.length > 0 && (
               <div className="mt-4 flex flex-wrap gap-2">
-                {vendorCategories.map((category) => (
+                {normalizedVendorCategories.map((category) => (
                   <Badge key={category} className="rounded-full bg-slate-100 px-3 py-1 text-slate-600">
                     {category.replace(/-/g, ' ').toUpperCase()}
                   </Badge>
