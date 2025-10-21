@@ -27,6 +27,24 @@ export const metadata: Metadata = {
   description: 'A vibrant, modern, and student-friendly UI that feels like a digital campus hub. Connect, share, and thrive!',
   keywords: ['student platform', 'UniNest', 'digital campus', 'social feed', 'marketplace', 'study hub'],
   authors: [{ name: 'UniNest Team' }],
+  manifest: '/manifest.json',
+  icons: {
+    icon: [
+      { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icons/icon-512x512.png', sizes: '512x512', type: 'image/png' },
+      { url: '/icons/icon-1024x1024.png', sizes: '1024x1024', type: 'image/png' },
+    ],
+    apple: [{ url: '/icons/icon-192x192.png' }],
+  },
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#38BDF8' },
+    { media: '(prefers-color-scheme: dark)', color: '#0F172A' },
+  ],
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'UniNest',
+  },
   openGraph: {
     title: 'UniNest – Your Digital Campus Hub',
     description: 'Connect, share, and thrive on your digital campus.',
