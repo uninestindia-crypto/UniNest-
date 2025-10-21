@@ -4,6 +4,11 @@ import type { BrandingAssets } from '@/lib/types';
 const defaultBrandingAssets: BrandingAssets = {
   logoUrl: null,
   faviconUrl: null,
+  pwaIcon192Url: null,
+  pwaIcon512Url: null,
+  pwaIcon1024Url: null,
+  pwaScreenshotDesktopUrl: null,
+  pwaScreenshotMobileUrl: null,
 };
 
 export async function getBrandingAssets(): Promise<BrandingAssets> {
@@ -37,6 +42,11 @@ export async function getBrandingAssets(): Promise<BrandingAssets> {
     return {
       logoUrl: value?.logoUrl ?? null,
       faviconUrl: value?.faviconUrl ?? null,
+      pwaIcon192Url: value?.pwaIcon192Url ?? null,
+      pwaIcon512Url: value?.pwaIcon512Url ?? null,
+      pwaIcon1024Url: value?.pwaIcon1024Url ?? null,
+      pwaScreenshotDesktopUrl: value?.pwaScreenshotDesktopUrl ?? null,
+      pwaScreenshotMobileUrl: value?.pwaScreenshotMobileUrl ?? null,
     };
   } catch (error) {
     console.error('Failed to load branding assets:', error);

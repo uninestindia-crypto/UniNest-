@@ -105,25 +105,45 @@ export async function updateBrandingAssets(formData: FormData) {
 
     const currentAssets = (existingAssetsResponse?.value as Partial<BrandingAssets> | null) ?? {};
 
-    const removeLogo = formData.get('removeLogo') === 'true';
-    const removeFavicon = formData.get('removeFavicon') === 'true';
+    const removeFlags = {
+      logo: formData.get('removeLogo') === 'true',
+      favicon: formData.get('removeFavicon') === 'true',
+      pwaIcon192: formData.get('removePwaIcon192') === 'true',
+      pwaIcon512: formData.get('removePwaIcon512') === 'true',
+      pwaIcon1024: formData.get('removePwaIcon1024') === 'true',
+      screenshotDesktop: formData.get('removeScreenshotDesktop') === 'true',
+      screenshotMobile: formData.get('removeScreenshotMobile') === 'true',
+    } as const;
 
-    const currentLogoPath = extractObjectPathFromPublicUrl(currentAssets.logoUrl ?? null, BRANDING_BUCKET);
-    const currentFaviconPath = extractObjectPathFromPublicUrl(currentAssets.faviconUrl ?? null, BRANDING_BUCKET);
+    type AssetKey = keyof typeof removeFlags;
 
-    let logoObjectPathToDelete = removeLogo ? currentLogoPath : null;
-    let faviconObjectPathToDelete = removeFavicon ? currentFaviconPath : null;
+    const currentPaths: Record<AssetKey, string | null> = {
+      logo: extractObjectPathFromPublicUrl(currentAssets.logoUrl ?? null, BRANDING_BUCKET),
+      favicon: extractObjectPathFromPublicUrl(currentAssets.faviconUrl ?? null, BRANDING_BUCKET),
+      pwaIcon192: extractObjectPathFromPublicUrl(currentAssets.pwaIcon192Url ?? null, BRANDING_BUCKET),
+      pwaIcon512: extractObjectPathFromPublicUrl(currentAssets.pwaIcon512Url ?? null, BRANDING_BUCKET),
+      pwaIcon1024: extractObjectPathFromPublicUrl(currentAssets.pwaIcon1024Url ?? null, BRANDING_BUCKET),
+      screenshotDesktop: extractObjectPathFromPublicUrl(currentAssets.pwaScreenshotDesktopUrl ?? null, BRANDING_BUCKET),
+      screenshotMobile: extractObjectPathFromPublicUrl(currentAssets.pwaScreenshotMobileUrl ?? null, BRANDING_BUCKET),
+    };
 
-    let newLogoObjectPath: string | null = null;
-    let newFaviconObjectPath: string | null = null;
+    const nextUrls: Record<AssetKey, string | null> = {
+      logo: removeFlags.logo ? null : currentAssets.logoUrl ?? null,
+      favicon: removeFlags.favicon ? null : currentAssets.faviconUrl ?? null,
+      pwaIcon192: removeFlags.pwaIcon192 ? null : currentAssets.pwaIcon192Url ?? null,
+      pwaIcon512: removeFlags.pwaIcon512 ? null : currentAssets.pwaIcon512Url ?? null,
+      pwaIcon1024: removeFlags.pwaIcon1024 ? null : currentAssets.pwaIcon1024Url ?? null,
+      screenshotDesktop: removeFlags.screenshotDesktop ? null : currentAssets.pwaScreenshotDesktopUrl ?? null,
+      screenshotMobile: removeFlags.screenshotMobile ? null : currentAssets.pwaScreenshotMobileUrl ?? null,
+    };
 
-    let nextLogoUrl = removeLogo ? null : currentAssets.logoUrl ?? null;
-    let nextFaviconUrl = removeFavicon ? null : currentAssets.faviconUrl ?? null;
+    const newObjectPaths: Partial<Record<AssetKey, string>> = {};
+    const deleteQueue: Array<{ key: AssetKey; path: string } | null> = [];
 
     const logoFile = formData.get('logo');
     if (logoFile instanceof File && logoFile.size > 0) {
       const logoPath = `logo-${Date.now()}-${logoFile.name}`;
-      newLogoObjectPath = logoPath;
+      newObjectPaths.logo = logoPath;
       const { error: uploadError } = await supabaseAdmin.storage.from(BRANDING_BUCKET).upload(logoPath, logoFile, {
         contentType: logoFile.type || 'image/png',
         upsert: true,
@@ -134,17 +154,16 @@ export async function updateBrandingAssets(formData: FormData) {
       }
 
       const { data } = supabaseAdmin.storage.from(BRANDING_BUCKET).getPublicUrl(logoPath);
-      nextLogoUrl = data.publicUrl;
-
-      if (currentLogoPath) {
-        logoObjectPathToDelete = currentLogoPath;
+      nextUrls.logo = data.publicUrl;
+      if (currentPaths.logo) {
+        deleteQueue.push({ key: 'logo', path: currentPaths.logo });
       }
     }
 
     const faviconFile = formData.get('favicon');
     if (faviconFile instanceof File && faviconFile.size > 0) {
       const faviconPath = `favicon-${Date.now()}-${faviconFile.name}`;
-      newFaviconObjectPath = faviconPath;
+      newObjectPaths.favicon = faviconPath;
       const { error: uploadError } = await supabaseAdmin.storage.from(BRANDING_BUCKET).upload(faviconPath, faviconFile, {
         contentType: faviconFile.type || 'image/png',
         upsert: true,
@@ -155,36 +174,138 @@ export async function updateBrandingAssets(formData: FormData) {
       }
 
       const { data } = supabaseAdmin.storage.from(BRANDING_BUCKET).getPublicUrl(faviconPath);
-      nextFaviconUrl = data.publicUrl;
-
-      if (currentFaviconPath) {
-        faviconObjectPathToDelete = currentFaviconPath;
+      nextUrls.favicon = data.publicUrl;
+      if (currentPaths.favicon) {
+        deleteQueue.push({ key: 'favicon', path: currentPaths.favicon });
       }
     }
 
-    if (logoObjectPathToDelete && logoObjectPathToDelete !== newLogoObjectPath) {
-      const { error: deleteLogoError } = await supabaseAdmin.storage.from(BRANDING_BUCKET).remove([logoObjectPathToDelete]);
-      if (deleteLogoError) {
-        if (newLogoObjectPath && newLogoObjectPath !== logoObjectPathToDelete) {
-          await supabaseAdmin.storage.from(BRANDING_BUCKET).remove([newLogoObjectPath]).catch(() => {});
-        }
-        throw new Error(`Failed to delete previous logo: ${deleteLogoError.message}`);
+    const pwaIcon192File = formData.get('pwaIcon192');
+    if (pwaIcon192File instanceof File && pwaIcon192File.size > 0) {
+      const iconPath = `pwa/icon-192-${Date.now()}-${pwaIcon192File.name}`;
+      newObjectPaths.pwaIcon192 = iconPath;
+      const { error } = await supabaseAdmin.storage.from(BRANDING_BUCKET).upload(iconPath, pwaIcon192File, {
+        contentType: pwaIcon192File.type || 'image/png',
+        upsert: true,
+      });
+
+      if (error) {
+        throw new Error(`Failed to upload 192px icon: ${error.message}`);
+      }
+
+      const { data } = supabaseAdmin.storage.from(BRANDING_BUCKET).getPublicUrl(iconPath);
+      nextUrls.pwaIcon192 = data.publicUrl;
+      if (currentPaths.pwaIcon192) {
+        deleteQueue.push({ key: 'pwaIcon192', path: currentPaths.pwaIcon192 });
       }
     }
 
-    if (faviconObjectPathToDelete && faviconObjectPathToDelete !== newFaviconObjectPath) {
-      const { error: deleteFaviconError } = await supabaseAdmin.storage.from(BRANDING_BUCKET).remove([faviconObjectPathToDelete]);
-      if (deleteFaviconError) {
-        if (newFaviconObjectPath && newFaviconObjectPath !== faviconObjectPathToDelete) {
-          await supabaseAdmin.storage.from(BRANDING_BUCKET).remove([newFaviconObjectPath]).catch(() => {});
-        }
-        throw new Error(`Failed to delete previous favicon: ${deleteFaviconError.message}`);
+    const pwaIcon512File = formData.get('pwaIcon512');
+    if (pwaIcon512File instanceof File && pwaIcon512File.size > 0) {
+      const iconPath = `pwa/icon-512-${Date.now()}-${pwaIcon512File.name}`;
+      newObjectPaths.pwaIcon512 = iconPath;
+      const { error } = await supabaseAdmin.storage.from(BRANDING_BUCKET).upload(iconPath, pwaIcon512File, {
+        contentType: pwaIcon512File.type || 'image/png',
+        upsert: true,
+      });
+
+      if (error) {
+        throw new Error(`Failed to upload 512px icon: ${error.message}`);
+      }
+
+      const { data } = supabaseAdmin.storage.from(BRANDING_BUCKET).getPublicUrl(iconPath);
+      nextUrls.pwaIcon512 = data.publicUrl;
+      if (currentPaths.pwaIcon512) {
+        deleteQueue.push({ key: 'pwaIcon512', path: currentPaths.pwaIcon512 });
       }
     }
+
+    const pwaIcon1024File = formData.get('pwaIcon1024');
+    if (pwaIcon1024File instanceof File && pwaIcon1024File.size > 0) {
+      const iconPath = `pwa/icon-1024-${Date.now()}-${pwaIcon1024File.name}`;
+      newObjectPaths.pwaIcon1024 = iconPath;
+      const { error } = await supabaseAdmin.storage.from(BRANDING_BUCKET).upload(iconPath, pwaIcon1024File, {
+        contentType: pwaIcon1024File.type || 'image/png',
+        upsert: true,
+      });
+
+      if (error) {
+        throw new Error(`Failed to upload 1024px icon: ${error.message}`);
+      }
+
+      const { data } = supabaseAdmin.storage.from(BRANDING_BUCKET).getPublicUrl(iconPath);
+      nextUrls.pwaIcon1024 = data.publicUrl;
+      if (currentPaths.pwaIcon1024) {
+        deleteQueue.push({ key: 'pwaIcon1024', path: currentPaths.pwaIcon1024 });
+      }
+    }
+
+    const screenshotDesktopFile = formData.get('pwaScreenshotDesktop');
+    if (screenshotDesktopFile instanceof File && screenshotDesktopFile.size > 0) {
+      const shotPath = `pwa/screenshot-desktop-${Date.now()}-${screenshotDesktopFile.name}`;
+      newObjectPaths.screenshotDesktop = shotPath;
+      const { error } = await supabaseAdmin.storage.from(BRANDING_BUCKET).upload(shotPath, screenshotDesktopFile, {
+        contentType: screenshotDesktopFile.type || 'image/png',
+        upsert: true,
+      });
+
+      if (error) {
+        throw new Error(`Failed to upload desktop screenshot: ${error.message}`);
+      }
+
+      const { data } = supabaseAdmin.storage.from(BRANDING_BUCKET).getPublicUrl(shotPath);
+      nextUrls.screenshotDesktop = data.publicUrl;
+      if (currentPaths.screenshotDesktop) {
+        deleteQueue.push({ key: 'screenshotDesktop', path: currentPaths.screenshotDesktop });
+      }
+    }
+
+    const screenshotMobileFile = formData.get('pwaScreenshotMobile');
+    if (screenshotMobileFile instanceof File && screenshotMobileFile.size > 0) {
+      const shotPath = `pwa/screenshot-mobile-${Date.now()}-${screenshotMobileFile.name}`;
+      newObjectPaths.screenshotMobile = shotPath;
+      const { error } = await supabaseAdmin.storage.from(BRANDING_BUCKET).upload(shotPath, screenshotMobileFile, {
+        contentType: screenshotMobileFile.type || 'image/png',
+        upsert: true,
+      });
+
+      if (error) {
+        throw new Error(`Failed to upload mobile screenshot: ${error.message}`);
+      }
+
+      const { data } = supabaseAdmin.storage.from(BRANDING_BUCKET).getPublicUrl(shotPath);
+      nextUrls.screenshotMobile = data.publicUrl;
+      if (currentPaths.screenshotMobile) {
+        deleteQueue.push({ key: 'screenshotMobile', path: currentPaths.screenshotMobile });
+      }
+    }
+
+    await Promise.all(
+      deleteQueue
+        .filter((entry): entry is { key: AssetKey; path: string } => Boolean(entry?.path))
+        .map(async ({ key, path }) => {
+          if (!path || newObjectPaths[key] === path) {
+            return;
+          }
+          const { error } = await supabaseAdmin.storage.from(BRANDING_BUCKET).remove([path]);
+          if (error) {
+            const newPath = newObjectPaths[key];
+            if (newPath && newPath !== path) {
+              await supabaseAdmin.storage.from(BRANDING_BUCKET).remove([newPath]).catch(() => {});
+            }
+            throw new Error(`Failed to delete previous ${key}: ${error.message}`);
+          }
+        }),
+    );
 
     const assets: BrandingAssets = {
-      logoUrl: nextLogoUrl,
-      faviconUrl: nextFaviconUrl,
+      logoUrl: nextUrls.logo,
+      faviconUrl: nextUrls.favicon,
+      pwaIcon192Url: nextUrls.pwaIcon192,
+      pwaIcon512Url: nextUrls.pwaIcon512,
+      pwaIcon1024Url: nextUrls.pwaIcon1024,
+      pwaScreenshotDesktopUrl: nextUrls.screenshotDesktop,
+      pwaScreenshotMobileUrl: nextUrls.screenshotMobile,
     };
 
     const { error: upsertError } = await supabaseAdmin
@@ -204,7 +325,7 @@ export async function updateBrandingAssets(formData: FormData) {
     await supabaseAdmin.from('audit_log').insert({
       admin_id: user.id,
       action: 'branding_assets_update',
-      details: `Updated branding assets (logo: ${assets.logoUrl ? 'set' : 'cleared'}, favicon: ${assets.faviconUrl ? 'set' : 'cleared'}).`,
+      details: `Updated branding assets (logo: ${assets.logoUrl ? 'set' : 'cleared'}, favicon: ${assets.faviconUrl ? 'set' : 'cleared'}, pwa icons/screenshots updated).`,
     });
 
     revalidatePath('/');

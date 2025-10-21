@@ -11,6 +11,11 @@ type BrandingAssetsContextValue = {
 const defaultAssets: BrandingAssets = {
   logoUrl: null,
   faviconUrl: null,
+  pwaIcon192Url: null,
+  pwaIcon512Url: null,
+  pwaIcon1024Url: null,
+  pwaScreenshotDesktopUrl: null,
+  pwaScreenshotMobileUrl: null,
 };
 
 const BrandingAssetsContext = createContext<BrandingAssetsContextValue | undefined>(undefined);
@@ -28,25 +33,47 @@ export function BrandingAssetsProvider({ initialAssets, children }: BrandingAsse
       return;
     }
     setAssets((prev) => {
-      if (prev.logoUrl === initialAssets.logoUrl && prev.faviconUrl === initialAssets.faviconUrl) {
-        return prev;
-      }
-      return initialAssets;
+      const keys: (keyof BrandingAssets)[] = [
+        'logoUrl',
+        'faviconUrl',
+        'pwaIcon192Url',
+        'pwaIcon512Url',
+        'pwaIcon1024Url',
+        'pwaScreenshotDesktopUrl',
+        'pwaScreenshotMobileUrl',
+      ];
+
+      const isSame = keys.every((key) => prev[key] === initialAssets[key]);
+      return isSame ? prev : initialAssets;
     });
-  }, [initialAssets?.logoUrl, initialAssets?.faviconUrl]);
+  }, [
+    initialAssets?.logoUrl,
+    initialAssets?.faviconUrl,
+    initialAssets?.pwaIcon192Url,
+    initialAssets?.pwaIcon512Url,
+    initialAssets?.pwaIcon1024Url,
+    initialAssets?.pwaScreenshotDesktopUrl,
+    initialAssets?.pwaScreenshotMobileUrl,
+  ]);
 
   useEffect(() => {
-    const relValues = ['icon', 'shortcut icon', 'apple-touch-icon'];
-    relValues.forEach((rel) => {
+    const faviconHref = assets.faviconUrl ?? '/favicon.ico';
+    const iconHref = assets.pwaIcon192Url ?? faviconHref;
+
+    const ensureLink = (rel: string, href: string) => {
       let link = document.head.querySelector<HTMLLinkElement>(`link[rel="${rel}"]`);
       if (!link) {
         link = document.createElement('link');
         link.rel = rel;
         document.head.appendChild(link);
       }
-      link.href = assets.faviconUrl ?? '/favicon.ico';
-    });
-  }, [assets.faviconUrl]);
+      link.href = href;
+    };
+
+    ensureLink('icon', faviconHref);
+    ensureLink('shortcut icon', faviconHref);
+    ensureLink('apple-touch-icon', iconHref);
+  }, [assets.faviconUrl, assets.pwaIcon192Url]);
 
   const value = useMemo<BrandingAssetsContextValue>(
     () => ({

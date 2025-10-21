@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Heart, Loader2, BookOpen, ShoppingBag, Armchair, IndianRupee, Sparkles, Star, ShieldCheck, Trophy, Medal, Crown, Rocket, Gift, Target, Flame } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { useRazorpay } from '@/hooks/use-razorpay';
 import { useToast } from '@/hooks/use-toast';
 import { useState, useEffect, useMemo, useRef } from 'react';
@@ -28,7 +29,15 @@ const donationTiers = [
     { amount: 250, title: "🔥 UniNest Champion" },
 ];
 
-const milestoneRewards = [
+type MilestoneReward = {
+    goal: number;
+    title: string;
+    description?: string;
+    icon: LucideIcon;
+    achieved?: boolean;
+};
+
+const milestoneRewards: MilestoneReward[] = [
     { goal: 5000, title: "Peer Mentorship Boost", description: "Unlock mentor office hours for freshers.", icon: Trophy },
     { goal: 15000, title: "Skill Sprint Weekend", description: "Fund campus-wide learning workshops.", icon: Medal },
     { goal: 30000, title: "Founders' Innovation Grant", description: "Sponsor prototyping grants for student teams.", icon: Crown },
@@ -44,6 +53,12 @@ const dailyQuests = [
     { id: "streak", title: "Keep the Streak Alive", reward: "Hit 25% of goal to earn combo XP.", threshold: 25, icon: Flame },
     { id: "share", title: "Share the Mission", reward: "Invite 3 friends to donate and unlock a bonus drop.", threshold: 50, icon: Gift },
     { id: "aim", title: "Bullseye Challenge", reward: "Reach 80% to unveil premium campus perks.", threshold: 80, icon: Target },
+];
+
+const trustBadges = [
+    { icon: ShieldCheck, label: 'Secure Razorpay checkout' },
+    { icon: Heart, label: 'Direct campus impact' },
+    { icon: Star, label: 'Hall of Heroes shoutout' },
 ];
 
 const medalColors = ["text-amber-400", "text-slate-400", "text-amber-700"];
@@ -104,7 +119,7 @@ export default function DonateContent({ initialDonors, initialGoal, initialRaise
   const [donors, setDonors] = useState<Donor[]>(initialDonors);
   const [goalAmount, setGoalAmount] = useState(initialGoal);
   const [raisedAmount, setRaisedAmount] = useState(initialRaised);
-  const [milestones, setMilestones] = useState(milestoneRewards);
+  const [milestones, setMilestones] = useState<MilestoneReward[]>(milestoneRewards);
   const [donationAmount, setDonationAmount] = useState('100');
   const [questProgress, setQuestProgress] = useState<QuestProgress>(() => {
       if (typeof window === 'undefined') return defaultQuestProgress;
@@ -225,6 +240,7 @@ export default function DonateContent({ initialDonors, initialGoal, initialRaise
   }, [supabase]);
 
   const progressPercentage = goalAmount > 0 ? Math.min((raisedAmount / goalAmount) * 100, 100) : 0;
+  const roundedProgress = Math.round(progressPercentage);
 
   useEffect(() => {
       const updates = { ...questProgress };
@@ -320,21 +336,26 @@ export default function DonateContent({ initialDonors, initialGoal, initialRaise
   return (
     <div className="space-y-16 md:space-y-24 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8">
       {/* Hero Section */}
-      <section className="text-center space-y-4">
-        <h1 className="text-4xl md:text-6xl font-headline font-bold primary-gradient bg-clip-text text-transparent">Fuel the Future of Students 🚀</h1>
-        <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">
-          Every donation helps UniNest stay alive for your campus.
+      <section className="text-center space-y-5">
+        <span className="inline-flex items-center justify-center gap-2 rounded-full bg-primary/10 px-4 py-1 text-sm font-semibold text-primary">
+          <Sparkles className="size-4" /> UniNest Fund
+        </span>
+        <h1 className="text-4xl md:text-6xl font-headline font-bold primary-gradient bg-clip-text text-transparent">Keep student tools online</h1>
+        <p className="mx-auto max-w-xl text-base text-muted-foreground">
+          Pick an amount, tap donate, and help UniNest stay live for every campus buddy.
         </p>
-        <Button
-          size="lg"
-          className="text-lg"
-          onClick={() => {
-            trackEvent('donation_scroll_to_form');
-            document.getElementById('donate-section')?.scrollIntoView({ behavior: 'smooth' });
-          }}
-        >
-            Power Up Now ⚡
-        </Button>
+        <div className="flex justify-center">
+          <Button
+            size="lg"
+            className="text-lg"
+            onClick={() => {
+              trackEvent('donation_scroll_to_form');
+              document.getElementById('donate-section')?.scrollIntoView({ behavior: 'smooth' });
+            }}
+          >
+            Donate in 10s ⚡
+          </Button>
+        </div>
       </section>
       
       {/* Impact Section */}
@@ -357,41 +378,31 @@ export default function DonateContent({ initialDonors, initialGoal, initialRaise
       {/* Donation & Leaderboard Section */}
       <div id="donate-section" className="grid lg:grid-cols-2 gap-12 items-start max-w-6xl mx-auto w-full">
         {/* Donation Card */}
-        <Card className="shadow-xl lg:sticky lg:top-24 lg:max-h-[calc(100vh-6rem)] lg:flex lg:flex-col">
+        <Card className="shadow-xl lg:shadow-2xl lg:sticky lg:top-24 lg:max-h-[calc(100vh-6rem)] lg:flex lg:flex-col">
           <CardHeader className="lg:flex-none">
-            <CardTitle className="text-2xl font-headline">Help Us Reach Our Goal</CardTitle>
-            <CardDescription>
-              Our monthly server cost is ₹{goalAmount.toLocaleString()}. Every rupee helps keep the platform running and ad-free.
+            <CardTitle className="text-2xl font-headline">Boost UniNest right now</CardTitle>
+            <CardDescription className="text-base">
+              Keep notes, bookings, and community spaces running for students everywhere.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6 lg:flex-1 lg:overflow-y-auto lg:pr-3">
-            {recentBoost && (
-                <div className="rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm font-medium text-primary animate-in slide-in-from-top-2">
-                    {recentBoost}
-                </div>
-            )}
-            <div className="space-y-2">
-              <Progress value={progressPercentage} className="h-3" />
-              <div className="flex justify-between text-sm font-medium">
-                <span className="text-primary">Raised: ₹{raisedAmount.toLocaleString()}</span>
-                <span className="text-muted-foreground">Goal: ₹{goalAmount.toLocaleString()}</span>
+            <div className="rounded-2xl bg-gradient-to-r from-primary/15 via-primary/5 to-transparent p-5 shadow-sm">
+              <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-primary">
+                <span>Goal progress</span>
+                <span>{roundedProgress}% funded</span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-muted-foreground">
-                {milestoneRewards.map(reward => {
-                    const achieved = raisedAmount >= reward.goal;
-                    return (
-                        <div key={reward.goal} className={cn("rounded-lg border px-3 py-2 flex items-center gap-2", achieved ? "border-primary/50 bg-primary/10 text-primary" : "border-border") }>
-                            <reward.icon className={cn("size-4", achieved && "text-primary")}/>
-                            <div>
-                                <p className="font-semibold text-foreground text-sm">{reward.title}</p>
-                                <p>{reward.description}</p>
-                            </div>
-                        </div>
-                    );
-                })}
+              <Progress value={progressPercentage} className="mt-3 h-2.5" />
+              <div className="mt-3 flex items-center justify-between text-sm font-semibold">
+                <span>₹{raisedAmount.toLocaleString()} raised</span>
+                <span className="text-muted-foreground">Target ₹{goalAmount.toLocaleString()}</span>
               </div>
             </div>
-             <div className="grid grid-cols-3 gap-3">
+            {recentBoost && (
+              <div className="rounded-xl border border-primary/40 bg-primary/10 px-4 py-3 text-sm font-semibold text-primary">
+                {recentBoost}
+              </div>
+            )}
+            <div className="grid grid-cols-3 gap-3">
                 {donationTiers.map(tier => (
                     <Button 
                         key={tier.amount} 
@@ -435,9 +446,38 @@ export default function DonateContent({ initialDonors, initialGoal, initialRaise
               }}
               disabled={!isLoaded || isDonating || !donationAmount}
             >
-                {isLoaded ? <Sparkles className="mr-2 size-5" /> : <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isDonating ? 'Processing...' : `Donate ₹${donationAmount || 0}`}
+              {isLoaded ? <Sparkles className="mr-2 size-5" /> : <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isDonating ? 'Processing...' : `Donate ₹${donationAmount || 0}`}
             </Button>
+            <div className="flex flex-wrap gap-2">
+              {milestones.map(milestone => {
+                const Icon = milestone.icon ?? Trophy;
+                const achieved = milestone.achieved ?? raisedAmount >= milestone.goal;
+                return (
+                  <div
+                    key={milestone.goal}
+                    className={cn(
+                      'inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold',
+                      achieved ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground'
+                    )}
+                  >
+                    <Icon className="size-4" />
+                    <span>{milestone.title}</span>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+              {trustBadges.map(badge => {
+                const Icon = badge.icon;
+                return (
+                  <div key={badge.label} className="inline-flex items-center gap-2 rounded-full border px-3 py-2">
+                    <Icon className="size-3.5 text-primary" />
+                    <span className="font-medium">{badge.label}</span>
+                  </div>
+                );
+              })}
+            </div>
           </CardContent>
         </Card>
 
