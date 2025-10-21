@@ -179,6 +179,26 @@ export default function HomePosterForm({ initialConfig }: HomePosterFormProps) {
     };
   }, [slides]);
 
+  useEffect(() => {
+    return () => {
+      quickAccessCards.forEach((card) => {
+        if (card.imagePreview) {
+          URL.revokeObjectURL(card.imagePreview);
+        }
+      });
+    };
+  }, [quickAccessCards]);
+
+  useEffect(() => {
+    return () => {
+      curatedCollections.forEach((collection) => {
+        if (collection.imagePreview) {
+          URL.revokeObjectURL(collection.imagePreview);
+        }
+      });
+    };
+  }, [curatedCollections]);
+
   const updateSlideAt = (index: number, patch: Partial<SlideFormState>) => {
     setSlides((prev) =>
       prev.map((slide, idx) =>

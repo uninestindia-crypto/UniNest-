@@ -23,6 +23,9 @@ async function getVendorDataForCategory(categoryLabel: string, userId: string) {
     if (categoryLabel === 'Hostels') {
         // For the Hostel dashboard, we need both the main hostel product and its room products.
         productCategories = ['Hostels', 'Hostel Room'];
+    } else if (categoryLabel === 'Library') {
+        // Include both the primary library listing and seat-level products for accurate order linkage.
+        productCategories = ['Library', 'Library Seat'];
     } else {
         productCategories.push(categoryLabel);
     }
