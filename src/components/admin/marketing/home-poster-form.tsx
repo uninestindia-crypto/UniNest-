@@ -303,6 +303,42 @@ export default function HomePosterForm({ initialConfig }: HomePosterFormProps) {
     );
   };
 
+  const handleQuickAccessImageChange = (index: number, file: File | null) => {
+    setQuickAccessCards((prev) =>
+      prev.map((card, idx) => {
+        if (idx !== index) {
+          return card;
+        }
+        if (card.imagePreview) {
+          URL.revokeObjectURL(card.imagePreview);
+        }
+        return {
+          ...card,
+          imageFile: file,
+          imagePreview: file ? URL.createObjectURL(file) : null,
+        };
+      }),
+    );
+  };
+
+  const resetQuickAccessImage = (index: number) => {
+    setQuickAccessCards((prev) =>
+      prev.map((card, idx) => {
+        if (idx !== index) {
+          return card;
+        }
+        if (card.imagePreview) {
+          URL.revokeObjectURL(card.imagePreview);
+        }
+        return {
+          ...card,
+          imageFile: null,
+          imagePreview: null,
+        };
+      }),
+    );
+  };
+
   const handleAddQuickAccess = () => {
     if (quickAccessCards.length >= MAX_QUICK_ACCESS) return;
     setQuickAccessCards((prev) => [...prev, createEmptyQuickAccess(prev.length)]);
@@ -313,7 +349,13 @@ export default function HomePosterForm({ initialConfig }: HomePosterFormProps) {
       toast({ variant: 'destructive', title: 'At least one quick access card is required.' });
       return;
     }
-    setQuickAccessCards((prev) => prev.filter((_, idx) => idx !== index));
+    setQuickAccessCards((prev) => {
+      const target = prev[index];
+      if (target?.imagePreview) {
+        URL.revokeObjectURL(target.imagePreview);
+      }
+      return prev.filter((_, idx) => idx !== index);
+    });
   };
 
   const handleMoveQuickAccess = (index: number, direction: 'up' | 'down') => {
@@ -342,6 +384,42 @@ export default function HomePosterForm({ initialConfig }: HomePosterFormProps) {
     );
   };
 
+  const handleCuratedCollectionImageChange = (index: number, file: File | null) => {
+    setCuratedCollections((prev) =>
+      prev.map((collection, idx) => {
+        if (idx !== index) {
+          return collection;
+        }
+        if (collection.imagePreview) {
+          URL.revokeObjectURL(collection.imagePreview);
+        }
+        return {
+          ...collection,
+          imageFile: file,
+          imagePreview: file ? URL.createObjectURL(file) : null,
+        };
+      }),
+    );
+  };
+
+  const resetCuratedCollectionImage = (index: number) => {
+    setCuratedCollections((prev) =>
+      prev.map((collection, idx) => {
+        if (idx !== index) {
+          return collection;
+        }
+        if (collection.imagePreview) {
+          URL.revokeObjectURL(collection.imagePreview);
+        }
+        return {
+          ...collection,
+          imageFile: null,
+          imagePreview: null,
+        };
+      }),
+    );
+  };
+
   const handleAddCollection = () => {
     if (curatedCollections.length >= MAX_CURATED) return;
     setCuratedCollections((prev) => [...prev, createEmptyCollection(prev.length)]);
@@ -352,7 +430,13 @@ export default function HomePosterForm({ initialConfig }: HomePosterFormProps) {
       toast({ variant: 'destructive', title: 'At least one curated collection is required.' });
       return;
     }
-    setCuratedCollections((prev) => prev.filter((_, idx) => idx !== index));
+    setCuratedCollections((prev) => {
+      const target = prev[index];
+      if (target?.imagePreview) {
+        URL.revokeObjectURL(target.imagePreview);
+      }
+      return prev.filter((_, idx) => idx !== index);
+    });
   };
 
   const handleMoveCollection = (index: number, direction: 'up' | 'down') => {
