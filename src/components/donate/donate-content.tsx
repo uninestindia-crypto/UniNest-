@@ -385,98 +385,102 @@ export default function DonateContent({ initialDonors, initialGoal, initialRaise
               Keep notes, bookings, and community spaces running for students everywhere.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6 lg:flex-1 lg:overflow-y-auto lg:pr-3">
-            <div className="rounded-2xl bg-gradient-to-r from-primary/15 via-primary/5 to-transparent p-5 shadow-sm">
-              <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-primary">
-                <span>Goal progress</span>
-                <span>{roundedProgress}% funded</span>
+          <CardContent className="space-y-6 lg:flex-1 lg:flex lg:flex-col lg:pr-3">
+            <div className="space-y-6">
+              <div className="rounded-2xl bg-gradient-to-r from-primary/15 via-primary/5 to-transparent p-5 shadow-sm">
+                <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-primary">
+                  <span>Goal progress</span>
+                  <span>{roundedProgress}% funded</span>
+                </div>
+                <Progress value={progressPercentage} className="mt-3 h-2.5" />
+                <div className="mt-3 flex items-center justify-between text-sm font-semibold">
+                  <span>₹{raisedAmount.toLocaleString()} raised</span>
+                  <span className="text-muted-foreground">Target ₹{goalAmount.toLocaleString()}</span>
+                </div>
               </div>
-              <Progress value={progressPercentage} className="mt-3 h-2.5" />
-              <div className="mt-3 flex items-center justify-between text-sm font-semibold">
-                <span>₹{raisedAmount.toLocaleString()} raised</span>
-                <span className="text-muted-foreground">Target ₹{goalAmount.toLocaleString()}</span>
+              {recentBoost && (
+                <div className="rounded-xl border border-primary/40 bg-primary/10 px-4 py-3 text-sm font-semibold text-primary">
+                  {recentBoost}
+                </div>
+              )}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {donationTiers.map(tier => (
+                      <Button 
+                          key={tier.amount} 
+                          variant="outline"
+                          className={cn(
+                              "py-6 text-base font-bold transition-all border-2 flex flex-col h-auto",
+                              donationAmount === tier.amount.toString() && "primary-gradient text-primary-foreground border-transparent ring-2 ring-primary"
+                          )}
+                          onClick={() => {
+                              setDonationAmount(tier.amount.toString());
+                              trackEvent('donation_tier_selected', {
+                                  amount: tier.amount,
+                                  label: tier.title,
+                              });
+                          }}
+                      >
+                          <span className="text-lg">₹{tier.amount}</span>
+                          <span className="text-xs font-normal">{tier.title}</span>
+                      </Button>
+                  ))}
               </div>
+              <div className="relative">
+                  <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
+                  <Input
+                      type="number"
+                      placeholder="Or enter a custom amount"
+                      className="pl-10 text-center text-lg font-semibold h-14 rounded-xl"
+                      value={donationAmount}
+                      onChange={(e) => setDonationAmount(e.target.value)}
+                  />
+              </div>
+              <Button
+                size="lg"
+                className="w-full text-lg h-14"
+                onClick={() => {
+                  trackEvent('donation_attempt', {
+                    amount: Number(donationAmount) || 0,
+                    method: 'razorpay',
+                  });
+                  handleDonate(donationAmount);
+                }}
+                disabled={!isLoaded || isDonating || !donationAmount}
+              >
+                {isLoaded ? <Sparkles className="mr-2 size-5" /> : <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isDonating ? 'Processing...' : `Donate ₹${donationAmount || 0}`}
+              </Button>
             </div>
-            {recentBoost && (
-              <div className="rounded-xl border border-primary/40 bg-primary/10 px-4 py-3 text-sm font-semibold text-primary">
-                {recentBoost}
-              </div>
-            )}
-            <div className="grid grid-cols-3 gap-3">
-                {donationTiers.map(tier => (
-                    <Button 
-                        key={tier.amount} 
-                        variant="outline"
-                        className={cn(
-                            "py-6 text-base font-bold transition-all border-2 flex flex-col h-auto",
-                            donationAmount === tier.amount.toString() && "primary-gradient text-primary-foreground border-transparent ring-2 ring-primary"
-                        )}
-                        onClick={() => {
-                            setDonationAmount(tier.amount.toString());
-                            trackEvent('donation_tier_selected', {
-                                amount: tier.amount,
-                                label: tier.title,
-                            });
-                        }}
+            <div className="space-y-4 lg:mt-6 lg:flex-1 lg:overflow-y-auto">
+              <div className="flex flex-wrap gap-2">
+                {milestones.map(milestone => {
+                  const Icon = milestone.icon ?? Trophy;
+                  const achieved = milestone.achieved ?? raisedAmount >= milestone.goal;
+                  return (
+                    <div
+                      key={milestone.goal}
+                      className={cn(
+                        'inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold',
+                        achieved ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground'
+                      )}
                     >
-                        <span className="text-lg">₹{tier.amount}</span>
-                        <span className="text-xs font-normal">{tier.title}</span>
-                    </Button>
-                ))}
-            </div>
-            <div className="relative">
-                <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
-                <Input
-                    type="number"
-                    placeholder="Or enter a custom amount"
-                    className="pl-10 text-center text-lg font-semibold h-14 rounded-xl"
-                    value={donationAmount}
-                    onChange={(e) => setDonationAmount(e.target.value)}
-                />
-            </div>
-            <Button
-              size="lg"
-              className="w-full text-lg h-14"
-              onClick={() => {
-                trackEvent('donation_attempt', {
-                  amount: Number(donationAmount) || 0,
-                  method: 'razorpay',
-                });
-                handleDonate(donationAmount);
-              }}
-              disabled={!isLoaded || isDonating || !donationAmount}
-            >
-              {isLoaded ? <Sparkles className="mr-2 size-5" /> : <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isDonating ? 'Processing...' : `Donate ₹${donationAmount || 0}`}
-            </Button>
-            <div className="flex flex-wrap gap-2">
-              {milestones.map(milestone => {
-                const Icon = milestone.icon ?? Trophy;
-                const achieved = milestone.achieved ?? raisedAmount >= milestone.goal;
-                return (
-                  <div
-                    key={milestone.goal}
-                    className={cn(
-                      'inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold',
-                      achieved ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground'
-                    )}
-                  >
-                    <Icon className="size-4" />
-                    <span>{milestone.title}</span>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-              {trustBadges.map(badge => {
-                const Icon = badge.icon;
-                return (
-                  <div key={badge.label} className="inline-flex items-center gap-2 rounded-full border px-3 py-2">
-                    <Icon className="size-3.5 text-primary" />
-                    <span className="font-medium">{badge.label}</span>
-                  </div>
-                );
-              })}
+                      <Icon className="size-4" />
+                      <span>{milestone.title}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                {trustBadges.map(badge => {
+                  const Icon = badge.icon;
+                  return (
+                    <div key={badge.label} className="inline-flex items-center gap-2 rounded-full border px-3 py-2">
+                      <Icon className="size-3.5 text-primary" />
+                      <span className="font-medium">{badge.label}</span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </CardContent>
         </Card>
