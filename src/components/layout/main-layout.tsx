@@ -85,6 +85,27 @@ export default function MainLayout({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
+      return;
+    }
+
+    const isSecureContext = window.location.protocol === 'https:' || window.location.hostname === 'localhost';
+    if (!isSecureContext) {
+      return;
+    }
+
+    const registerServiceWorker = async () => {
+      try {
+        await navigator.serviceWorker.register('/service-worker.js');
+      } catch (error) {
+        console.warn('[pwa] service worker registration failed', error);
+      }
+    };
+
+    registerServiceWorker();
+  }, []);
+
   const isAdminPage = pathname.startsWith('/admin');
   const isVendorPage = pathname.startsWith('/vendor');
   const isHomePage = pathname === '/';
