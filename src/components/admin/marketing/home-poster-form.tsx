@@ -30,9 +30,15 @@ type SlideFormState = HomeHeroSlide & {
   imagePreview: string | null;
 };
 
-type QuickAccessFormState = HomeQuickAccessCard;
+type QuickAccessFormState = HomeQuickAccessCard & {
+  imageFile: File | null;
+  imagePreview: string | null;
+};
 
-type CuratedCollectionFormState = HomeCuratedCollection;
+type CuratedCollectionFormState = HomeCuratedCollection & {
+  imageFile: File | null;
+  imagePreview: string | null;
+};
 
 type HomePosterFormProps = {
   initialConfig: HomePosterConfig;
@@ -65,6 +71,8 @@ const mapConfigToQuickAccess = (config: HomePosterConfig): QuickAccessFormState[
     href: card.href,
     imageUrl: card.imageUrl,
     icon: card.icon ?? '',
+    imageFile: null,
+    imagePreview: null,
   }));
 };
 
@@ -79,6 +87,8 @@ const mapConfigToCuratedCollections = (config: HomePosterConfig): CuratedCollect
     description: collection.description,
     href: collection.href,
     imageUrl: collection.imageUrl,
+    imageFile: null,
+    imagePreview: null,
   }));
 };
 
@@ -103,6 +113,8 @@ const createEmptyQuickAccess = (index: number): QuickAccessFormState => ({
   href: '',
   imageUrl: '',
   icon: '',
+  imageFile: null,
+  imagePreview: null,
 });
 
 const createEmptyCollection = (index: number): CuratedCollectionFormState => ({
@@ -111,6 +123,8 @@ const createEmptyCollection = (index: number): CuratedCollectionFormState => ({
   description: '',
   href: '',
   imageUrl: '',
+  imageFile: null,
+  imagePreview: null,
 });
 
 const toNullable = (value: string | null | undefined) => {

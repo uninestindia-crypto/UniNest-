@@ -31,6 +31,7 @@ const formSchema = z.object({
   location: z.string().optional(),
   phone_number: z.string().optional(),
   whatsapp_number: z.string().optional(),
+  telegram_number: z.string().optional(),
   total_seats: z.string().optional(),
   opening_hours: z.string().optional(),
   amenities: z.string().optional(),
@@ -62,6 +63,7 @@ type ProductFormProps = {
     location: string | null;
     phone_number?: string | null;
     whatsapp_number?: string | null;
+    telegram_number?: string | null;
     total_seats?: number | null;
     opening_hours?: string[] | null;
     amenities?: string[] | null;
@@ -122,6 +124,7 @@ export default function ProductForm({ product, chargeForPosts = false, postPrice
       location: product?.location || '',
       phone_number: product?.phone_number || user?.user_metadata?.contact_number || '',
       whatsapp_number: product?.whatsapp_number || user?.user_metadata?.whatsapp_number || '',
+      telegram_number: product?.telegram_number || user?.user_metadata?.telegram_number || '',
       total_seats: product?.total_seats ? String(product.total_seats) : '',
       opening_hours: formatList(product?.opening_hours || null),
       amenities: formatList(product?.amenities || null),
@@ -188,6 +191,15 @@ export default function ProductForm({ product, chargeForPosts = false, postPrice
           description: 'Activate your subscription or start a trial to publish listings.',
         });
         return;
+    }
+
+    if (role === 'vendor') {
+      const hasWhatsApp = !!values.whatsapp_number && values.whatsapp_number.trim().length > 0;
+      const hasTelegram = !!values.telegram_number && values.telegram_number.trim().length > 0;
+      if (!hasWhatsApp && !hasTelegram) {
+        toast({ variant: 'destructive', title: 'Contact required', description: 'Provide a WhatsApp or Telegram contact to continue.' });
+        return;
+      }
     }
 
     const requireListField = (field: keyof FormValues, message: string) => {
@@ -401,21 +413,22 @@ export default function ProductForm({ product, chargeForPosts = false, postPrice
                       </>
                     )}
 
-                    {role === 'vendor' && (
-                        <div className="grid md:grid-cols-2 gap-6">
-                            <FormField control={form.control} name="phone_number" render={({ field }) => (
-                                <FormItem><FormLabel>Contact Phone</FormLabel><FormControl><Input type="tel" placeholder="Your business phone" {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
-                            )} />
-                            <FormField control={form.control} name="whatsapp_number" render={({ field }) => (
-                                <FormItem><FormLabel>WhatsApp Number</FormLabel><FormControl><Input type="tel" placeholder="Your WhatsApp contact" {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
-                            )} />
-                        </div>
-                    )}
-                   
-                     <FormField control={form.control} name="image" render={({ field: { onChange, value, ...rest } }) => (
+                    <div className="grid md:grid-cols-3 gap-6">
+                        <FormField control={form.control} name="phone_number" render={({ field }) => (
+                            <FormItem><FormLabel>Contact Phone</FormLabel><FormControl><Input type="tel" placeholder="Your business phone" {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="whatsapp_number" render={({ field }) => (
+                            <FormItem><FormLabel>WhatsApp Number</FormLabel><FormControl><Input type="tel" placeholder="Your WhatsApp contact" {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="telegram_number" render={({ field }) => (
+                            <FormItem><FormLabel>Telegram Number or Username</FormLabel><FormControl><Input type="text" placeholder="Your Telegram contact" {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                    </div>
+
+                    <FormField control={form.control} name="image" render={({ field: { value, onChange, ...rest } }) => (
                         <FormItem>
-                            <FormLabel>{isLibraryOrHostel ? 'Main Image' : 'Product Image'}</FormLabel>
-                            {isEditMode && product.image_url && !value && (
+                            <FormLabel>Listing Image</FormLabel>
+                            {isEditMode && product?.image_url && !value && (
                                 <div className="mb-4">
                                     <p className="text-sm text-muted-foreground mb-2">Current image:</p>
                                     <Image src={product.image_url} alt="Current product image" width={100} height={100} className="rounded-md" />
@@ -425,6 +438,7 @@ export default function ProductForm({ product, chargeForPosts = false, postPrice
                             <FormMessage />
                         </FormItem>
                      )} />
+
                     <Button type="submit" disabled={isLoading || (chargeForPosts && !isEditMode && !isLoaded)}>
                         {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         {isEditMode 
