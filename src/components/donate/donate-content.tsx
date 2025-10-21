@@ -318,7 +318,7 @@ export default function DonateContent({ initialDonors, initialGoal, initialRaise
   const otherDonors = donors.slice(3);
 
   return (
-    <div className="space-y-16 md:space-y-24">
+    <div className="space-y-16 md:space-y-24 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8">
       {/* Hero Section */}
       <section className="text-center space-y-4">
         <h1 className="text-4xl md:text-6xl font-headline font-bold primary-gradient bg-clip-text text-transparent">Fuel the Future of Students 🚀</h1>
@@ -355,16 +355,16 @@ export default function DonateContent({ initialDonors, initialGoal, initialRaise
       </section>
 
       {/* Donation & Leaderboard Section */}
-      <div id="donate-section" className="grid lg:grid-cols-2 gap-12 items-start max-w-6xl mx-auto">
+      <div id="donate-section" className="grid lg:grid-cols-2 gap-12 items-start max-w-6xl mx-auto w-full">
         {/* Donation Card */}
-        <Card className="shadow-xl sticky top-24">
-          <CardHeader>
+        <Card className="shadow-xl lg:sticky lg:top-24 lg:max-h-[calc(100vh-6rem)] lg:flex lg:flex-col">
+          <CardHeader className="lg:flex-none">
             <CardTitle className="text-2xl font-headline">Help Us Reach Our Goal</CardTitle>
             <CardDescription>
               Our monthly server cost is ₹{goalAmount.toLocaleString()}. Every rupee helps keep the platform running and ad-free.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-6 lg:flex-1 lg:overflow-y-auto lg:pr-3">
             {recentBoost && (
                 <div className="rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm font-medium text-primary animate-in slide-in-from-top-2">
                     {recentBoost}
