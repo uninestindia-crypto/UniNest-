@@ -9,6 +9,8 @@ import { BrandingAssetsProvider } from '@/components/branding/branding-provider'
 import { getBrandingAssets } from '@/lib/branding';
 import { Poppins } from 'next/font/google';
 
+export const dynamic = 'force-dynamic';
+
 const poppins = Poppins({
   subsets: ['latin'],
   weight: ['400', '600', '800'],
