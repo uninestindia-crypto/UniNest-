@@ -15,6 +15,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { CalendarRange, Info, Megaphone, Percent, Sparkles, Timer, Users, Wand2 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import type { VendorPromotionsByStatus } from '@/lib/types';
 
 const promotionStatuses = [
   { id: 'active', title: 'Active', description: 'Campaigns running right now' },
@@ -22,18 +23,11 @@ const promotionStatuses = [
   { id: 'completed', title: 'Completed', description: 'Past performance to review' },
 ] as const;
 
-const samplePromotions = {
-  active: [
-    { id: 'PR-2310', name: 'Festive stay offer', audience: 'Hostel leads · City-wide', uplift: '+28% bookings', dates: '10–24 Oct', budget: '₹5,000' },
-    { id: 'PR-2308', name: 'Meal plan happy hours', audience: 'Food mess subscribers', uplift: '+18% renewals', dates: 'Daily 5–8pm', budget: '₹1,800' },
-  ],
-  scheduled: [
-    { id: 'PR-2312', name: 'Exam focus bundle', audience: 'Library waitlist', uplift: 'Projected +22%', dates: '1–15 Nov', budget: '₹3,200' },
-  ],
-  completed: [
-    { id: 'PR-2289', name: 'Welcome week flash sale', audience: 'New campus entrants', uplift: '+32% ARR', dates: '01–07 Aug', budget: '₹4,500' },
-  ],
-} as const;
+const emptyPromotions: VendorPromotionsByStatus = {
+  active: [],
+  scheduled: [],
+  completed: [],
+};
 
 const creationSteps = [
   { id: 'audience', title: 'Audience & goal', description: 'Choose who sees the campaign and define success.' },
@@ -66,7 +60,11 @@ type StepId = (typeof creationSteps)[number]['id'];
 
 type PromotionTab = (typeof promotionStatuses)[number]['id'];
 
-export default function VendorPromotionsContent() {
+type VendorPromotionsContentProps = {
+  promotions?: VendorPromotionsByStatus | null;
+};
+
+export default function VendorPromotionsContent({ promotions }: VendorPromotionsContentProps) {
   const [activeTab, setActiveTab] = useState<PromotionTab>('active');
   const [step, setStep] = useState<StepId>('audience');
   const [discount, setDiscount] = useState<number[]>([15]);
@@ -76,6 +74,8 @@ export default function VendorPromotionsContent() {
 
   const stepIndex = useMemo(() => creationSteps.findIndex((item) => item.id === step), [step]);
   const progress = useMemo(() => ((stepIndex + 1) / creationSteps.length) * 100, [stepIndex]);
+
+  const promotionsByStatus = promotions ?? emptyPromotions;
 
   const goStep = (direction: 'next' | 'prev') => {
     if (direction === 'next' && stepIndex < creationSteps.length - 1) {
@@ -136,37 +136,54 @@ export default function VendorPromotionsContent() {
               </TabsList>
               {promotionStatuses.map((status) => (
                 <TabsContent key={status.id} value={status.id}>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    {samplePromotions[status.id as keyof typeof samplePromotions].map((promo) => (
-                      <Card key={promo.id} className="border border-muted/40">
-                        <CardHeader className="space-y-1">
-                          <div className="flex items-center justify-between">
-                            <CardTitle className="text-lg">{promo.name}</CardTitle>
-                            <Badge variant="outline">{promo.id}</Badge>
-                          </div>
-                          <CardDescription>{promo.audience}</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-2 text-sm">
-                          <div className="flex items-center justify-between">
-                            <span className="text-muted-foreground">Performance</span>
-                            <span className="font-medium text-foreground">{promo.uplift}</span>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-muted-foreground">Run window</span>
-                            <span className="font-medium text-foreground">{promo.dates}</span>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-muted-foreground">Budget</span>
-                            <span className="font-medium text-foreground">{promo.budget}</span>
-                          </div>
-                        </CardContent>
-                        <CardFooter className="flex flex-col gap-2 border-t bg-muted/40 p-4 sm:flex-row sm:justify-between">
-                          <Button variant="outline" size="sm" className="w-full sm:w-auto">View insights</Button>
-                          <Button size="sm" className="w-full sm:w-auto">Boost</Button>
-                        </CardFooter>
-                      </Card>
-                    ))}
-                  </div>
+                  {promotionsByStatus[status.id as keyof VendorPromotionsByStatus].length === 0 ? (
+                    <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-muted-foreground/40 bg-muted/20 p-10 text-center">
+                      <Sparkles className="size-8 text-primary" />
+                      <div className="space-y-1">
+                        <p className="text-base font-semibold text-foreground">No {status.title.toLowerCase()} campaigns yet</p>
+                        <p className="text-sm text-muted-foreground">Create a promotion to see live performance metrics here.</p>
+                      </div>
+                      <Button size="sm" onClick={() => setActiveTab('active')}>Create promotion</Button>
+                    </div>
+                  ) : (
+                    <div className="grid gap-4 md:grid-cols-2">
+                      {promotionsByStatus[status.id as keyof VendorPromotionsByStatus].map((promo) => (
+                        <Card key={promo.id} className="border border-muted/40">
+                          <CardHeader className="space-y-1">
+                            <div className="flex items-center justify-between">
+                              <CardTitle className="text-lg">{promo.name}</CardTitle>
+                              <Badge variant="outline">{promo.id}</Badge>
+                            </div>
+                            {promo.audience && <CardDescription>{promo.audience}</CardDescription>}
+                          </CardHeader>
+                          <CardContent className="space-y-2 text-sm">
+                            {promo.uplift && (
+                              <div className="flex items-center justify-between">
+                                <span className="text-muted-foreground">Performance</span>
+                                <span className="font-medium text-foreground">{promo.uplift}</span>
+                              </div>
+                            )}
+                            {promo.dates && (
+                              <div className="flex items-center justify-between">
+                                <span className="text-muted-foreground">Run window</span>
+                                <span className="font-medium text-foreground">{promo.dates}</span>
+                              </div>
+                            )}
+                            {promo.budget && (
+                              <div className="flex items-center justify-between">
+                                <span className="text-muted-foreground">Budget</span>
+                                <span className="font-medium text-foreground">{promo.budget}</span>
+                              </div>
+                            )}
+                          </CardContent>
+                          <CardFooter className="flex flex-col gap-2 border-t bg-muted/40 p-4 sm:flex-row sm:justify-between">
+                            <Button variant="outline" size="sm" className="w-full sm:w-auto">View insights</Button>
+                            <Button size="sm" className="w-full sm:w-auto">Boost</Button>
+                          </CardFooter>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
                 </TabsContent>
               ))}
             </Tabs>

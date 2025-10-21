@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient as createAdminClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
@@ -25,12 +26,14 @@ const slideSchema = z.object({
   tag: z.string().optional().nullable(),
 });
 
+const optionalUrlSchema = z.union([z.string().url(), z.literal('')]);
+
 const quickAccessSchema = z.object({
   id: z.string().optional(),
   title: z.string().min(1),
   description: z.string().min(1),
   href: z.string().min(1),
-  imageUrl: z.string().url(),
+  imageUrl: optionalUrlSchema,
   icon: z.string().optional().nullable(),
 });
 
@@ -39,7 +42,7 @@ const curatedCollectionSchema = z.object({
   title: z.string().min(1),
   description: z.string().min(1),
   href: z.string().min(1),
-  imageUrl: z.string().url(),
+  imageUrl: optionalUrlSchema,
 });
 
 const configSchema = z.object({
@@ -63,6 +66,7 @@ const donationSettingsSchema = z.object({
 });
 
 const BRANDING_BUCKET = 'branding';
+const POSTER_BUCKET = 'products';
 
 const getSupabaseAdmin = () => {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -272,14 +276,21 @@ export async function updateDonationSettings(formData: FormData) {
   }
 }
 
-const uploadSlideImage = async (file: File, index: number) => {
-  if (!file || file.size === 0) return { url: null, error: null };
+const uploadPosterAsset = async (
+  supabaseAdmin: SupabaseClient,
+  file: File,
+  pathPrefix: string,
+  index: number,
+): Promise<{ url: string | null; error: string | null }> => {
+  if (!file || file.size === 0) {
+    return { url: null, error: null };
+  }
 
-  const supabaseAdmin = getSupabaseAdmin();
-  const filePath = `home-poster/${Date.now()}-${index}-${file.name}`;
+  const sanitizedName = file.name.replace(/\s+/g, '-');
+  const filePath = `${pathPrefix}/${Date.now()}-${index}-${sanitizedName}`;
 
   const { error: uploadError } = await supabaseAdmin.storage
-    .from('products')
+    .from(POSTER_BUCKET)
     .upload(filePath, file, {
       contentType: file.type || 'image/jpeg',
       upsert: true,
@@ -289,7 +300,7 @@ const uploadSlideImage = async (file: File, index: number) => {
     return { url: null, error: uploadError.message };
   }
 
-  const { data } = supabaseAdmin.storage.from('products').getPublicUrl(filePath);
+  const { data } = supabaseAdmin.storage.from(POSTER_BUCKET).getPublicUrl(filePath);
   return { url: data.publicUrl, error: null };
 };
 
@@ -316,16 +327,23 @@ export async function updateHomePoster(formData: FormData) {
       curatedCollections: JSON.parse(curatedCollectionsJson),
     });
 
+    const supabaseAdmin = getSupabaseAdmin();
+
+    const { error: bucketError } = await ensureBucketExists(supabaseAdmin, POSTER_BUCKET);
+    if (bucketError) {
+      throw new Error(`Failed to ensure poster bucket: ${bucketError}`);
+    }
+
     const processedSlides: HomeHeroSlide[] = [];
 
     for (let index = 0; index < parsed.heroSlides.length; index += 1) {
       const slideInput = parsed.heroSlides[index];
       const file = formData.get(`slide-${index}-image`);
 
-      let imageUrl = slideInput.imageUrl ?? undefined;
+      let imageUrl = (slideInput.imageUrl ?? '').toString().trim();
 
       if (file instanceof File && file.size > 0) {
-        const { url, error } = await uploadSlideImage(file, index);
+        const { url, error } = await uploadPosterAsset(supabaseAdmin, file, 'home-poster/slides', index);
         if (error || !url) {
           throw new Error(`Failed to upload image for slide ${index + 1}: ${error}`);
         }
@@ -349,30 +367,70 @@ export async function updateHomePoster(formData: FormData) {
       });
     }
 
-    const quickAccessCards: HomeQuickAccessCard[] = parsed.quickAccessCards.map((card, index) => ({
-      id: card.id && card.id.trim().length > 0 ? card.id : `quick-${Date.now()}-${index}`,
-      title: card.title,
-      description: card.description,
-      href: card.href,
-      imageUrl: card.imageUrl,
-      icon: card.icon ?? undefined,
-    }));
+    const processedQuickAccessCards: HomeQuickAccessCard[] = [];
 
-    const curatedCollections: HomeCuratedCollection[] = parsed.curatedCollections.map((collection, index) => ({
-      id: collection.id && collection.id.trim().length > 0 ? collection.id : `collection-${Date.now()}-${index}`,
-      title: collection.title,
-      description: collection.description,
-      href: collection.href,
-      imageUrl: collection.imageUrl,
-    }));
+    for (let index = 0; index < parsed.quickAccessCards.length; index += 1) {
+      const cardInput = parsed.quickAccessCards[index];
+      const file = formData.get(`quick-${index}-image`);
+
+      let imageUrl = (cardInput.imageUrl ?? '').toString().trim();
+
+      if (file instanceof File && file.size > 0) {
+        const { url, error } = await uploadPosterAsset(supabaseAdmin, file, 'home-poster/quick-access', index);
+        if (error || !url) {
+          throw new Error(`Failed to upload image for quick access card ${index + 1}: ${error}`);
+        }
+        imageUrl = url;
+      }
+
+      if (!imageUrl) {
+        throw new Error(`Quick access card ${index + 1} requires an image.`);
+      }
+
+      processedQuickAccessCards.push({
+        id: cardInput.id && cardInput.id.trim().length > 0 ? cardInput.id : `quick-${Date.now()}-${index}`,
+        title: cardInput.title,
+        description: cardInput.description,
+        href: cardInput.href,
+        imageUrl,
+        icon: cardInput.icon ?? undefined,
+      });
+    }
+
+    const processedCuratedCollections: HomeCuratedCollection[] = [];
+
+    for (let index = 0; index < parsed.curatedCollections.length; index += 1) {
+      const collectionInput = parsed.curatedCollections[index];
+      const file = formData.get(`collection-${index}-image`);
+
+      let imageUrl = (collectionInput.imageUrl ?? '').toString().trim();
+
+      if (file instanceof File && file.size > 0) {
+        const { url, error } = await uploadPosterAsset(supabaseAdmin, file, 'home-poster/curated-collections', index);
+        if (error || !url) {
+          throw new Error(`Failed to upload image for curated collection ${index + 1}: ${error}`);
+        }
+        imageUrl = url;
+      }
+
+      if (!imageUrl) {
+        throw new Error(`Curated collection ${index + 1} requires an image.`);
+      }
+
+      processedCuratedCollections.push({
+        id: collectionInput.id && collectionInput.id.trim().length > 0 ? collectionInput.id : `collection-${Date.now()}-${index}`,
+        title: collectionInput.title,
+        description: collectionInput.description,
+        href: collectionInput.href,
+        imageUrl,
+      });
+    }
 
     const posterConfig: HomePosterConfig = {
       heroSlides: processedSlides,
-      quickAccessCards,
-      curatedCollections,
+      quickAccessCards: processedQuickAccessCards,
+      curatedCollections: processedCuratedCollections,
     };
-
-    const supabaseAdmin = getSupabaseAdmin();
 
     const { error: upsertError } = await supabaseAdmin
       .from('platform_settings')

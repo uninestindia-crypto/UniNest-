@@ -3,6 +3,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -32,6 +33,7 @@ type InternshipPreview = {
   stipend_period: string;
   deadline: string;
   location: string;
+  image_url: string | null;
 };
 
 type SortOption = 'deadline' | 'prize-high' | 'stipend-high';
@@ -75,7 +77,7 @@ export default function WorkspaceClient() {
       setInternshipsLoading(true);
       const { data, error } = await supabase
         .from('internships')
-        .select('id,role,company,stipend,stipend_period,deadline,location')
+        .select('id,role,company,stipend,stipend_period,deadline,location,image_url')
         .order('deadline', { ascending: true })
         .limit(3);
       if (isMounted && !error) {
@@ -443,6 +445,17 @@ export default function WorkspaceClient() {
                   <Link key={internship.id} href={`/workspace/internships/${internship.id}`} className="group block">
                     <Card className="flex flex-col transition-shadow hover:shadow-lg">
                       <CardHeader className="space-y-2">
+                        {internship.image_url && (
+                          <div className="relative w-full overflow-hidden rounded-xl border border-border/40 aspect-[4/3]">
+                            <Image
+                              src={internship.image_url}
+                              alt={`${internship.role} poster`}
+                              fill
+                              className="object-cover"
+                              sizes="(min-width: 1280px) 320px, (min-width: 768px) 45vw, 90vw"
+                            />
+                          </div>
+                        )}
                         <CardTitle className="flex items-center gap-2 text-lg group-hover:text-primary transition-colors">
                           <Briefcase className="size-5 text-sky-500" />
                           <span className="line-clamp-2">{internship.role}</span>

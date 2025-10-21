@@ -247,6 +247,21 @@ export type HomeTimelineItem = {
   icon: string;
 };
 
+export type VendorPromotion = {
+  id: string;
+  name: string;
+  audience?: string;
+  uplift?: string;
+  dates?: string;
+  budget?: string;
+};
+
+export type VendorPromotionsByStatus = {
+  active: VendorPromotion[];
+  scheduled: VendorPromotion[];
+  completed: VendorPromotion[];
+};
+
 export type BrandingAssets = {
   logoUrl: string | null;
   faviconUrl: string | null;

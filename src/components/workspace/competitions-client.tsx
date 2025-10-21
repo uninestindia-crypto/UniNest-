@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import Link from 'next/link';
+import Image from 'next/image';
 
 type Competition = {
     id: number;
@@ -18,6 +19,7 @@ type Competition = {
     prize: number;
     deadline: string;
     entry_fee: number;
+    image_url: string | null;
 };
 
 export default function CompetitionsClient() {
@@ -69,9 +71,22 @@ export default function CompetitionsClient() {
             competitions.map((comp) => (
              <Link key={comp.id} href={`/workspace/competitions/${comp.id}`} className="flex">
                 <Card className="flex flex-col w-full transition-shadow hover:shadow-lg">
-                    <CardHeader>
-                    <CardTitle>{comp.title}</CardTitle>
-                    <CardDescription className="pt-2 line-clamp-2">{comp.description}</CardDescription>
+                    <CardHeader className="space-y-4">
+                    {comp.image_url && (
+                        <div className="relative w-full overflow-hidden rounded-xl aspect-[4/3] border border-border/40">
+                        <Image
+                            src={comp.image_url}
+                            alt={`${comp.title} poster`}
+                            fill
+                            className="object-cover"
+                            sizes="(min-width: 1024px) 300px, (min-width: 768px) 40vw, 90vw"
+                        />
+                        </div>
+                    )}
+                    <div className="space-y-2">
+                        <CardTitle>{comp.title}</CardTitle>
+                        <CardDescription className="pt-2 line-clamp-2">{comp.description}</CardDescription>
+                    </div>
                     </CardHeader>
                     <CardContent className="flex-grow space-y-4">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">

@@ -551,47 +551,22 @@ export default function HomePosterForm({ initialConfig }: HomePosterFormProps) {
 
     for (let i = 0; i < quickAccessCards.length; i += 1) {
       const card = quickAccessCards[i];
-      if (!card.title.trim()) {
-        toast({ variant: 'destructive', title: `Quick access card ${i + 1} needs a title.` });
+      const issues = getQuickAccessIssues(card);
+      if (issues.length > 0) {
+        toast({ variant: 'destructive', title: `Quick access card ${i + 1} has issues: ${issues.join(', ')}` });
         return;
       }
-      if (!card.description.trim()) {
-        toast({ variant: 'destructive', title: `Quick access card ${i + 1} needs a description.` });
+    }
+
+    for (let i = 0; i < curatedCollections.length; i += 1) {
+      const collection = curatedCollections[i];
+      const issues = getCollectionIssues(collection);
+      if (issues.length > 0) {
+        toast({ variant: 'destructive', title: `Curated collection ${i + 1} has issues: ${issues.join(', ')}` });
         return;
+      }
+    }
 
-const getQuickAccessIssues = (card: QuickAccessFormState) => {
-const issues: string[] = [];
-if (!card.title.trim()) {
-  issues.push('Title missing');
-}
-if (!card.description.trim()) {
-  issues.push('Description missing');
-}
-if (!card.href.trim()) {
-  issues.push('Link missing');
-}
-if (!card.imageUrl.trim() && !card.imageFile) {
-  issues.push('Image URL missing');
-}
-return issues;
-};
-
-const getCollectionIssues = (collection: CuratedCollectionFormState) => {
-const issues: string[] = [];
-if (!collection.title.trim()) {
-  issues.push('Title missing');
-}
-if (!collection.description.trim()) {
-  issues.push('Description missing');
-}
-if (!collection.href.trim()) {
-  issues.push('Link missing');
-}
-if (!collection.imageUrl.trim() && !collection.imageFile) {
-  issues.push('Image URL missing');
-}
-return issues;
-};
     try {
       const slidePayload = slides.map((slide) => ({
         id: slide.id,
@@ -942,7 +917,6 @@ return issues;
                           value={card.imageUrl}
                           onChange={(event) => updateQuickAccessAt(index, { imageUrl: event.target.value })}
                           placeholder="https://..."
-                          disabled={Boolean(card.imageFile)}
                         />
                         <div className="flex items-center gap-3 pt-2">
                           <div className="relative h-20 w-20 overflow-hidden rounded-md border bg-muted">
@@ -1086,7 +1060,6 @@ return issues;
                           value={collection.imageUrl}
                           onChange={(event) => updateCollectionAt(index, { imageUrl: event.target.value })}
                           placeholder="https://..."
-                          disabled={Boolean(collection.imageFile)}
                         />
                         <div className="flex items-center gap-3 pt-2">
                           <div className="relative h-20 w-20 overflow-hidden rounded-md border bg-muted">
