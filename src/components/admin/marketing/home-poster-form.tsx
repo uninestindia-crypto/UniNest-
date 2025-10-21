@@ -19,7 +19,7 @@ import type {
   HomeCuratedCollection,
 } from '@/lib/types';
 import { defaultHomePosterConfig } from '@/lib/home-poster';
-import { Plus, Trash2, ImageIcon, Loader2, ArrowDown, ArrowUp } from 'lucide-react';
+import { Plus, Trash2, ImageIcon, Loader2, ArrowDown, ArrowUp, Undo2 } from 'lucide-react';
 
 const MAX_SLIDES = 5;
 const MAX_QUICK_ACCESS = 6;
