@@ -65,13 +65,13 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
         src: icon192,
         sizes: '192x192',
         type: 'image/png',
-        purpose: 'any maskable',
+        purpose: 'maskable',
       },
       {
         src: icon512,
         sizes: '512x512',
         type: 'image/png',
-        purpose: 'any maskable',
+        purpose: 'maskable',
       },
       {
         src: icon1024,
