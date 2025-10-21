@@ -158,9 +158,30 @@ export default function HomePosterForm({ initialConfig }: HomePosterFormProps) {
       quickAccess: mapConfigToQuickAccess(initialConfig),
       curatedCollections: mapConfigToCuratedCollections(initialConfig),
     };
-    setSlides(nextState.slides);
-    setQuickAccessCards(nextState.quickAccess);
-    setCuratedCollections(nextState.curatedCollections);
+    setSlides((prev) => {
+      prev.forEach((slide) => {
+        if (slide.imagePreview) {
+          URL.revokeObjectURL(slide.imagePreview);
+        }
+      });
+      return nextState.slides;
+    });
+    setQuickAccessCards((prev) => {
+      prev.forEach((card) => {
+        if (card.imagePreview) {
+          URL.revokeObjectURL(card.imagePreview);
+        }
+      });
+      return nextState.quickAccess;
+    });
+    setCuratedCollections((prev) => {
+      prev.forEach((collection) => {
+        if (collection.imagePreview) {
+          URL.revokeObjectURL(collection.imagePreview);
+        }
+      });
+      return nextState.curatedCollections;
+    });
     setActiveSlideId((prev) => {
       if (prev && nextState.slides.some((slide) => slide.id === prev)) {
         return prev;
@@ -261,6 +282,21 @@ export default function HomePosterForm({ initialConfig }: HomePosterFormProps) {
   };
 
   const handleResetDefaults = () => {
+    slides.forEach((slide) => {
+      if (slide.imagePreview) {
+        URL.revokeObjectURL(slide.imagePreview);
+      }
+    });
+    quickAccessCards.forEach((card) => {
+      if (card.imagePreview) {
+        URL.revokeObjectURL(card.imagePreview);
+      }
+    });
+    curatedCollections.forEach((collection) => {
+      if (collection.imagePreview) {
+        URL.revokeObjectURL(collection.imagePreview);
+      }
+    });
     const nextState = {
       slides: mapConfigToSlides(defaultHomePosterConfig),
       quickAccess: mapConfigToQuickAccess(defaultHomePosterConfig),
