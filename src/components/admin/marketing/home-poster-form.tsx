@@ -510,7 +510,7 @@ export default function HomePosterForm({ initialConfig }: HomePosterFormProps) {
     if (!card.href.trim()) {
       issues.push('Link missing');
     }
-    if (!card.imageUrl.trim()) {
+    if (!card.imageUrl.trim() && !card.imageFile) {
       issues.push('Image URL missing');
     }
     return issues;
@@ -527,7 +527,7 @@ export default function HomePosterForm({ initialConfig }: HomePosterFormProps) {
     if (!collection.href.trim()) {
       issues.push('Link missing');
     }
-    if (!collection.imageUrl.trim()) {
+    if (!collection.imageUrl.trim() && !collection.imageFile) {
       issues.push('Image URL missing');
     }
     return issues;
@@ -558,38 +558,40 @@ export default function HomePosterForm({ initialConfig }: HomePosterFormProps) {
       if (!card.description.trim()) {
         toast({ variant: 'destructive', title: `Quick access card ${i + 1} needs a description.` });
         return;
-      }
-      if (!card.href.trim()) {
-        toast({ variant: 'destructive', title: `Quick access card ${i + 1} needs a link.` });
-        return;
-      }
-      if (!card.imageUrl.trim()) {
-        toast({ variant: 'destructive', title: `Quick access card ${i + 1} needs an image URL.` });
-        return;
-      }
-    }
 
-    for (let i = 0; i < curatedCollections.length; i += 1) {
-      const collection = curatedCollections[i];
-      if (!collection.title.trim()) {
-        toast({ variant: 'destructive', title: `Curated collection ${i + 1} needs a title.` });
-        return;
-      }
-      if (!collection.description.trim()) {
-        toast({ variant: 'destructive', title: `Curated collection ${i + 1} needs a description.` });
-        return;
-      }
-      if (!collection.href.trim()) {
-        toast({ variant: 'destructive', title: `Curated collection ${i + 1} needs a link.` });
-        return;
-      }
-      if (!collection.imageUrl.trim()) {
-        toast({ variant: 'destructive', title: `Curated collection ${i + 1} needs an image URL.` });
-        return;
-      }
-    }
+const getQuickAccessIssues = (card: QuickAccessFormState) => {
+const issues: string[] = [];
+if (!card.title.trim()) {
+  issues.push('Title missing');
+}
+if (!card.description.trim()) {
+  issues.push('Description missing');
+}
+if (!card.href.trim()) {
+  issues.push('Link missing');
+}
+if (!card.imageUrl.trim() && !card.imageFile) {
+  issues.push('Image URL missing');
+}
+return issues;
+};
 
-    setIsSubmitting(true);
+const getCollectionIssues = (collection: CuratedCollectionFormState) => {
+const issues: string[] = [];
+if (!collection.title.trim()) {
+  issues.push('Title missing');
+}
+if (!collection.description.trim()) {
+  issues.push('Description missing');
+}
+if (!collection.href.trim()) {
+  issues.push('Link missing');
+}
+if (!collection.imageUrl.trim() && !collection.imageFile) {
+  issues.push('Image URL missing');
+}
+return issues;
+};
     try {
       const slidePayload = slides.map((slide) => ({
         id: slide.id,
@@ -630,6 +632,16 @@ export default function HomePosterForm({ initialConfig }: HomePosterFormProps) {
       slides.forEach((slide, index) => {
         if (slide.imageFile) {
           formData.append(`slide-${index}-image`, slide.imageFile);
+        }
+      });
+      quickAccessCards.forEach((card, index) => {
+        if (card.imageFile) {
+          formData.append(`quick-${index}-image`, card.imageFile);
+        }
+      });
+      curatedCollections.forEach((collection, index) => {
+        if (collection.imageFile) {
+          formData.append(`collection-${index}-image`, collection.imageFile);
         }
       });
 
@@ -930,7 +942,33 @@ export default function HomePosterForm({ initialConfig }: HomePosterFormProps) {
                           value={card.imageUrl}
                           onChange={(event) => updateQuickAccessAt(index, { imageUrl: event.target.value })}
                           placeholder="https://..."
+                          disabled={Boolean(card.imageFile)}
                         />
+                        <div className="flex items-center gap-3 pt-2">
+                          <div className="relative h-20 w-20 overflow-hidden rounded-md border bg-muted">
+                            {card.imagePreview ? (
+                              <Image src={card.imagePreview} alt={`Quick access ${index + 1}`} fill className="object-cover" sizes="80px" />
+                            ) : card.imageUrl ? (
+                              <Image src={card.imageUrl} alt={`Quick access ${index + 1}`} fill className="object-cover" sizes="80px" />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                                <ImageIcon className="size-6" />
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-1 space-y-2">
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              onChange={(event) => handleQuickAccessImageChange(index, event.target.files?.[0] ?? null)}
+                            />
+                            {(card.imageFile || card.imagePreview || card.imageUrl) && (
+                              <Button type="button" variant="ghost" size="sm" onClick={() => resetQuickAccessImage(index)}>
+                                <Undo2 className="mr-2 size-4" /> Reset image
+                              </Button>
+                            )}
+                          </div>
+                        </div>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor={`quick-${index}-icon`}>Icon (optional)</Label>
@@ -1048,7 +1086,33 @@ export default function HomePosterForm({ initialConfig }: HomePosterFormProps) {
                           value={collection.imageUrl}
                           onChange={(event) => updateCollectionAt(index, { imageUrl: event.target.value })}
                           placeholder="https://..."
+                          disabled={Boolean(collection.imageFile)}
                         />
+                        <div className="flex items-center gap-3 pt-2">
+                          <div className="relative h-20 w-20 overflow-hidden rounded-md border bg-muted">
+                            {collection.imagePreview ? (
+                              <Image src={collection.imagePreview} alt={`Collection ${index + 1}`} fill className="object-cover" sizes="80px" />
+                            ) : collection.imageUrl ? (
+                              <Image src={collection.imageUrl} alt={`Collection ${index + 1}`} fill className="object-cover" sizes="80px" />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                                <ImageIcon className="size-6" />
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-1 space-y-2">
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              onChange={(event) => handleCuratedCollectionImageChange(index, event.target.files?.[0] ?? null)}
+                            />
+                            {(collection.imageFile || collection.imagePreview || collection.imageUrl) && (
+                              <Button type="button" variant="ghost" size="sm" onClick={() => resetCuratedCollectionImage(index)}>
+                                <Undo2 className="mr-2 size-4" /> Reset image
+                              </Button>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
