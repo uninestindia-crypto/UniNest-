@@ -1,74 +1,74 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://uninest.app/</loc>
-    <lastmod>2024-01-01</lastmod>
-    <changefreq>yearly</changefreq>
+    <loc>https://uninest.co.in/</loc>
+    <lastmod>2025-10-23</lastmod>
+    <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://uninest.app/about</loc>
-    <lastmod>2024-01-01</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://uninest.app/feed</loc>
-    <lastmod>2024-01-01</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://uninest.app/marketplace</loc>
-    <lastmod>2024-01-01</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://uninest.app/notes</loc>
-    <lastmod>2024-01-01</lastmod>
+    <loc>https://uninest.co.in/about</loc>
+    <lastmod>2025-10-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
-    <url>
-    <loc>https://uninest.app/workspace</loc>
-    <lastmod>2024-01-01</lastmod>
+  <url>
+    <loc>https://uninest.co.in/feed</loc>
+    <lastmod>2025-10-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://uninest.co.in/marketplace</loc>
+    <lastmod>2025-10-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://uninest.co.in/workspace</loc>
+    <lastmod>2025-10-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://uninest.app/workspace/competitions</loc>
-    <lastmod>2024-01-01</lastmod>
+    <loc>https://uninest.co.in/workspace/competitions</loc>
+    <lastmod>2025-10-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://uninest.app/workspace/internships</loc>
-    <lastmod>2024-01-01</lastmod>
+    <loc>https://uninest.co.in/workspace/internships</loc>
+    <lastmod>2025-10-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://uninest.app/donate</loc>
-    <lastmod>2024-01-01</lastmod>
+    <loc>https://uninest.co.in/notes</loc>
+    <lastmod>2025-10-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://uninest.co.in/donate</loc>
+    <lastmod>2025-10-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://uninest.app/login</loc>
-    <lastmod>2024-01-01</lastmod>
+    <loc>https://uninest.co.in/login</loc>
+    <lastmod>2025-10-23</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://uninest.app/signup</loc>
-    <lastmod>2024-01-01</lastmod>
+    <loc>https://uninest.co.in/signup</loc>
+    <lastmod>2025-10-23</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
-    <url>
-    <loc>https://uninest.app/terms</loc>
-    <lastmod>2024-01-01</lastmod>
+  <url>
+    <loc>https://uninest.co.in/terms</loc>
+    <lastmod>2025-10-23</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
