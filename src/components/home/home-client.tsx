@@ -82,167 +82,74 @@ export default function HomeClient() {
               <div className="rounded-2xl border border-border/60 bg-background/80 p-5 shadow-sm">
                 <p className="text-3xl font-bold">3200+</p>
                 <p className="text-sm text-muted-foreground">Daily campus interactions tracked with transparent analytics.</p>
-              </Card>
-            </div>
-          </div>
-
-          <aside className="space-y-6 rounded-3xl border border-border/60 bg-muted/40 p-8 shadow-lg">
-            <div className="space-y-3">
-              <h2 className="text-xl font-semibold">Why students choose UniNest</h2>
-              <p className="text-sm text-muted-foreground">
-                All listings and programs pass compliance checks inspired by the national standard for technical education authorities.
-              </p>
-            </div>
-            <AnimatedBeam className="rounded-2xl bg-background/80 p-6 shadow" />
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">Your trusted student super app</p>
-              <div className="flex items-center gap-3">
-                <div className="h-12 w-12 rounded-full bg-primary/15" />
-                <div>
-                  <p className="font-semibold">Live listings, verified communities</p>
-                  <p className="text-sm text-muted-foreground">Curated experiences for every student journey.</p>
-                </div>
               </div>
             </div>
+          </div>
+          <aside className="space-y-6 rounded-3xl border border-border/60 bg-muted/40 p-8 shadow-lg">
+            <div className="space-y-2">
+              <h2 className="text-xl font-semibold">Why students choose UniNest</h2>
+              <p className="text-sm text-muted-foreground">
+                All listings and programs pass compliance checks inspired by{' '}
+                <a
+                  href="https://www.aicte-india.org/"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="font-medium text-primary underline-offset-4 hover:underline"
+                >
+                  AICTE
+                </a>{' '}
+                and curated data from the{' '}
+                <a
+                  href="https://ndl.iitkgp.ac.in/"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="font-medium text-primary underline-offset-4 hover:underline"
+                >
+                  National Digital Library of India
+                </a>
+                .
+              </p>
+            </div>
+            <ul className="space-y-4 text-sm text-muted-foreground">
+              <li className="rounded-2xl bg-background/80 p-4 shadow-sm">
+                <span className="block text-base font-semibold text-foreground">Verified PG booking and hostel discovery</span>
+                <span>Match with accredited accommodations near NIRF-recognized institutes in minutes.</span>
+              </li>
+              <li className="rounded-2xl bg-background/80 p-4 shadow-sm">
+                <span className="block text-base font-semibold text-foreground">Real-time library seat booking</span>
+                <span>Reserve quiet zones or collaborative pods with just-in-time availability updates.</span>
+              </li>
+              <li className="rounded-2xl bg-background/80 p-4 shadow-sm">
+                <span className="block text-base font-semibold text-foreground">Student marketplace safeguards</span>
+                <span>Trade essentials securely with escrow-style payments and ID-verified peers.</span>
+              </li>
+            </ul>
+            <Button variant="secondary" className="w-full" asChild>
+              <Link href="/vendor-dashboard">Partner with UniNest</Link>
+            </Button>
           </aside>
         </div>
       </section>
 
-      <section className="px-6 pb-16 lg:px-12">
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {quickAccessCards.map((card) => (
-            <Link key={card.id} href={card.href} className="group relative overflow-hidden rounded-3xl border border-border/50 bg-background/80 shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-0 transition group-hover:opacity-100" />
-              <div className="relative space-y-4 p-6">
-                <div className="flex items-center justify-between">
-                  <Badge className="rounded-full bg-primary/10 text-primary">Featured</Badge>
-                  <ArrowRight className="size-4 text-muted-foreground transition group-hover:translate-x-1" />
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-xl font-semibold text-foreground">{card.title}</h3>
-                  <p className="text-sm text-muted-foreground">{card.description}</p>
-                </div>
-                {card.imageUrl ? (
-                  <div className="relative overflow-hidden rounded-2xl">
-                    <Image src={card.imageUrl} alt={card.title} width={480} height={320} className="h-40 w-full object-cover transition duration-500 group-hover:scale-105" />
-                  </div>
-                ) : null}
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      <section className="px-6 pb-16 lg:px-12">
-        <h2 className="text-3xl font-headline font-bold text-center mb-8 md:mb-12">Curated collections to explore</h2>
-        <div className="grid gap-6 md:grid-cols-3">
-          {curatedCollections.map((collection) => (
-            <Link key={collection.id} href={collection.href} className="group rounded-3xl border border-border/50 bg-background/80 shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
-              <div className="relative overflow-hidden rounded-t-3xl">
-                {collection.imageUrl ? (
-                  <Image src={collection.imageUrl} alt={collection.title} width={640} height={420} className="h-52 w-full object-cover transition duration-500 group-hover:scale-105" />
-                ) : (
-                  <div className="h-52 w-full bg-muted" />
-                )}
-              </div>
-              <div className="space-y-3 p-6">
-                <h3 className="text-xl font-semibold">{collection.title}</h3>
-                <p className="text-sm text-muted-foreground">{collection.description}</p>
-                <Button variant="link" className="px-0" asChild>
-                  <span className="inline-flex items-center gap-2">
-                    Explore now
-                    <ArrowRight className="size-4" />
-                  </span>
-                </Button>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {stats.length > 0 ? (
-        <section className="px-6 pb-16 lg:px-12">
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            {stats.map(({ icon: iconName, ...stat }, index) => {
-              const IconComponent = resolveIcon(iconName, Users);
-              return <StatCard key={index} {...stat} icon={IconComponent} />;
-            })}
-          </div>
-        </section>
-      ) : null}
-
-      {testimonials.length > 0 ? (
-        <section className="px-6 pb-16 lg:px-12">
-          <h2 className="text-3xl font-headline font-bold text-center mb-8 md:mb-12">Loved by Students Everywhere</h2>
-          <Carousel opts={{ align: "start", loop: true }} className="w-full max-w-5xl mx-auto">
-            <CarouselContent className="-ml-2 md:-ml-4">
-              {testimonials.map((testimonial, index) => (
-                <CarouselItem key={index} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
-                  <div className="p-1">
-                    <Card className="h-full">
-                      <CardContent className="flex h-full flex-col items-center justify-center gap-4 p-6 text-center">
-                        <Avatar className="h-20 w-20 border-4 border-primary/20">
-                          <AvatarImage src={testimonial.avatar} alt={testimonial.name} width={80} height={80} />
-                          <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <p className="text-muted-foreground italic">“{testimonial.quote}”</p>
-                        <div>
-                          <p className="font-bold">{testimonial.name}</p>
-                          <p className="text-sm text-muted-foreground">{testimonial.school}</p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious className="hidden md:flex" />
-            <CarouselNext className="hidden md:flex" />
-          </Carousel>
-        </section>
-      ) : null}
-
-      {timeline.length > 0 ? (
-        <section className="px-6 pb-16 lg:px-12">
-          <h2 className="text-3xl font-headline font-bold text-center mb-8 md:mb-12">Our Journey So Far</h2>
-          <div className="grid gap-x-6 gap-y-10 md:grid-cols-4">
-            {timeline.map((item) => {
-              const IconComponent = resolveIcon(item.icon, Sparkles);
-              return (
-                <div key={item.title} className="text-center">
-                  <div className="mb-4 flex justify-center">
-                    <div className="rounded-full border-2 border-primary/20 bg-primary/10 p-4 text-primary shadow-sm">
-                      <IconComponent className="size-8" />
-                    </div>
-                  </div>
-                  <p className="text-sm text-muted-foreground">{item.year}</p>
-                  <h3 className="text-xl font-headline font-semibold">{item.title}</h3>
-                  <p className="text-muted-foreground">{item.description}</p>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      ) : null}
-
-      <section className="px-6 pb-16 lg:px-12">
-        <div className="rounded-2xl bg-gradient-to-r from-primary via-primary/90 to-primary/80 p-8 text-primary-foreground shadow-xl md:p-12">
-          <h2 className="text-3xl font-headline font-bold">Don’t Miss Out.</h2>
-          <p className="mt-2 max-w-2xl text-primary-foreground/90">
-            Be part of the fastest-growing student movement and supercharge your campus life.
+      <section className="border-t border-border/60 bg-muted/30 px-4 py-16 sm:px-6 lg:px-10 xl:px-16">
+        <div className="mx-auto max-w-5xl space-y-6 text-center">
+          <h2 className="text-3xl font-headline font-bold">About UniNest</h2>
+          <p className="text-lg text-muted-foreground">
+            UniNest is the student community platform designed to centralize campus life. From verified housing to vendor partnerships and collaborative study spaces, we combine technology, student feedback, and institutional oversight to keep every decision informed and trustworthy.
           </p>
-          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Button size="lg" variant="secondary" className="text-lg" asChild>
-              <Link href="/signup">Get Started Now 🚀</Link>
+          <p className="text-lg text-muted-foreground">
+            Get guided workflows, moderator-backed listings, and transparent analytics that show how your campus interactions evolve. UniNest ensures every member experiences modern design, soft pastel highlights, and mobile-first usability on any device.
+          </p>
+          <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Button size="lg" asChild>
+              <Link href="/about">Discover the UniNest Story</Link>
             </Button>
-            <Button size="lg" variant="ghost" className="text-lg text-primary-foreground hover:bg-primary-foreground/10" asChild>
-              <Link href="/about">Learn more about UniNest</Link>
+            <Button size="lg" variant="ghost" asChild>
+              <Link href="/study-spaces">Browse Study Spaces</Link>
             </Button>
           </div>
         </div>
       </section>
-
-      <DonationModal isOpen={false} onOpenChange={() => {}} />
 
       <section className="px-4 py-16 sm:px-6 lg:px-10 xl:px-16">
         <div className="mx-auto max-w-6xl grid gap-12 lg:grid-cols-2">
