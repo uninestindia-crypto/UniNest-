@@ -1,3 +1,4 @@
+import { CardTitle } from "../ui/card"
 
 CardHeader>
                     <CardTitle className="text-2xl font-semibold tracking-tight">{collection.title}</CardTitle>
