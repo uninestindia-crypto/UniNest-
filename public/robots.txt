@@ -2,4 +2,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://uninest.app/sitemap.xml
+Sitemap: https://uninest.co.in/sitemap.xml

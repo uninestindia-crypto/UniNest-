@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import Script from 'next/script';
 import './globals.css';
 import { cn } from '@/lib/utils';
 import { Toaster } from "@/components/ui/toaster";
@@ -19,22 +20,32 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://uninest.app'),
+  metadataBase: new URL('https://uninest.co.in'),
   title: {
-    default: 'UniNest – Your Digital Campus Hub',
+    default: 'UniNest – India’s #1 Student Platform for Internships & Competitions',
     template: '%s | UniNest',
   },
-  description: 'A vibrant, modern, and student-friendly UI that feels like a digital campus hub. Connect, share, and thrive!',
-  keywords: ['student platform', 'UniNest', 'digital campus', 'social feed', 'marketplace', 'study hub'],
+  description: 'Join 10,000+ students on UniNest. Connect, study, find internships & competitions – grow with India’s fastest student community.',
+  keywords: [
+    'uninest',
+    'student platform',
+    'internships',
+    'competitions',
+    'college community',
+    'university students',
+    'student network',
+  ],
   authors: [{ name: 'UniNest Team' }],
   manifest: '/manifest.json',
+  alternates: {
+    canonical: 'https://uninest.co.in/',
+  },
   icons: {
     icon: [
-      { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
-      { url: '/icons/icon-512x512.png', sizes: '512x512', type: 'image/png' },
-      { url: '/icons/icon-1024x1024.png', sizes: '1024x1024', type: 'image/png' },
+      { url: 'https://uninest.co.in/favicon.png', type: 'image/png' },
+      { url: 'https://uninest.co.in/favicon.ico', type: 'image/x-icon' },
     ],
-    apple: [{ url: '/icons/icon-192x192.png' }],
+    apple: [{ url: 'https://uninest.co.in/favicon.png' }],
   },
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#38BDF8' },
@@ -46,16 +57,16 @@ export const metadata: Metadata = {
     title: 'UniNest',
   },
   openGraph: {
-    title: 'UniNest – Your Digital Campus Hub',
-    description: 'Connect, share, and thrive on your digital campus.',
-    url: 'https://uninest.app',
+    title: 'UniNest – India’s #1 Student Platform for Internships & Competitions',
+    description: 'Join 10,000+ students on UniNest. Connect, learn, and grow together.',
+    url: 'https://uninest.co.in/',
     siteName: 'UniNest',
     images: [
       {
-        url: '/images/uninest-og-new.png',
-        width: 1200,
-        height: 630,
-        alt: 'UniNest Platform Banner',
+        url: 'https://uninest.co.in/favicon.png',
+        width: 512,
+        height: 512,
+        alt: 'UniNest Logo',
       },
     ],
     locale: 'en_US',
@@ -63,9 +74,15 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'UniNest – Your Digital Campus Hub',
-    description: 'The ultimate platform for modern students.',
-    images: ['/images/uninest-og-new.png'],
+    title: 'UniNest – India’s #1 Student Platform for Internships & Competitions',
+    description: 'Join 10,000+ students on UniNest. Connect, study, and grow with your peers.',
+    images: ['https://uninest.co.in/favicon.png'],
+  },
+  verification: {
+    google: 'YOUR_VERIFICATION_TOKEN',
+  },
+  other: {
+    'meta-title': 'UniNest – India’s #1 Student Platform for Internships & Competitions',
   },
   robots: {
     index: true,
@@ -91,6 +108,24 @@ export default async function RootLayout({
       <body className={cn(
         "min-h-screen bg-background font-body antialiased"
       )}>
+        <Script
+          id="uninest-organization-schema"
+          type="application/ld+json"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Organization',
+              name: 'UniNest',
+              url: 'https://uninest.co.in',
+              logo: 'https://uninest.co.in/favicon.png',
+              sameAs: [
+                'https://www.instagram.com/uninest',
+                'https://www.linkedin.com/company/uninest',
+              ],
+            }),
+          }}
+        />
         <ClientOnly>
           <AuthProvider>
             <BrandingAssetsProvider initialAssets={brandingAssets}>
