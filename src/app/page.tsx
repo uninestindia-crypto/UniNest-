@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import HomeClient from '@/components/home/home-client';
+import { defaultHomePosterConfig } from '@/lib/home-poster';
 
 export const metadata: Metadata = {
   title: 'UniNest | Student Housing, Internships & Competitions Hub',
@@ -28,5 +29,5 @@ export const metadata: Metadata = {
 };
 
 export default function HomePage() {
-  return <HomeClient />;
+  return <HomeClient posterConfig={defaultHomePosterConfig} />;
 }
