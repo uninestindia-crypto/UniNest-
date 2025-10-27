@@ -1,4 +1,4 @@
-const CACHE_NAME = "uninest-shell-v1";
+const CACHE_NAME = "uninest-shell-v2";
 const SKIP_WAITING_MESSAGE_TYPE = "SKIP_WAITING";
 const PRECACHE_ASSETS = [
   "/",
@@ -6,6 +6,9 @@ const PRECACHE_ASSETS = [
   "/icons/icon-192x192.png",
   "/icons/icon-512x512.png"
 ];
+const PRECACHE_URLS = new Set(
+  PRECACHE_ASSETS.map((asset) => new URL(asset, self.location.origin).href),
+);
 
 self.addEventListener("install", event => {
   event.waitUntil(
@@ -30,18 +33,28 @@ self.addEventListener("message", event => {
 });
 
 self.addEventListener("fetch", event => {
-  if (event.request.method !== "GET") return;
+  const { request } = event;
 
-  event.respondWith(
-    caches.match(event.request).then(match => {
-      if (match) return match;
-      return fetch(event.request)
-        .then(response => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
-          return response;
-        })
-        .catch(() => caches.match("/offline.html"));
-    })
-  );
+  if (request.method !== "GET") {
+    return;
+  }
+
+  if (request.mode === "navigate") {
+    event.respondWith(
+      fetch(request).catch(() => caches.match("/offline.html")),
+    );
+    return;
+  }
+
+  const requestUrl = new URL(request.url);
+
+  if (requestUrl.origin !== self.location.origin) {
+    return;
+  }
+
+  if (PRECACHE_URLS.has(requestUrl.href)) {
+    event.respondWith(
+      caches.match(request).then(match => match ?? fetch(request)),
+    );
+  }
 });

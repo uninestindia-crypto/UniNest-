@@ -7,6 +7,8 @@ import queryClient from '@/state/query-client';
 import { AuthProvider } from '@/providers/AuthProvider';
 import { View, ActivityIndicator } from 'react-native';
 import { colors } from '@/theme/colors';
+import { ToastProvider } from '@/providers/ToastProvider';
+import { ModalProvider } from '@/providers/ModalProvider';
 
 export default function RootLayout() {
   return (
@@ -21,7 +23,11 @@ export default function RootLayout() {
               </View>
             )}
           >
-            <Stack screenOptions={{ headerShown: false }} />
+            <ToastProvider>
+              <ModalProvider>
+                <Stack screenOptions={{ headerShown: false }} />
+              </ModalProvider>
+            </ToastProvider>
           </AuthProvider>
         </QueryClientProvider>
       </SafeAreaProvider>
