@@ -1,4 +1,14 @@
 {
   "firebase_hosting": {},
-  "cloud_run_deploy": {}
+  "cloud_run_deploy": {},
+  "mcpServers": {
+    "supabase": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://mcp.supabase.com/mcp?project_ref=dfkgefoqodjccrrqmqis"
+      ]
+    }
+  }
 }

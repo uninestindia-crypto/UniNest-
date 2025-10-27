@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { supabase } from '@/services/supabase/client';
 import { colors } from '@/theme/colors';
 import { useAuthStore } from '@/state/stores/authStore';
+import { trackEvent } from '@/services/analytics';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -15,23 +16,64 @@ export default function LoginScreen() {
   const [submitting, setSubmitting] = useState(false);
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Missing details', 'Enter your email and password to continue.');
+    const trimmedEmail = email.trim().toLowerCase();
+    const validationErrors: string[] = [];
+
+    if (!trimmedEmail) {
+      validationErrors.push('Enter your email.');
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      validationErrors.push('Email format looks invalid.');
+    }
+
+    if (!password) {
+      validationErrors.push('Enter your password.');
+    } else if (password.length < 8) {
+      validationErrors.push('Password must be at least 8 characters.');
+    }
+
+    if (validationErrors.length > 0) {
+      Alert.alert('Check details', validationErrors.join('\n'));
+      trackEvent('auth_login_validation_failed', { errors: validationErrors.length });
       return;
     }
 
     setSubmitting(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({ email: trimmedEmail, password });
     setSubmitting(false);
 
     if (error) {
       Alert.alert('Login failed', error.message);
+      trackEvent('auth_login_failed', { reason: error.message });
       return;
     }
 
     await fetchProfile();
     initialize();
+    trackEvent('auth_login_success', { method: 'password' });
     router.replace('/(vendor)/dashboard');
+  };
+
+  const handleForgotPassword = async () => {
+    const trimmedEmail = email.trim().toLowerCase();
+    if (!trimmedEmail) {
+      Alert.alert('Email required', 'Enter your email above so we can send reset instructions.');
+      return;
+    }
+
+    setSubmitting(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(trimmedEmail, {
+      redirectTo: 'https://uninest.app/auth/callback',
+    });
+    setSubmitting(false);
+
+    if (error) {
+      Alert.alert('Unable to send reset link', error.message);
+      trackEvent('auth_password_reset_failed', { reason: error.message });
+      return;
+    }
+
+    Alert.alert('Check your inbox', 'We emailed you a secure reset link.');
+    trackEvent('auth_password_reset_requested', {});
   };
 
   return (
@@ -79,6 +121,10 @@ export default function LoginScreen() {
           style={[styles.submitButton, submitting && styles.submitButtonDisabled]}
         >
           <Text style={styles.submitLabel}>{submitting ? 'Signing in…' : 'Sign in'}</Text>
+        </Pressable>
+
+        <Pressable onPress={handleForgotPassword} disabled={submitting}>
+          <Text style={styles.forgotLink}>Forgot password? Send a reset link</Text>
         </Pressable>
 
         <Pressable onPress={() => router.push('/support')} disabled={submitting}>
@@ -161,5 +207,12 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.primary,
     textAlign: 'center',
+  },
+  forgotLink: {
+    marginTop: 12,
+    fontSize: 13,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    textDecorationLine: 'underline',
   },
 });
