@@ -1,7 +1,5 @@
 import { useEffect } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useAuthStore } from '@/state/stores/authStore';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { useVendorDashboardStore } from '@/state/stores/vendorDashboardStore';
 import { VendorDashboardHeader } from '@/components/vendor/dashboard/VendorDashboardHeader';
 import { SummaryMetricsGrid } from '@/components/vendor/dashboard/SummaryMetricsGrid';
@@ -11,10 +9,18 @@ import { CRMLeadsCard } from '@/components/vendor/dashboard/CRMLeadsCard';
 import { MarketingBoostersCard } from '@/components/vendor/dashboard/MarketingBoostersCard';
 import { AIListingOptimizerCard } from '@/components/vendor/dashboard/AIListingOptimizerCard';
 import { TierStatusCard } from '@/components/vendor/dashboard/TierStatusCard';
+import { AppShell } from '@/layouts/AppShell';
+import { useAuthGuard } from '@/hooks/useAuthGuard';
+import { useResponsiveValue } from '@/hooks/useResponsiveValue';
+import { spacing } from '@/theme/tokens';
 
 export default function VendorDashboardScreen() {
-  const router = useRouter();
-  const { user, vendorCategories, isAuthenticated, loading, fetchProfile } = useAuthStore();
+  const {
+    user,
+    vendorCategories,
+    isAuthenticated,
+    isChecking,
+  } = useAuthGuard({ requireVendor: true });
   const {
     initializeDashboard,
     loading: dashboardLoading,
@@ -29,50 +35,44 @@ export default function VendorDashboardScreen() {
     optimizerHighlights,
     nudges,
     tierMetrics,
+    refreshDashboard,
   } = useVendorDashboardStore();
 
   const vendorId = user?.id ?? null;
+  const splitDirection = useResponsiveValue({ base: 'column', lg: 'row' }) as 'column' | 'row';
 
   useEffect(() => {
-    fetchProfile();
-  }, [fetchProfile]);
-
-  useEffect(() => {
-    if (loading) {
-      return;
-    }
-
-    if (!isAuthenticated) {
-      router.replace('/login');
+    if (isChecking) {
       return;
     }
 
     if (vendorId) {
       initializeDashboard(vendorId);
     }
-  }, [isAuthenticated, loading, router, initializeDashboard, vendorId]);
+  }, [initializeDashboard, isChecking, vendorId]);
 
-  if (!isAuthenticated) {
-    return null;
+  if (isChecking) {
+    return (
+      <AppShell title="Vendor HQ" subtitle="Loading your workspace…" isLoading>
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color="#2563eb" />
+          <Text style={styles.feedbackText}>Preparing your dashboard…</Text>
+        </View>
+      </AppShell>
+    );
   }
 
   return (
-    <ScrollView
-      contentInsetAdjustmentBehavior="automatic"
-      style={styles.container}
-      contentContainerStyle={styles.contentContainer}
+    <AppShell
+      title="Vendor HQ"
+      subtitle="Keep occupancy, pricing, conversations, and payouts aligned from a single clean workspace."
+      isLoading={dashboardLoading}
+      onRefresh={refreshDashboard}
     >
       <VendorDashboardHeader
         userName={user?.user_metadata?.full_name ?? 'Vendor'}
         categories={vendorCategories}
       />
-
-      {dashboardLoading && (
-        <View style={styles.feedbackRow}>
-          <ActivityIndicator size="large" color="#2563eb" />
-          <Text style={styles.feedbackText}>Loading dashboard insights…</Text>
-        </View>
-      )}
 
       {error && (
         <View style={styles.errorBanner}>
@@ -85,37 +85,42 @@ export default function VendorDashboardScreen() {
 
       <SummaryMetricsGrid metrics={summaryMetrics} />
 
-      <View style={styles.twoColumnRow}>
-        <PricingInsightsCard days={pricingDays} />
-        <CRMLeadsCard leads={crmLeads} quickReplies={quickReplies} />
+      <View style={[styles.splitRow, { flexDirection: splitDirection }]}> 
+        <View style={styles.splitItem}>
+          <PricingInsightsCard days={pricingDays} />
+        </View>
+        <View style={styles.splitItem}>
+          <CRMLeadsCard leads={crmLeads} quickReplies={quickReplies} />
+        </View>
       </View>
 
-      <BookingPaymentsCard bookingCalendar={bookingCalendar} payouts={payouts} />
-
-      <View style={styles.twoColumnRow}>
-        <MarketingBoostersCard boosters={marketingBoosters} />
-        <AIListingOptimizerCard highlights={optimizerHighlights} nudges={nudges} />
+      <View style={styles.singleRow}>
+        <BookingPaymentsCard bookingCalendar={bookingCalendar} payouts={payouts} />
       </View>
 
-      <TierStatusCard metrics={tierMetrics} />
-    </ScrollView>
+      <View style={[styles.splitRow, { flexDirection: splitDirection }]}> 
+        <View style={styles.splitItem}>
+          <MarketingBoostersCard boosters={marketingBoosters} />
+        </View>
+        <View style={styles.splitItem}>
+          <AIListingOptimizerCard highlights={optimizerHighlights} nudges={nudges} />
+        </View>
+      </View>
+
+      <View style={styles.singleRow}>
+        <TierStatusCard metrics={tierMetrics} />
+      </View>
+    </AppShell>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8fafc',
-  },
-  contentContainer: {
-    paddingHorizontal: 24,
-    paddingVertical: 32,
-    gap: 24,
-  },
-  feedbackRow: {
-    flexDirection: 'row',
+  centered: {
+    width: '100%',
     alignItems: 'center',
-    gap: 12,
+    justifyContent: 'center',
+    paddingVertical: spacing['3xl'],
+    gap: spacing.sm,
   },
   feedbackText: {
     fontSize: 14,
@@ -138,8 +143,15 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#92400e',
   },
-  twoColumnRow: {
-    flexDirection: 'column',
-    gap: 24,
+  splitRow: {
+    width: '100%',
+    gap: spacing.xl,
+  },
+  splitItem: {
+    flex: 1,
+    minWidth: 0,
+  },
+  singleRow: {
+    width: '100%',
   },
 });
