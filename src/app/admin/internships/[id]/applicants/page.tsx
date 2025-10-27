@@ -1,6 +1,6 @@
 
 import PageHeader from "@/components/admin/page-header";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
 import { getApplicants } from "./actions";
 import InternshipApplicantsTable from "@/components/admin/internships/applicants-table";
@@ -8,7 +8,7 @@ import InternshipApplicantsTable from "@/components/admin/internships/applicants
 export const revalidate = 0;
 
 export default async function InternshipApplicantsPage({ params }: { params: { id: string } }) {
-    const supabase = createClient();
+    const supabase = createAdminClient();
 
     const { data: internship, error: internshipError } = await supabase
         .from('internships')

@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import TicketStatusChanger from "@/components/admin/tickets/ticket-status-changer";
 import Link from "next/link";
 import type { SupportTicket, Profile } from "@/lib/types";
-import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 type TicketWithProfile = SupportTicket & {
     profile: Pick<Profile, 'id' | 'full_name' | 'avatar_url'> | null;
@@ -17,73 +17,58 @@ type TicketWithProfile = SupportTicket & {
 export const revalidate = 0;
 
 export default async function AdminTicketsPage() {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
-
-    if (!supabaseUrl || !supabaseServiceKey) {
-        return (
-            <div className="space-y-8">
-                <PageHeader title="Support Tickets" description="Review and manage user feedback and issues." />
-                <div className="rounded-md border border-destructive bg-destructive/10 p-4 text-destructive">
-                    Supabase service credentials are not configured.
-                </div>
-            </div>
-        );
-    }
-
-    const supabase = createAdminClient(supabaseUrl, supabaseServiceKey);
-
-    const { data: ticketsData, error: ticketsError } = await supabase
-        .from('support_tickets')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-    if (ticketsError) {
-        return (
-            <div className="space-y-8">
-                <PageHeader title="Support Tickets" description="Review and manage user feedback and issues." />
-                <div className="rounded-md border border-destructive bg-destructive/10 p-4 text-destructive">
-                    Error loading tickets: {ticketsError.message}
-                </div>
-            </div>
-        );
-    }
-
-    const baseTickets = (ticketsData || []) as SupportTicket[];
-
     let tickets: TicketWithProfile[] = [];
-    let profilesErrorMessage: string | null = null;
+    let errorMessage: string | null = null;
 
-    if (baseTickets.length > 0) {
-        const userIds = Array.from(new Set(baseTickets.map(ticket => ticket.user_id).filter(Boolean)));
+    try {
+        const supabase = createAdminClient();
 
-        let profileMap = new Map<string, Pick<Profile, 'id' | 'full_name' | 'avatar_url'>>();
+        const { data: ticketsData, error: ticketsError } = await supabase
+            .from('support_tickets')
+            .select('*')
+            .order('created_at', { ascending: false });
 
-        if (userIds.length > 0) {
-            const { data: profilesData, error: profilesError } = await supabase
-                .from('profiles')
-                .select('id, full_name, avatar_url')
-                .in('id', userIds);
-
-            if (profilesError) {
-                profilesErrorMessage = profilesError.message;
-            } else if (profilesData) {
-                profileMap = new Map(profilesData.map(profile => [profile.id, profile]));
-            }
+        if (ticketsError) {
+            throw new Error(`Error loading tickets: ${ticketsError.message}`);
         }
 
-        tickets = baseTickets.map(ticket => ({
-            ...ticket,
-            profile: profileMap.get(ticket.user_id) || null,
-        })) as TicketWithProfile[];
+        const baseTickets = (ticketsData || []) as SupportTicket[];
+
+        if (baseTickets.length > 0) {
+            const userIds = Array.from(new Set(baseTickets.map(ticket => ticket.user_id).filter(Boolean)));
+
+            let profileMap = new Map<string, Pick<Profile, 'id' | 'full_name' | 'avatar_url'>>();
+
+            if (userIds.length > 0) {
+                const { data: profilesData, error: profilesError } = await supabase
+                    .from('profiles')
+                    .select('id, full_name, avatar_url')
+                    .in('id', userIds);
+
+                if (profilesError) {
+                    throw new Error(`Error loading ticket profiles: ${profilesError.message}`);
+                }
+
+                if (profilesData) {
+                    profileMap = new Map(profilesData.map(profile => [profile.id, profile]));
+                }
+            }
+
+            tickets = baseTickets.map(ticket => ({
+                ...ticket,
+                profile: profileMap.get(ticket.user_id) || null,
+            })) as TicketWithProfile[];
+        }
+    } catch (error) {
+        errorMessage = error instanceof Error ? error.message : 'Failed to load support tickets.';
     }
 
-    if (profilesErrorMessage) {
+    if (errorMessage) {
         return (
             <div className="space-y-8">
                 <PageHeader title="Support Tickets" description="Review and manage user feedback and issues." />
                 <div className="rounded-md border border-destructive bg-destructive/10 p-4 text-destructive">
-                    Error loading tickets: {profilesErrorMessage}
+                    {errorMessage}
                 </div>
             </div>
         );

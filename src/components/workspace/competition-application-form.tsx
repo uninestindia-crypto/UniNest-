@@ -90,7 +90,7 @@ export default function CompetitionApplicationForm({ competition }: CompetitionA
     setIsLoading(false);
 
      if (!verificationResponse.ok) {
-        toast({ variant: 'destructive', title: 'Error Saving Entry', description: result.error || 'Your payment was processed, but we failed to save your entry. Please contact support.' });
+        toast({ variant: 'destructive', title: 'Error Saving Entry', description: result.error || 'Your payment was processed, but we failed to save your entry. Please contact support@uninest.co.in.' });
     } else {
         toast({ title: 'Entry Successful!', description: `You have successfully entered ${competition.title}.` });
         router.push(`/workspace/competitions/${competition.id}`);

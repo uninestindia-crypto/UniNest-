@@ -1,13 +1,13 @@
 
 import PageHeader from "@/components/admin/page-header";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
 import ApplicantsTable from "@/components/admin/competitions/applicants-table";
 
 export const revalidate = 0;
 
 export default async function CompetitionApplicantsPage({ params }: { params: { id: string } }) {
-    const supabase = createClient();
+    const supabase = createAdminClient();
 
     const { data: competition, error: competitionError } = await supabase
         .from('competitions')
@@ -38,7 +38,7 @@ export default async function CompetitionApplicantsPage({ params }: { params: { 
         return <p>Error loading entrants: {entriesError.message}</p>
     }
 
-    const mappedEntries = entries.map(e => ({
+    const mappedEntries = (entries || []).map(e => ({
         ...e,
         profiles: e.profile
     }));
