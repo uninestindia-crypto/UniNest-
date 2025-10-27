@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
-import { useVendorDashboardStore } from '@/state/stores/vendorDashboardStore';
 import { VendorDashboardHeader } from '@/components/vendor/dashboard/VendorDashboardHeader';
 import { SummaryMetricsGrid } from '@/components/vendor/dashboard/SummaryMetricsGrid';
 import { PricingInsightsCard } from '@/components/vendor/dashboard/PricingInsightsCard';
@@ -13,6 +12,7 @@ import { AppShell } from '@/layouts/AppShell';
 import { useAuthGuard } from '@/hooks/useAuthGuard';
 import { useResponsiveValue } from '@/hooks/useResponsiveValue';
 import { spacing } from '@/theme/tokens';
+import { useVendorDashboard } from '@/hooks/useVendorDashboard';
 
 export default function VendorDashboardScreen() {
   const {
@@ -21,25 +21,16 @@ export default function VendorDashboardScreen() {
     isAuthenticated,
     isChecking,
   } = useAuthGuard({ requireVendor: true });
-  const {
-    initializeDashboard,
-    loading: dashboardLoading,
-    error,
-    summaryMetrics,
-    pricingDays,
-    bookingCalendar,
-    payouts,
-    crmLeads,
-    quickReplies,
-    marketingBoosters,
-    optimizerHighlights,
-    nudges,
-    tierMetrics,
-    refreshDashboard,
-  } = useVendorDashboardStore();
 
   const vendorId = user?.id ?? null;
   const splitDirection = useResponsiveValue({ base: 'column', lg: 'row' }) as 'column' | 'row';
+  const {
+    snapshot,
+    errorMessage,
+    isLoading: dashboardLoading,
+    isFetching,
+    refetch,
+  } = useVendorDashboard(vendorId);
 
   useEffect(() => {
     if (isChecking) {
@@ -47,9 +38,9 @@ export default function VendorDashboardScreen() {
     }
 
     if (vendorId) {
-      initializeDashboard(vendorId);
+      refetch();
     }
-  }, [initializeDashboard, isChecking, vendorId]);
+  }, [isChecking, refetch, vendorId]);
 
   if (isChecking) {
     return (
@@ -66,49 +57,51 @@ export default function VendorDashboardScreen() {
     <AppShell
       title="Vendor HQ"
       subtitle="Keep occupancy, pricing, conversations, and payouts aligned from a single clean workspace."
-      isLoading={dashboardLoading}
-      onRefresh={refreshDashboard}
+      isLoading={dashboardLoading || isFetching}
+      onRefresh={() => {
+        void refetch();
+      }}
     >
       <VendorDashboardHeader
         userName={user?.user_metadata?.full_name ?? 'Vendor'}
         categories={vendorCategories}
       />
 
-      {error && (
+      {errorMessage && (
         <View style={styles.errorBanner}>
-          <Text style={styles.errorText}>{error}</Text>
+          <Text style={styles.errorText}>{errorMessage}</Text>
           <Text style={styles.errorHint}>
             Some metrics use default samples. Confirm Supabase tables are provisioned.
           </Text>
         </View>
       )}
 
-      <SummaryMetricsGrid metrics={summaryMetrics} />
+      <SummaryMetricsGrid metrics={snapshot.summaryMetrics} />
 
       <View style={[styles.splitRow, { flexDirection: splitDirection }]}> 
         <View style={styles.splitItem}>
-          <PricingInsightsCard days={pricingDays} />
+          <PricingInsightsCard days={snapshot.pricingDays} />
         </View>
         <View style={styles.splitItem}>
-          <CRMLeadsCard leads={crmLeads} quickReplies={quickReplies} />
+          <CRMLeadsCard leads={snapshot.crmLeads} quickReplies={snapshot.quickReplies} />
         </View>
       </View>
 
       <View style={styles.singleRow}>
-        <BookingPaymentsCard bookingCalendar={bookingCalendar} payouts={payouts} />
+        <BookingPaymentsCard bookingCalendar={snapshot.bookingCalendar} payouts={snapshot.payouts} />
       </View>
 
       <View style={[styles.splitRow, { flexDirection: splitDirection }]}> 
         <View style={styles.splitItem}>
-          <MarketingBoostersCard boosters={marketingBoosters} />
+          <MarketingBoostersCard boosters={snapshot.marketingBoosters} />
         </View>
         <View style={styles.splitItem}>
-          <AIListingOptimizerCard highlights={optimizerHighlights} nudges={nudges} />
+          <AIListingOptimizerCard highlights={snapshot.optimizerHighlights} nudges={snapshot.nudges} />
         </View>
       </View>
 
       <View style={styles.singleRow}>
-        <TierStatusCard metrics={tierMetrics} />
+        <TierStatusCard metrics={snapshot.tierMetrics} />
       </View>
     </AppShell>
   );

@@ -1,4 +1,5 @@
 const CACHE_NAME = "uninest-shell-v1";
+const SKIP_WAITING_MESSAGE_TYPE = "SKIP_WAITING";
 const PRECACHE_ASSETS = [
   "/",
   "/offline.html",
@@ -20,6 +21,12 @@ self.addEventListener("activate", event => {
     )
   );
   self.clients.claim();
+});
+
+self.addEventListener("message", event => {
+  if (event.data && event.data.type === SKIP_WAITING_MESSAGE_TYPE) {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener("fetch", event => {
