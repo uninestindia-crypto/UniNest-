@@ -18,10 +18,25 @@ const getSupabaseAdmin = () => {
 const uploadFile = async (supabaseAdmin: any, file: File, bucket: string, userId: string): Promise<string | null> => {
     if (!file || file.size === 0) return null;
     const filePath = `applications/${userId}/${Date.now()}-${file.name}`;
+
+    // Ensure bucket exists before uploading
+    const { error: bucketError } = await supabaseAdmin.storage
+      .from(bucket)
+      .ensureBucketExists();
+    if (bucketError) {
+      console.error('Bucket Error:', bucketError);
+      return null;
+    }
+
     const { error: uploadError } = await supabaseAdmin.storage
       .from(bucket)
-      .upload(filePath, file);
-    
+      .upload(filePath, file, {
+        // Handle Supabase types correctly
+        upsert: true,
+        cacheControl: '3600',
+        contentType: file.type,
+      });
+
     if (uploadError) {
       console.error('Upload Error:', uploadError);
       return null;
