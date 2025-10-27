@@ -1,12 +1,11 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
-import type { User } from '@supabase/supabase-js';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { submitApplication } from '@/app/workspace/internships/[id]/apply/actions';
+import { useAuth } from '@/hooks/use-auth';
 
 
 const formSchema = z.object({
@@ -29,26 +29,52 @@ const formSchema = z.object({
 
 type ApplicationFormProps = {
     internshipId: number;
-    user: User;
 };
 
-export default function ApplicationForm({ internshipId, user }: ApplicationFormProps) {
+export default function ApplicationForm({ internshipId }: ApplicationFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  const { user, loading } = useAuth();
+  const loginRedirectPath = `/login?redirect=/workspace/internships/${internshipId}/apply`;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: user.user_metadata?.full_name || '',
-      email: user.email || '',
-      phone_number: user.user_metadata?.phone_number || '',
-      whatsapp_number: user.user_metadata?.whatsapp_number || '',
+      name: '',
+      email: '',
+      phone_number: '',
+      whatsapp_number: '',
       coverLetter: '',
     },
   });
 
+  useEffect(() => {
+    if (user) {
+      form.reset({
+        name: user.user_metadata?.full_name || '',
+        email: user.email || '',
+        phone_number: user.user_metadata?.phone_number || '',
+        whatsapp_number: user.user_metadata?.whatsapp_number || '',
+        coverLetter: '',
+        resume: undefined,
+      });
+    }
+  }, [user, form]);
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace(loginRedirectPath);
+    }
+  }, [loading, user, router, loginRedirectPath]);
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!user) {
+      toast({ variant: 'destructive', title: 'Authentication Required', description: 'Please log in to submit your application.' });
+      router.replace(loginRedirectPath);
+      return;
+    }
+
     setIsLoading(true);
     
     const formData = new FormData();
@@ -72,6 +98,27 @@ export default function ApplicationForm({ internshipId, user }: ApplicationFormP
     }
     
     setIsLoading(false);
+  }
+
+  if (loading) {
+    return (
+      <Card>
+        <CardContent className="flex items-center justify-center py-12">
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          <span>Loading application form...</span>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!user) {
+    return (
+      <Card>
+        <CardContent className="py-12 text-center text-muted-foreground">
+          Redirecting to login...
+        </CardContent>
+      </Card>
+    );
   }
 
   return (

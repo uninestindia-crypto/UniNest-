@@ -13,7 +13,7 @@ export default async function CompetitionApplyPage({ params }: ApplyPageProps) {
     
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-        redirect('/login');
+        redirect(`/login?redirect=/workspace/competitions/${params.id}/apply`);
     }
 
     const { data: competition, error } = await supabase
@@ -33,7 +33,7 @@ export default async function CompetitionApplyPage({ params }: ApplyPageProps) {
                 description={`Confirm your details to enter. An entry fee of ₹${competition.entry_fee} is required.`}
             />
             <div className="mt-8">
-                <CompetitionApplicationForm competition={competition} user={user} />
+                <CompetitionApplicationForm competition={competition} />
             </div>
         </div>
     )

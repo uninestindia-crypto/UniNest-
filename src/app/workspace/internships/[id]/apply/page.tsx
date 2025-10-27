@@ -13,7 +13,7 @@ export default async function ApplyPage({ params }: ApplyPageProps) {
     
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-        redirect('/login');
+        redirect(`/login?redirect=/workspace/internships/${params.id}/apply`);
     }
 
     const { data: internship, error } = await supabase
@@ -33,7 +33,7 @@ export default async function ApplyPage({ params }: ApplyPageProps) {
                 description={`You are applying to ${internship.company}.`}
             />
             <div className="mt-8">
-                <ApplicationForm internshipId={internship.id} user={user} />
+                <ApplicationForm internshipId={internship.id} />
             </div>
         </div>
     )

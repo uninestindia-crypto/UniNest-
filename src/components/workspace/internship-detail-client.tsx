@@ -8,7 +8,7 @@ import { OpportunityShareButton } from '@/components/workspace/opportunity-share
 import { useAuth } from '@/hooks/use-auth';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { format } from 'date-fns';
 import { Briefcase, Calendar, IndianRupee, FileText, MapPin, Users } from 'lucide-react';
 
@@ -41,6 +41,14 @@ type InternshipDetailClientProps = {
 
 export default function InternshipDetailClient({ internship, initialApplicants, showApplicants = true }: InternshipDetailClientProps) {
     const { user } = useAuth();
+    const applyHref = useMemo(() => {
+        const basePath = `/workspace/internships/${internship.id}/apply`;
+        if (user) {
+            return basePath;
+        }
+        const params = new URLSearchParams({ redirect: basePath });
+        return `/login?${params.toString()}`;
+    }, [internship.id, user]);
     const [hasApplied, setHasApplied] = useState(false); // Placeholder state
 
     // In a real app, this should be checked against the database
@@ -81,7 +89,7 @@ export default function InternshipDetailClient({ internship, initialApplicants, 
             
             <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t">
                 <Button size="lg" className="flex-1" asChild>
-                    <Link href={`/workspace/internships/${internship.id}/apply`}>
+                    <Link href={applyHref}>
                         <Briefcase className="mr-2"/>
                         Apply Now
                     </Link>

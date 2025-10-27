@@ -2,12 +2,11 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
-import type { User } from '@supabase/supabase-js';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -31,25 +30,42 @@ type CompetitionApplicationFormProps = {
         title: string;
         entry_fee: number;
     };
-    user: User;
 };
 
-export default function CompetitionApplicationForm({ competition, user }: CompetitionApplicationFormProps) {
+export default function CompetitionApplicationForm({ competition }: CompetitionApplicationFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
-  const { supabase } = useAuth();
+  const { supabase, user, loading } = useAuth();
   const { openCheckout, isLoaded } = useRazorpay();
+  const loginRedirectPath = `/login?redirect=/workspace/competitions/${competition.id}/apply`;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: user.user_metadata?.full_name || '',
-      email: user.email || '',
-      phone_number: user.user_metadata?.phone_number || '',
-      whatsapp_number: user.user_metadata?.whatsapp_number || '',
+      name: '',
+      email: '',
+      phone_number: '',
+      whatsapp_number: '',
     },
   });
+
+  useEffect(() => {
+    if (user) {
+      form.reset({
+        name: user.user_metadata?.full_name || '',
+        email: user.email || '',
+        phone_number: user.user_metadata?.phone_number || '',
+        whatsapp_number: user.user_metadata?.whatsapp_number || '',
+      });
+    }
+  }, [user, form]);
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace(loginRedirectPath);
+    }
+  }, [loading, user, router, loginRedirectPath]);
 
   const handlePaymentSuccess = async (paymentResponse: any, accessToken: string) => {
     const values = form.getValues();
@@ -83,6 +99,12 @@ export default function CompetitionApplicationForm({ competition, user }: Compet
 
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!user) {
+      toast({ variant: 'destructive', title: 'Authentication Required', description: 'Please log in to continue with your entry.' });
+      router.replace(loginRedirectPath);
+      return;
+    }
+
     setIsLoading(true);
 
     if (competition.entry_fee <= 0) {
@@ -123,6 +145,27 @@ export default function CompetitionApplicationForm({ competition, user }: Compet
         toast({ variant: 'destructive', title: 'Payment Error', description: error instanceof Error ? error.message : 'Could not connect to payment gateway.'});
         setIsLoading(false);
     }
+  }
+
+  if (loading) {
+    return (
+      <Card>
+        <CardContent className="flex items-center justify-center py-12">
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          <span>Loading entry form...</span>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!user) {
+    return (
+      <Card>
+        <CardContent className="py-12 text-center text-muted-foreground">
+          Redirecting to login...
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
