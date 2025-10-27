@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Autoplay from 'embla-carousel-autoplay';
 import { MessageSquare, Quote, Store, Users, type LucideIcon } from 'lucide-react';
 
@@ -18,6 +18,7 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { defaultHomePosterConfig } from '@/lib/home-poster';
 import type { HomePosterConfig, HomeStat, HomeTestimonial } from '@/lib/types';
+import DonationModal from '@/components/home/donation-modal';
 
 const iconMap: Record<string, LucideIcon> = {
   users: Users,
@@ -90,6 +91,10 @@ const getInitials = (name: string): string => {
     .slice(0, 2);
 };
 
+const DONATION_PROMPT_DISMISSED_UNTIL_KEY = 'uninest-donation-prompt-dismissed-until';
+const DONATION_PROMPT_DELAY_MS = 12_000;
+const DONATION_DISMISS_TTL_MS = 1000 * 60 * 60 * 24 * 3; // 3 days
+
 type HomeClientProps = {
   posterConfig?: HomePosterConfig;
 };
@@ -106,9 +111,40 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
       : defaultHomePosterConfig.testimonials ?? [];
 
   const autoplayPlugin = useMemo(() => Autoplay({ delay: 6000, stopOnInteraction: false }), []);
+  const [donationModalOpen, setDonationModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const storage = window.localStorage;
+    const dismissedUntilRaw = storage.getItem(DONATION_PROMPT_DISMISSED_UNTIL_KEY);
+    const dismissedUntil = dismissedUntilRaw ? Number(dismissedUntilRaw) : Number.NaN;
+
+    if (Number.isFinite(dismissedUntil) && dismissedUntil > Date.now()) {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(() => setDonationModalOpen(true), DONATION_PROMPT_DELAY_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, []);
+
+  const handleDonationModalOpenChange = (open: boolean) => {
+    setDonationModalOpen(open);
+
+    if (!open && typeof window !== 'undefined') {
+      const nextEligible = Date.now() + DONATION_DISMISS_TTL_MS;
+      window.localStorage.setItem(DONATION_PROMPT_DISMISSED_UNTIL_KEY, nextEligible.toString());
+    }
+  };
 
   return (
     <main className="bg-background text-foreground">
+      <DonationModal isOpen={donationModalOpen} onOpenChange={handleDonationModalOpenChange} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaMarkup) }}
