@@ -24,11 +24,16 @@ export default async function CompetitionApplicantsPage({ params }: { params: { 
 
     try {
         const supabase = createAdminClient();
+        const competitionId = Number(params.id);
+
+        if (Number.isNaN(competitionId)) {
+            throw new Error('Invalid competition identifier.');
+        }
 
         const { data: competitionData, error: competitionError } = await supabase
             .from('competitions')
             .select('id, title')
-            .eq('id', params.id)
+            .eq('id', competitionId)
             .single();
 
         if (competitionError) {
@@ -53,7 +58,7 @@ export default async function CompetitionApplicantsPage({ params }: { params: { 
                     avatar_url
                 )
             `)
-            .eq('competition_id', params.id)
+            .eq('competition_id', competitionId)
             .order('created_at', { ascending: false });
 
         if (entriesError) {
