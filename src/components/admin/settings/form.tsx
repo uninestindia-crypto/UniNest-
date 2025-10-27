@@ -14,7 +14,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import type { MonetizationSettings } from '@/lib/types';
+import type { PlatformSettings } from '@/lib/types';
 import { Separator } from '@/components/ui/separator';
 import { updateSettings } from '@/app/admin/settings/actions';
 
@@ -28,14 +28,20 @@ const vendorMonetizationSettingSchema = z.object({
   price_per_service_per_month: z.coerce.number().min(0, 'Price must be a positive number.'),
 });
 
+const applicationVisibilitySchema = z.object({
+  showCompetitionApplicants: z.boolean(),
+  showInternshipApplicants: z.boolean(),
+});
+
 const formSchema = z.object({
   student: studentMonetizationSettingSchema,
   vendor: vendorMonetizationSettingSchema,
+  applicationVisibility: applicationVisibilitySchema,
   start_date: z.date().optional().nullable(),
 });
 
 type SettingsFormProps = {
-    currentSettings: MonetizationSettings;
+    currentSettings: PlatformSettings;
 }
 
 export default function SettingsForm({ currentSettings }: SettingsFormProps) {
@@ -52,6 +58,10 @@ export default function SettingsForm({ currentSettings }: SettingsFormProps) {
         vendor: {
             charge_for_platform_access: currentSettings.vendor.charge_for_platform_access,
             price_per_service_per_month: currentSettings.vendor.price_per_service_per_month,
+        },
+        applicationVisibility: {
+            showCompetitionApplicants: currentSettings.applicationVisibility.showCompetitionApplicants,
+            showInternshipApplicants: currentSettings.applicationVisibility.showInternshipApplicants,
         },
         start_date: currentSettings.start_date ? new Date(currentSettings.start_date) : null,
     },
@@ -163,7 +173,54 @@ export default function SettingsForm({ currentSettings }: SettingsFormProps) {
         </div>
 
         <Separator />
-        
+
+        {/* Application Visibility */}
+        <div className='space-y-6 rounded-lg border p-4'>
+            <h3 className="text-lg font-semibold">Application Visibility</h3>
+            <FormField
+              control={form.control}
+              name="applicationVisibility.showCompetitionApplicants"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border bg-background p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-base">Show Competition Applicants</FormLabel>
+                    <FormDescription>
+                      Display the applicants tab and count on competition detail pages.
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="applicationVisibility.showInternshipApplicants"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border bg-background p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-base">Show Internship Applicants</FormLabel>
+                    <FormDescription>
+                      Display the applicants card on internship detail pages.
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+        </div>
+
+        <Separator />
+
         {/* Global Settings */}
         <h3 className="text-lg font-semibold">Global Settings</h3>
         <FormField
