@@ -1,8 +1,8 @@
 import { memo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import type { PricingDay } from '@/src/state/stores/vendorDashboardStore';
-import { colors } from '@/src/theme/colors';
+import type { PricingDay } from '@/state/stores/vendorDashboardStore';
+import { colors } from '@/theme/colors';
 
 export type PricingInsightsCardProps = {
   days: PricingDay[];

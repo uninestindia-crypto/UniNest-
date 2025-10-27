@@ -2,8 +2,8 @@ import { memo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { MessageCircle, PhoneCall } from 'lucide-react-native';
 
-import type { CRMLead } from '@/src/state/stores/vendorDashboardStore';
-import { colors } from '@/src/theme/colors';
+import type { CRMLead } from '@/state/stores/vendorDashboardStore';
+import { colors } from '@/theme/colors';
 
 export type CRMLeadsCardProps = {
   leads: CRMLead[];

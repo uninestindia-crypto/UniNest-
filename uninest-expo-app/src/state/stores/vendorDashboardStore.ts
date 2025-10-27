@@ -335,16 +335,46 @@ async function fetchTierMetrics(vendorId: string) {
 
 async function hydrateDashboard(vendorId: string) {
   const [summaryMetrics, pricingDays, crmLeads, quickReplies, bookingCalendar, payouts, marketingBoosters, optimizerHighlights, nudges, tierMetrics] = await Promise.all([
-    fetchSummaryMetrics(vendorId).catch(() => initialState.summaryMetrics),
-    fetchPricingDays(vendorId).catch(() => initialState.pricingDays),
-    fetchCrmLeads(vendorId).catch(() => initialState.crmLeads),
-    fetchQuickReplies(vendorId).catch(() => initialState.quickReplies),
-    fetchBookingCalendar(vendorId).catch(() => initialState.bookingCalendar),
-    fetchPayouts(vendorId).catch(() => initialState.payouts),
-    fetchMarketingBoosters(vendorId).catch(() => initialState.marketingBoosters),
-    fetchOptimizerHighlights(vendorId).catch(() => initialState.optimizerHighlights),
-    fetchNudges(vendorId).catch(() => initialState.nudges),
-    fetchTierMetrics(vendorId).catch(() => initialState.tierMetrics),
+    fetchSummaryMetrics(vendorId).catch((error) => {
+      console.warn('[vendorDashboard] Using fallback summary metrics. Ensure table `vendor_metrics_summary` exists.', error);
+      return initialState.summaryMetrics;
+    }),
+    fetchPricingDays(vendorId).catch((error) => {
+      console.warn('[vendorDashboard] Using fallback pricing insights. Ensure table `vendor_pricing_insights` exists.', error);
+      return initialState.pricingDays;
+    }),
+    fetchCrmLeads(vendorId).catch((error) => {
+      console.warn('[vendorDashboard] Using fallback CRM leads. Ensure table `vendor_leads` exists.', error);
+      return initialState.crmLeads;
+    }),
+    fetchQuickReplies(vendorId).catch((error) => {
+      console.warn('[vendorDashboard] Using fallback quick replies. Ensure table `vendor_quick_replies` exists.', error);
+      return initialState.quickReplies;
+    }),
+    fetchBookingCalendar(vendorId).catch((error) => {
+      console.warn('[vendorDashboard] Using fallback booking calendar. Ensure table `vendor_booking_calendar` exists.', error);
+      return initialState.bookingCalendar;
+    }),
+    fetchPayouts(vendorId).catch((error) => {
+      console.warn('[vendorDashboard] Using fallback payouts. Ensure table `vendor_payouts` exists.', error);
+      return initialState.payouts;
+    }),
+    fetchMarketingBoosters(vendorId).catch((error) => {
+      console.warn('[vendorDashboard] Using fallback marketing boosters. Ensure table `vendor_marketing_boosters` exists.', error);
+      return initialState.marketingBoosters;
+    }),
+    fetchOptimizerHighlights(vendorId).catch((error) => {
+      console.warn('[vendorDashboard] Using fallback optimizer highlights. Ensure table `vendor_optimizer_highlights` exists.', error);
+      return initialState.optimizerHighlights;
+    }),
+    fetchNudges(vendorId).catch((error) => {
+      console.warn('[vendorDashboard] Using fallback nudges. Ensure table `vendor_nudges` exists.', error);
+      return initialState.nudges;
+    }),
+    fetchTierMetrics(vendorId).catch((error) => {
+      console.warn('[vendorDashboard] Using fallback tier metrics. Ensure table `vendor_tier_metrics` exists.', error);
+      return initialState.tierMetrics;
+    }),
   ]);
 
   return {
