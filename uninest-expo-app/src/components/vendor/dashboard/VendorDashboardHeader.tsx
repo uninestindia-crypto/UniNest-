@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { colors } from '@/src/theme/colors';
+import { colors } from '@/theme/colors';
 
 export type VendorDashboardHeaderProps = {
   userName: string;

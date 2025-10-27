@@ -3,8 +3,8 @@ import { StyleSheet, Text, View } from 'react-native';
 import type { LucideIcon } from 'lucide-react-native';
 import { TrendingUp, Wallet, Users, Coins, Info } from 'lucide-react-native';
 
-import type { SummaryMetric } from '@/src/state/stores/vendorDashboardStore';
-import { colors } from '@/src/theme/colors';
+import type { SummaryMetric } from '@/state/stores/vendorDashboardStore';
+import { colors } from '@/theme/colors';
 
 const iconMap: Record<string, LucideIcon> = {
   TrendingUp,
