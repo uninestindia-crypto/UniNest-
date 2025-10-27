@@ -3,6 +3,7 @@ import type { ExpoConfig } from '@expo/config';
 const config: ExpoConfig = {
   name: 'uninest-expo-app',
   slug: 'uninest-expo-app',
+  owner: 'uninest',
   scheme: 'uninest',
   version: '1.0.0',
   orientation: 'portrait',
@@ -19,6 +20,9 @@ const config: ExpoConfig = {
     bundleIdentifier: 'com.uninest.app',
     buildNumber: '1.0.0',
     supportsTablet: true,
+    infoPlist: {
+      ITSAppUsesNonExemptEncryption: false,
+    },
   },
   android: {
     package: 'com.uninest.app',
