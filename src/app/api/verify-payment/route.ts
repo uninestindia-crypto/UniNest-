@@ -62,6 +62,7 @@ export async function POST(request: NextRequest) {
             competitionId,
             phone_number,
             whatsapp_number,
+            pitchUrl,
             servicesCount,
             categories,
             currency,
@@ -128,6 +129,7 @@ export async function POST(request: NextRequest) {
                 competition_id: competitionId,
                 user_id: user.id, // Use the verified user ID from the token
                 razorpay_payment_id: razorpay_payment_id ?? null,
+                pitch_url: pitchUrl ?? null,
             });
             if (error) throw error;
             

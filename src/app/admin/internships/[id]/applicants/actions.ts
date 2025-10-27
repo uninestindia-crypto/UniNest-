@@ -14,7 +14,7 @@ const getSupabaseAdmin = () => {
     return createClient(supabaseUrl, supabaseServiceKey);
 }
 
-export async function getApplicants(internshipId: string) {
+export async function getApplicants(internshipId: number) {
     try {
         const supabaseAdmin = getSupabaseAdmin();
         const { data, error } = await supabaseAdmin
