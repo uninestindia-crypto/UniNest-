@@ -322,7 +322,7 @@ export default function MarketplaceContent() {
               .single();
 
             if (orderError || !newOrder) {
-                toast({ variant: 'destructive', title: 'Error Saving Order', description: 'Payment received, but failed to save your order. Please contact support.' });
+                toast({ variant: 'destructive', title: 'Error Saving Order', description: 'Payment received, but failed to save your order. Please contact support@uninest.co.in.' });
                 setPurchasingProductId(null);
                 return;
             }
@@ -337,7 +337,7 @@ export default function MarketplaceContent() {
               });
 
              if (itemError) {
-                toast({ variant: 'destructive', title: 'Error Saving Order Item', description: 'Your order was processed but had an issue. Please contact support.' });
+                toast({ variant: 'destructive', title: 'Error Saving Order Item', description: 'Your order was processed but had an issue. Please contact support@uninest.co.in.' });
              } else {
                 toast({ title: 'Payment Successful!', description: `${product.name} has been purchased.` });
                 router.push('/vendor/orders');

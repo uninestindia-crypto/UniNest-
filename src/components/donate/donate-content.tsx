@@ -280,7 +280,7 @@ export default function DonateContent({ initialDonors, initialGoal, initialRaise
     setIsDonating(false);
 
     if (!verificationResponse.ok) {
-         toast({ variant: 'destructive', title: 'Error Saving Donation', description: result.error || 'Your donation was processed, but we failed to record it. Please contact support.'});
+         toast({ variant: 'destructive', title: 'Error Saving Donation', description: result.error || 'Your donation was processed, but we failed to record it. Please contact support@uninest.co.in.'});
     } else {
         router.push(`/donate/thank-you?amount=${amount}`);
     }

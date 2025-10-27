@@ -98,7 +98,7 @@ export default function DonationModal({ isOpen, onOpenChange }: DonationModalPro
     setIsDonating(false);
 
     if (!verificationResponse.ok) {
-         toast({ variant: 'destructive', title: 'Donation record failed', description: result.error || 'Your payment was successful but we couldn\'t record it. Please contact support.' });
+         toast({ variant: 'destructive', title: 'Donation record failed', description: result.error || 'Your payment was successful but we couldn\'t record it. Please contact support@uninest.co.in.' });
     } else {
         router.push(`/donate/thank-you?amount=${amount}`);
     }

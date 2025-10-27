@@ -11,7 +11,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { format } from 'date-fns';
 import { Calendar, FileText, IndianRupee, Trophy, Users } from 'lucide-react';
 
@@ -52,6 +52,14 @@ export default function CompetitionDetailClient({ competition: initialCompetitio
     const [competition, setCompetition] = useState(initialCompetition);
 
     const hasApplied = applicants.some(app => app.user_id === user?.id);
+    const applyHref = useMemo(() => {
+        const basePath = `/workspace/competitions/${competition.id}/apply`;
+        if (user) {
+            return basePath;
+        }
+        const params = new URLSearchParams({ redirect: basePath });
+        return `/login?${params.toString()}`;
+    }, [competition.id, user]);
 
     useEffect(() => {
         if (!supabase) return;
@@ -135,7 +143,7 @@ export default function CompetitionDetailClient({ competition: initialCompetitio
                     </div>
                      <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t mt-6">
                         <Button size="lg" className="flex-1" disabled={hasApplied || isCompetitionOver} asChild>
-                           <Link href={`/workspace/competitions/${competition.id}/apply`}>
+                           <Link href={applyHref}>
                              {hasApplied ? 'Applied' : isCompetitionOver ? 'Deadline Passed' : 'Apply Now'}
                            </Link>
                         </Button>

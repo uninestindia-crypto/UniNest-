@@ -23,6 +23,13 @@ export default async function SupportPage() {
             <p className="mt-2 text-lg text-muted-foreground">
                 Have an issue or some feedback? Let us know!
             </p>
+            <p className="mt-3 text-base text-muted-foreground">
+                Prefer email? Reach us anytime at{' '}
+                <a href="mailto:support@uninest.co.in" className="text-primary hover:underline">
+                    support@uninest.co.in
+                </a>
+                .
+            </p>
             <div className="mt-8">
                 <SupportTicketForm />
             </div>
