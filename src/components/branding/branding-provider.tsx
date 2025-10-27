@@ -57,23 +57,31 @@ export function BrandingAssetsProvider({ initialAssets, children }: BrandingAsse
   ]);
 
   useEffect(() => {
-    const faviconHref = assets.faviconUrl ?? '/favicon.ico';
-    const iconHref = assets.pwaIcon192Url ?? faviconHref;
-
-    const ensureLink = (rel: string, href: string) => {
-      let link = document.head.querySelector<HTMLLinkElement>(`link[rel="${rel}"]`);
-      if (!link) {
-        link = document.createElement('link');
+    const updateLink = (rel: string, href: string | null) => {
+      const existing = document.head.querySelector<HTMLLinkElement>(`link[rel="${rel}"]`);
+      if (href) {
+        if (existing) {
+          existing.href = href;
+          return;
+        }
+        const link = document.createElement('link');
         link.rel = rel;
+        link.href = href;
         document.head.appendChild(link);
+        return;
       }
-      link.href = href;
+      if (existing) {
+        existing.remove();
+      }
     };
 
-    ensureLink('icon', faviconHref);
-    ensureLink('shortcut icon', faviconHref);
-    ensureLink('apple-touch-icon', iconHref);
-  }, [assets.faviconUrl, assets.pwaIcon192Url]);
+    const faviconHref = assets.faviconUrl ?? null;
+    const appleIconHref = assets.pwaIcon192Url ?? assets.logoUrl ?? null;
+
+    updateLink('icon', faviconHref);
+    updateLink('shortcut icon', faviconHref);
+    updateLink('apple-touch-icon', appleIconHref);
+  }, [assets.faviconUrl, assets.pwaIcon192Url, assets.logoUrl]);
 
   const value = useMemo<BrandingAssetsContextValue>(
     () => ({

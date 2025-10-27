@@ -4,12 +4,6 @@ import { getBrandingAssets, getDefaultBrandingAssets } from '@/lib/branding';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-const FALLBACK_ICONS = {
-  192: '/icons/icon-192x192.png',
-  512: '/icons/icon-512x512.png',
-  1024: '/icons/icon-1024x1024.png',
-} as const;
-
 const FALLBACK_SCREENSHOTS = {
   desktop: {
     src: '/screenshots/dashboard-desktop.png',
@@ -27,10 +21,43 @@ const FALLBACK_SCREENSHOTS = {
 
 export default async function manifest(): Promise<MetadataRoute.Manifest> {
   const brandingAssets = await getBrandingAssets().catch(() => getDefaultBrandingAssets());
+  const fallbackIcon = brandingAssets.faviconUrl ?? brandingAssets.logoUrl ?? null;
 
-  const icon192 = brandingAssets.pwaIcon192Url ?? FALLBACK_ICONS[192];
-  const icon512 = brandingAssets.pwaIcon512Url ?? FALLBACK_ICONS[512];
-  const icon1024 = brandingAssets.pwaIcon1024Url ?? FALLBACK_ICONS[1024];
+  const icons: MetadataRoute.Manifest['icons'] = [];
+
+  if (brandingAssets.pwaIcon192Url) {
+    icons.push({
+      src: brandingAssets.pwaIcon192Url,
+      sizes: '192x192',
+      type: 'image/png',
+      purpose: 'maskable',
+    });
+  }
+
+  if (brandingAssets.pwaIcon512Url) {
+    icons.push({
+      src: brandingAssets.pwaIcon512Url,
+      sizes: '512x512',
+      type: 'image/png',
+      purpose: 'maskable',
+    });
+  }
+
+  if (brandingAssets.pwaIcon1024Url) {
+    icons.push({
+      src: brandingAssets.pwaIcon1024Url,
+      sizes: '1024x1024',
+      type: 'image/png',
+    });
+  }
+
+  if (!icons.length && fallbackIcon) {
+    icons.push({
+      src: fallbackIcon,
+      sizes: '512x512',
+      type: 'image/png',
+    });
+  }
 
   const desktopScreenshot = brandingAssets.pwaScreenshotDesktopUrl
     ? {
@@ -60,25 +87,7 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
     orientation: 'any',
     background_color: '#0F172A',
     theme_color: '#38BDF8',
-    icons: [
-      {
-        src: icon192,
-        sizes: '192x192',
-        type: 'image/png',
-        purpose: 'maskable',
-      },
-      {
-        src: icon512,
-        sizes: '512x512',
-        type: 'image/png',
-        purpose: 'maskable',
-      },
-      {
-        src: icon1024,
-        sizes: '1024x1024',
-        type: 'image/png',
-      },
-    ],
+    icons,
     screenshots: [desktopScreenshot, mobileScreenshot],
     shortcuts: [
       {

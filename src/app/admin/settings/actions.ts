@@ -16,10 +16,16 @@ const vendorMonetizationSchema = z.object({
   price_per_service_per_month: z.number().min(0),
 });
 
+const applicationVisibilitySchema = z.object({
+  showCompetitionApplicants: z.boolean(),
+  showInternshipApplicants: z.boolean(),
+});
+
 const settingsSchema = z.object({
   student: studentMonetizationSchema,
   vendor: vendorMonetizationSchema,
   start_date: z.string().datetime({ offset: true }).nullable(),
+  applicationVisibility: applicationVisibilitySchema,
 });
 
 const getSupabaseAdmin = () => {

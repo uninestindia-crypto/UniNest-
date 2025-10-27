@@ -1,7 +1,6 @@
 'use client';
 
 import Image from 'next/image';
-import { Logo } from '@/components/icons';
 import { cn } from '@/lib/utils';
 import { useBrandingAssets } from '@/components/branding/branding-provider';
 
@@ -14,18 +13,18 @@ type BrandingLogoProps = {
 export function BrandingLogo({ className, size = 32, fallbackClassName }: BrandingLogoProps) {
   const { assets } = useBrandingAssets();
 
-  if (assets.logoUrl) {
-    return (
-      <Image
-        src={assets.logoUrl}
-        alt="UniNest logo"
-        width={size}
-        height={size}
-        className={cn('h-auto w-auto max-h-full max-w-full object-contain', className)}
-        priority
-      />
-    );
+  if (!assets.logoUrl) {
+    return null;
   }
 
-  return <Logo className={cn('text-primary', fallbackClassName, className)} />;
+  return (
+    <Image
+      src={assets.logoUrl}
+      alt="UniNest logo"
+      width={size}
+      height={size}
+      className={cn('h-auto w-auto max-h-full max-w-full object-contain', className)}
+      priority
+    />
+  );
 }

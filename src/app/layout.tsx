@@ -19,7 +19,7 @@ const poppins = Poppins({
   display: 'swap',
 });
 
-export const metadata: Metadata = {
+const baseMetadata: Metadata = {
   metadataBase: new URL('https://uninest.co.in'),
   title: {
     default: 'UniNest – India’s #1 Student Platform for Internships & Competitions',
@@ -40,13 +40,6 @@ export const metadata: Metadata = {
   alternates: {
     canonical: 'https://uninest.co.in/',
   },
-  icons: {
-    icon: [
-      { url: 'https://uninest.co.in/favicon.png', type: 'image/png' },
-      { url: 'https://uninest.co.in/favicon.ico', type: 'image/x-icon' },
-    ],
-    apple: [{ url: 'https://uninest.co.in/favicon.png' }],
-  },
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#38BDF8' },
     { media: '(prefers-color-scheme: dark)', color: '#0F172A' },
@@ -55,28 +48,6 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: 'black-translucent',
     title: 'UniNest',
-  },
-  openGraph: {
-    title: 'UniNest – India’s #1 Student Platform for Internships & Competitions',
-    description: 'Join 10,000+ students on UniNest. Connect, learn, and grow together.',
-    url: 'https://uninest.co.in/',
-    siteName: 'UniNest',
-    images: [
-      {
-        url: 'https://uninest.co.in/favicon.png',
-        width: 512,
-        height: 512,
-        alt: 'UniNest Logo',
-      },
-    ],
-    locale: 'en_US',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'UniNest – India’s #1 Student Platform for Internships & Competitions',
-    description: 'Join 10,000+ students on UniNest. Connect, study, and grow with your peers.',
-    images: ['https://uninest.co.in/favicon.png'],
   },
   verification: {
     google: 'YOUR_VERIFICATION_TOKEN',
@@ -89,6 +60,63 @@ export const metadata: Metadata = {
     follow: true,
   },
 };
+
+const baseOpenGraph: NonNullable<Metadata['openGraph']> = {
+  title: 'UniNest – India’s #1 Student Platform for Internships & Competitions',
+  description: 'Join 10,000+ students on UniNest. Connect, learn, and grow together.',
+  url: 'https://uninest.co.in/',
+  siteName: 'UniNest',
+  locale: 'en_US',
+  type: 'website',
+};
+
+const baseTwitter: NonNullable<Metadata['twitter']> = {
+  card: 'summary_large_image',
+  title: 'UniNest – India’s #1 Student Platform for Internships & Competitions',
+  description: 'Join 10,000+ students on UniNest. Connect, study, and grow with your peers.',
+};
+
+export async function generateMetadata(): Promise<Metadata> {
+  const brandingAssets = await getBrandingAssets();
+
+  const faviconUrl = brandingAssets.faviconUrl ?? null;
+  const appleIconUrl = brandingAssets.pwaIcon192Url ?? brandingAssets.logoUrl ?? faviconUrl ?? undefined;
+  const logoUrl = brandingAssets.logoUrl ?? null;
+
+  const icons = faviconUrl
+    ? {
+        icon: [{ url: faviconUrl }],
+        shortcut: [{ url: faviconUrl }],
+        apple: appleIconUrl ? [{ url: appleIconUrl }] : undefined,
+      }
+    : undefined;
+
+  const openGraph: Metadata['openGraph'] = {
+    ...baseOpenGraph,
+    images: logoUrl
+      ? [
+          {
+            url: logoUrl,
+            width: 512,
+            height: 512,
+            alt: 'UniNest Logo',
+          },
+        ]
+      : undefined,
+  };
+
+  const twitter: Metadata['twitter'] = {
+    ...baseTwitter,
+    images: logoUrl ? [logoUrl] : undefined,
+  };
+
+  return {
+    ...baseMetadata,
+    icons,
+    openGraph,
+    twitter,
+  };
+}
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -118,7 +146,7 @@ export default async function RootLayout({
               '@type': 'Organization',
               name: 'UniNest',
               url: 'https://uninest.co.in',
-              logo: 'https://uninest.co.in/favicon.png',
+              logo: brandingAssets.logoUrl ?? brandingAssets.faviconUrl ?? undefined,
               sameAs: [
                 'https://www.instagram.com/uninest',
                 'https://www.linkedin.com/company/uninest',

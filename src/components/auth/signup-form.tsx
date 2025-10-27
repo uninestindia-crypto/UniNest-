@@ -134,7 +134,7 @@ export default function SignupForm() {
 
     const role = values.userType;
     const generatedHandle = await generateUniqueHandle(values);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: values.email,
       password: values.password,
       options: {
@@ -154,9 +154,12 @@ export default function SignupForm() {
         description: error.message,
       });
     } else {
+        const requiresEmailConfirmation = !data?.session;
         toast({
             title: 'Success!',
-            description: 'Check your email for a verification link.',
+            description: requiresEmailConfirmation
+              ? 'Check your email for a verification link.'
+              : 'Account created successfully. You can log in now.',
         });
         router.push('/login');
     }

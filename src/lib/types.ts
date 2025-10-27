@@ -172,6 +172,15 @@ export type MonetizationSettings = {
     start_date: string | null;
 };
 
+export type ApplicationVisibilitySettings = {
+    showCompetitionApplicants: boolean;
+    showInternshipApplicants: boolean;
+};
+
+export type PlatformSettings = MonetizationSettings & {
+    applicationVisibility: ApplicationVisibilitySettings;
+};
+
 export type SupportTicket = {
   id: number;
   created_at: string;
