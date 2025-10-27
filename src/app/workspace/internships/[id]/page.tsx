@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import InternshipDetailClient from '@/components/workspace/internship-detail-client';
+import type { PlatformSettings } from '@/lib/types';
 
 type InternshipDetailPageProps = {
     params: { id: string };
@@ -31,6 +32,14 @@ export async function generateMetadata({ params }: InternshipDetailPageProps): P
 
 export default async function InternshipDetailPage({ params }: InternshipDetailPageProps) {
     const supabase = createClient();
+    const { data: settingsData } = await supabase
+        .from('platform_settings')
+        .select('value')
+        .eq('key', 'monetization')
+        .maybeSingle();
+
+    const visibilitySettings = (settingsData?.value as PlatformSettings | null)?.applicationVisibility;
+
     const { data: internship, error } = await supabase
         .from('internships')
         .select('*')
@@ -52,5 +61,25 @@ export default async function InternshipDetailPage({ params }: InternshipDetailP
         `)
         .eq('internship_id', internship.id);
 
-    return <InternshipDetailClient internship={internship} initialApplicants={applicants || []} />;
+    const mappedApplicants = (applicants ?? []).map((application) => {
+        const rawProfile = Array.isArray(application.profiles) ? application.profiles[0] : application.profiles;
+
+        return {
+            user_id: application.user_id,
+            profiles: rawProfile
+                ? {
+                    full_name: rawProfile.full_name ?? 'Anonymous',
+                    avatar_url: rawProfile.avatar_url ?? null,
+                }
+                : null,
+        };
+    });
+
+    return (
+        <InternshipDetailClient
+            internship={internship}
+            initialApplicants={mappedApplicants}
+            showApplicants={visibilitySettings?.showInternshipApplicants ?? true}
+        />
+    );
 }

@@ -36,9 +36,10 @@ type Applicant = {
 type InternshipDetailClientProps = {
     internship: Internship;
     initialApplicants: Applicant[];
+    showApplicants?: boolean;
 }
 
-export default function InternshipDetailClient({ internship, initialApplicants }: InternshipDetailClientProps) {
+export default function InternshipDetailClient({ internship, initialApplicants, showApplicants = true }: InternshipDetailClientProps) {
     const { user } = useAuth();
     const [hasApplied, setHasApplied] = useState(false); // Placeholder state
 
@@ -104,31 +105,33 @@ export default function InternshipDetailClient({ internship, initialApplicants }
                 />
             </div>
             
-             <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Users />
-                        Applicants ({initialApplicants.length})
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    {initialApplicants.length > 0 ? (
-                        <div className="flex flex-wrap gap-4">
-                            {initialApplicants.map(applicant => (
-                                <div key={applicant.user_id} className="flex flex-col items-center gap-2">
-                                    <Avatar>
-                                        <AvatarImage src={applicant.profiles?.avatar_url || ''} />
-                                        <AvatarFallback>{applicant.profiles?.full_name?.[0]}</AvatarFallback>
-                                    </Avatar>
-                                    <span className="text-xs text-center w-20 truncate">{applicant.profiles?.full_name}</span>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <p className="text-muted-foreground">No applicants yet. Be the first to apply!</p>
-                    )}
-                </CardContent>
-            </Card>
+             {showApplicants && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Users />
+                            Applicants ({initialApplicants.length})
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {initialApplicants.length > 0 ? (
+                            <div className="flex flex-wrap gap-4">
+                                {initialApplicants.map(applicant => (
+                                    <div key={applicant.user_id} className="flex flex-col items-center gap-2">
+                                        <Avatar>
+                                            <AvatarImage src={applicant.profiles?.avatar_url || ''} />
+                                            <AvatarFallback>{applicant.profiles?.full_name?.[0]}</AvatarFallback>
+                                        </Avatar>
+                                        <span className="text-xs text-center w-20 truncate">{applicant.profiles?.full_name}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-muted-foreground">No applicants yet. Be the first to apply!</p>
+                        )}
+                    </CardContent>
+                </Card>
+            )}
         </div>
     );
 }
