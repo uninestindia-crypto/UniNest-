@@ -22,6 +22,9 @@ const formSchema = z.object({
   email: z.string().email('Invalid email address.'),
   phone_number: z.string().min(10, 'Please enter a valid phone number.'),
   whatsapp_number: z.string().min(10, 'Please enter a valid WhatsApp number.'),
+  pitch: z
+    .any()
+    .refine((file) => file instanceof File, 'Pitch deck upload is required.'),
 });
 
 type CompetitionApplicationFormProps = {
@@ -34,9 +37,11 @@ type CompetitionApplicationFormProps = {
 
 export default function CompetitionApplicationForm({ competition }: CompetitionApplicationFormProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploadingPitch, setIsUploadingPitch] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
   const { supabase, user, loading } = useAuth();
+  const pitchUrlRef = useRef<string | null>(null);
   const { openCheckout, isLoaded } = useRazorpay();
   const loginRedirectPath = `/login?redirect=/workspace/competitions/${competition.id}/apply`;
 
@@ -47,6 +52,7 @@ export default function CompetitionApplicationForm({ competition }: CompetitionA
       email: '',
       phone_number: '',
       whatsapp_number: '',
+      pitch: undefined,
     },
   });
 
@@ -57,6 +63,7 @@ export default function CompetitionApplicationForm({ competition }: CompetitionA
         email: user.email || '',
         phone_number: user.user_metadata?.phone_number || '',
         whatsapp_number: user.user_metadata?.whatsapp_number || '',
+        pitch: undefined,
       });
     }
   }, [user, form]);
@@ -77,6 +84,7 @@ export default function CompetitionApplicationForm({ competition }: CompetitionA
         competitionId: competition.id,
         phone_number: values.phone_number,
         whatsapp_number: values.whatsapp_number,
+        pitchUrl: pitchUrlRef.current,
     };
     const headers: HeadersInit = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${accessToken}`};
 
@@ -106,6 +114,46 @@ export default function CompetitionApplicationForm({ competition }: CompetitionA
     }
 
     setIsLoading(true);
+
+    const pitchFile = values.pitch as File;
+
+    if (!supabase) {
+      toast({ variant: 'destructive', title: 'Configuration Error', description: 'Supabase is not configured. Please contact support.' });
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      setIsUploadingPitch(true);
+      const fileExt = pitchFile.name.split('.').pop();
+      const sanitizedExt = fileExt ? fileExt.replace(/[^a-zA-Z0-9]/g, '') : 'pdf';
+      const filePath = `competition-pitches/${user.id}/${competition.id}-${Date.now()}.${sanitizedExt}`;
+      const { error: uploadError } = await supabase.storage
+        .from('competition-pitches')
+        .upload(filePath, pitchFile, { cacheControl: '3600', upsert: true });
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from('competition-pitches')
+        .getPublicUrl(filePath);
+
+      pitchUrlRef.current = publicUrlData?.publicUrl ?? null;
+
+      if (!pitchUrlRef.current) {
+        throw new Error('Failed to retrieve pitch file URL.');
+      }
+    } catch (error) {
+      console.error('Pitch upload error:', error);
+      toast({ variant: 'destructive', title: 'Upload Error', description: 'Failed to upload your pitch. Please try again.' });
+      setIsUploadingPitch(false);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsUploadingPitch(false);
 
     if (competition.entry_fee <= 0) {
         const { data: { session } } = await supabase!.auth.getSession();
@@ -144,6 +192,7 @@ export default function CompetitionApplicationForm({ competition }: CompetitionA
     } catch (error) {
         toast({ variant: 'destructive', title: 'Payment Error', description: error instanceof Error ? error.message : 'Could not connect to payment gateway.'});
         setIsLoading(false);
+        pitchUrlRef.current = null;
     }
   }
 
@@ -190,10 +239,33 @@ export default function CompetitionApplicationForm({ competition }: CompetitionA
                  <FormField control={form.control} name="whatsapp_number" render={({ field }) => (
                     <FormItem><FormLabel>WhatsApp Number</FormLabel><FormControl><Input type="tel" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
+                 <FormField
+                  control={form.control}
+                  name="pitch"
+                  render={({ field: { onChange, value, ...rest } }) => (
+                    <FormItem className="md:col-span-2">
+                      <FormLabel>Pitch Deck (PDF, PPT, or Image)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="file"
+                          accept=".pdf,.ppt,.pptx,.jpg,.jpeg,.png"
+                          onChange={(event) => {
+                            const file = event.target.files?.[0];
+                            if (file) {
+                              onChange(file);
+                            }
+                          }}
+                          {...rest}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
             </div>
-            
-            <Button type="submit" disabled={isLoading || !isLoaded} className="w-full">
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+
+            <Button type="submit" disabled={isLoading || !isLoaded || isUploadingPitch} className="w-full">
+              {(isLoading || isUploadingPitch) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {competition.entry_fee > 0 ? `Pay ₹${competition.entry_fee} and Enter` : 'Enter for Free'}
             </Button>
           </form>

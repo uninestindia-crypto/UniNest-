@@ -9,18 +9,23 @@ export const revalidate = 0;
 
 export default async function InternshipApplicantsPage({ params }: { params: { id: string } }) {
     const supabase = createAdminClient();
+    const internshipId = Number(params.id);
+
+    if (Number.isNaN(internshipId)) {
+        notFound();
+    }
 
     const { data: internship, error: internshipError } = await supabase
         .from('internships')
         .select('id, role, company')
-        .eq('id', params.id)
+        .eq('id', internshipId)
         .single();
     
     if (internshipError || !internship) {
         notFound();
     }
 
-    const { applications, error } = await getApplicants(params.id);
+    const { applications, error } = await getApplicants(internshipId);
 
     if (error) {
         return <p>Error loading applications: {error}</p>
