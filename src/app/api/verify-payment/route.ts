@@ -100,12 +100,34 @@ export async function POST(request: NextRequest) {
             if (error) throw error;
 
         } else if (type === 'competition_entry') {
+            if (phone_number || whatsapp_number) {
+                const existingMetadata = user.user_metadata ?? {};
+                const nextMetadata = {
+                    ...existingMetadata,
+                    ...(phone_number ? { phone_number } : {}),
+                    ...(whatsapp_number ? { whatsapp_number } : {}),
+                };
+
+                // Only attempt an update if metadata actually changes
+                const hasMetadataChanges =
+                    nextMetadata.phone_number !== existingMetadata.phone_number ||
+                    nextMetadata.whatsapp_number !== existingMetadata.whatsapp_number;
+
+                if (hasMetadataChanges) {
+                    const { error: metadataError } = await supabaseAdmin.auth.admin.updateUserById(user.id, {
+                        user_metadata: nextMetadata,
+                    });
+
+                    if (metadataError) {
+                        console.error('Failed to update user metadata during competition entry:', metadataError.message);
+                    }
+                }
+            }
+
             const { error } = await supabaseAdmin.from('competition_entries').insert({
                 competition_id: competitionId,
                 user_id: user.id, // Use the verified user ID from the token
-                razorpay_payment_id: razorpay_payment_id,
-                phone_number: phone_number,
-                whatsapp_number: whatsapp_number,
+                razorpay_payment_id: razorpay_payment_id ?? null,
             });
             if (error) throw error;
             
