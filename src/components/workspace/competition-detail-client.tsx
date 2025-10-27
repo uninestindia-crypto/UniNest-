@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { OpportunityShareButton } from '@/components/workspace/opportunity-share';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/use-auth';
+import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -42,9 +43,10 @@ type Applicant = {
 type CompetitionDetailClientProps = {
     competition: Competition;
     initialApplicants: Applicant[];
+    showApplicants?: boolean;
 }
 
-export default function CompetitionDetailClient({ competition: initialCompetition, initialApplicants }: CompetitionDetailClientProps) {
+export default function CompetitionDetailClient({ competition: initialCompetition, initialApplicants, showApplicants = true }: CompetitionDetailClientProps) {
     const { user, supabase } = useAuth();
     const [applicants, setApplicants] = useState(initialApplicants);
     const [competition, setCompetition] = useState(initialCompetition);
@@ -120,9 +122,11 @@ export default function CompetitionDetailClient({ competition: initialCompetitio
             </div>
             
             <Tabs defaultValue="details" className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className={cn('grid w-full', showApplicants ? 'grid-cols-3' : 'grid-cols-2')}>
                     <TabsTrigger value="details">Details</TabsTrigger>
-                    <TabsTrigger value="applicants">Applicants ({applicants.length})</TabsTrigger>
+                    {showApplicants && (
+                        <TabsTrigger value="applicants">Applicants ({applicants.length})</TabsTrigger>
+                    )}
                     <TabsTrigger value="results" disabled={!isCompetitionOver || !competition.winner_id}>Results</TabsTrigger>
                 </TabsList>
                 <TabsContent value="details" className="mt-6">
@@ -154,33 +158,35 @@ export default function CompetitionDetailClient({ competition: initialCompetitio
                         />
                     </div>
                 </TabsContent>
-                <TabsContent value="applicants" className="mt-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Users />
-                                Current Applicants
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            {applicants.length > 0 ? (
-                                <div className="flex flex-wrap gap-4">
-                                    {applicants.map(applicant => (
-                                        <div key={applicant.user_id} className="flex flex-col items-center gap-2">
-                                            <Avatar>
-                                                <AvatarImage src={applicant.profiles?.avatar_url || ''} />
-                                                <AvatarFallback>{applicant.profiles?.full_name?.[0]}</AvatarFallback>
-                                            </Avatar>
-                                            <span className="text-xs text-center w-20 truncate">{applicant.profiles?.full_name}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <p className="text-muted-foreground">Be the first to apply!</p>
-                            )}
-                        </CardContent>
-                    </Card>
-                </TabsContent>
+                {showApplicants && (
+                    <TabsContent value="applicants" className="mt-6">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <Users />
+                                    Current Applicants
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                {applicants.length > 0 ? (
+                                    <div className="flex flex-wrap gap-4">
+                                        {applicants.map(applicant => (
+                                            <div key={applicant.user_id} className="flex flex-col items-center gap-2">
+                                                <Avatar>
+                                                    <AvatarImage src={applicant.profiles?.avatar_url || ''} />
+                                                    <AvatarFallback>{applicant.profiles?.full_name?.[0]}</AvatarFallback>
+                                                </Avatar>
+                                                <span className="text-xs text-center w-20 truncate">{applicant.profiles?.full_name}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-muted-foreground">Be the first to apply!</p>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+                )}
                 <TabsContent value="results" className="mt-6">
                      <Card className="bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
                         <CardHeader className="text-center">
