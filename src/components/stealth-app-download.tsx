@@ -100,9 +100,14 @@ export default function StealthAppDownload() {
 
   // Android Installation
   const handleAndroidInstall = useCallback(async () => {
-    if (!deferredPrompt) return
-
     trackEvent('pwa_install_click', { platform: 'android' })
+
+    if (!deferredPrompt) {
+      if (typeof window !== 'undefined') {
+        window.open('https://support.google.com/chrome/answer/9658361', '_blank', 'noopener')
+      }
+      return
+    }
 
     deferredPrompt.prompt()
     const { outcome } = await deferredPrompt.userChoice
@@ -129,9 +134,8 @@ export default function StealthAppDownload() {
   const shouldShowAndroidButton = useMemo(() => {
     if (!device) return false
     if (!device.isAndroid) return false
-    if (device.isInstalled) return false
-    return Boolean(deferredPrompt)
-  }, [deferredPrompt, device])
+    return !device.isInstalled
+  }, [device])
 
   const shouldShowIOSButton = useMemo(() => {
     if (!device) return false
