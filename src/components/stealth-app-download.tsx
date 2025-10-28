@@ -37,6 +37,22 @@ export default function StealthAppDownload() {
     }
   }, [])
 
+  const recordInstall = useCallback((platform: 'ios' | 'android') => {
+    if (typeof window === 'undefined') return
+
+    try {
+      if (localStorage.getItem('pwa_installed') === 'true') {
+        return
+      }
+    } catch (error) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn('[stealth-app-download] failed to read install flag', error)
+      }
+    }
+
+    trackPWAInstall(platform)
+  }, [])
+
   useEffect(() => {
     if (typeof window === 'undefined') return
 
@@ -49,7 +65,7 @@ export default function StealthAppDownload() {
     }
 
     const handleAppInstalled = () => {
-      trackPWAInstall('android')
+      recordInstall('android')
       setDevice((prev) => (prev ? { ...prev, isInstalled: true } : null))
       setDeferredPrompt(null)
     }
@@ -69,7 +85,7 @@ export default function StealthAppDownload() {
       window.removeEventListener('appinstalled', handleAppInstalled)
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
-  }, [detectDevice])
+  }, [detectDevice, recordInstall])
 
   // Android Installation
   const handleAndroidInstall = useCallback(async () => {
@@ -79,12 +95,12 @@ export default function StealthAppDownload() {
     const { outcome } = await deferredPrompt.userChoice
 
     if (outcome === 'accepted') {
-      trackPWAInstall('android')
+      recordInstall('android')
       setDevice((prev) => (prev ? { ...prev, isInstalled: true } : prev))
     }
 
     setDeferredPrompt(null)
-  }, [deferredPrompt])
+  }, [deferredPrompt, recordInstall])
 
   // iOS Installation Instructions
   const handleIOSInstall = useCallback(() => {
@@ -108,6 +124,15 @@ export default function StealthAppDownload() {
     if (!device.isIOS) return false
     return !device.isInstalled
   }, [device])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (!device) return
+
+    if (device.isIOS && device.isInstalled) {
+      recordInstall('ios')
+    }
+  }, [device, recordInstall])
 
   if (!device || device.isInstalled) return null
 
