@@ -58,7 +58,12 @@ export default function LibraryDashboard({ products, orders: initialOrders }: Li
             toast({ variant: 'destructive', title: 'Error', description: `Failed to ${newStatus === 'approved' ? 'approve' : 'reject'} booking.` });
         } else {
             toast({ title: 'Success', description: `Booking has been ${newStatus}.` });
-            setOrders(currentOrders => currentOrders.filter(o => o.id !== orderId));
+            setOrders(currentOrders => currentOrders.map(order => {
+                if (order.id !== orderId) {
+                    return order;
+                }
+                return { ...order, status: newStatus };
+            }));
         }
         setUpdatingOrderId(null);
     }
