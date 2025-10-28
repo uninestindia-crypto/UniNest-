@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import Autoplay from 'embla-carousel-autoplay';
@@ -111,7 +112,21 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
       ? config.testimonials
       : defaultHomePosterConfig.testimonials ?? [];
 
-  const autoplayPlugin = useMemo(() => Autoplay({ delay: 6000, stopOnInteraction: false }), []);
+  const heroSlides =
+    Array.isArray(config.heroSlides) && config.heroSlides.length > 0
+      ? config.heroSlides
+      : defaultHomePosterConfig.heroSlides;
+  const quickAccessCards =
+    Array.isArray(config.quickAccessCards) && config.quickAccessCards.length > 0
+      ? config.quickAccessCards
+      : defaultHomePosterConfig.quickAccessCards ?? [];
+  const curatedCollections =
+    Array.isArray(config.curatedCollections) && config.curatedCollections.length > 0
+      ? config.curatedCollections
+      : defaultHomePosterConfig.curatedCollections ?? [];
+
+  const heroAutoplay = useMemo(() => Autoplay({ delay: 5000, stopOnInteraction: false }), []);
+  const testimonialAutoplay = useMemo(() => Autoplay({ delay: 6000, stopOnInteraction: false }), []);
   const [donationModalOpen, setDonationModalOpen] = useState(false);
 
   useEffect(() => {
@@ -151,87 +166,168 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaMarkup) }}
       />
 
-      <section className="flex min-h-[calc(100vh-4rem)] items-center px-4 py-16 sm:min-h-[calc(100vh-5rem)] sm:px-6 lg:min-h-[75vh] lg:px-10 xl:px-16">
-        <div className="mx-auto grid w-full max-w-6xl gap-10 lg:grid-cols-[1.15fr_minmax(280px,1fr)]">
-          <div className="space-y-6">
-            <span className="inline-flex w-max items-center gap-2 rounded-full bg-primary/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-              India's trusted student community platform
-            </span>
-            <h1 className="text-4xl font-headline font-bold leading-tight sm:text-5xl lg:text-[3.25rem]">
-              UniNest keeps campus life simple, safe, and full of possibilities.
-            </h1>
-            <p className="max-w-2xl text-lg text-muted-foreground">
-              Discover verified hostels and PGs, reserve study spaces on demand, land real internships, compete in national contests, and trade safely with peers. UniNest brings every trusted campus service into one confident, modern super app built for student growth.
-            </p>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Button size="lg" className="text-base" asChild>
-                <Link href="/signup">Join UniNest Now</Link>
-              </Button>
-              <Button size="lg" variant="outline" className="text-base" asChild>
-                <Link href="/housing">Explore Verified PGs</Link>
-              </Button>
-            </div>
-            <StealthAppDownload />
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div className="rounded-2xl border border-border/60 bg-background/80 p-5 shadow-sm">
-                <p className="text-3xl font-bold">10k+</p>
-                <p className="text-sm text-muted-foreground">Students rely on UniNest for housing and opportunities.</p>
-              </div>
-              <div className="rounded-2xl border border-border/60 bg-background/80 p-5 shadow-sm">
-                <p className="text-3xl font-bold">480+</p>
-                <p className="text-sm text-muted-foreground">Verified vendors, hostels, and co-study partners onboarded.</p>
-              </div>
-              <div className="rounded-2xl border border-border/60 bg-background/80 p-5 shadow-sm">
-                <p className="text-3xl font-bold">3200+</p>
-                <p className="text-sm text-muted-foreground">Daily campus interactions tracked with transparent analytics.</p>
-              </div>
-            </div>
-          </div>
-          <aside className="space-y-6 rounded-3xl border border-border/60 bg-muted/40 p-8 shadow-lg">
+      <section className="px-4 py-16 sm:px-6 lg:px-10 xl:px-16">
+        <div className="mx-auto max-w-6xl space-y-6">
+          <div className="flex items-center justify-between">
             <div className="space-y-2">
-              <h2 className="text-xl font-semibold">Why students choose UniNest</h2>
+              <span className="inline-flex w-max items-center gap-2 rounded-full bg-primary/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+                India's trusted student community platform
+              </span>
+              <h1 className="text-3xl font-headline font-bold sm:text-4xl">Discover what's new on UniNest</h1>
               <p className="text-sm text-muted-foreground">
-                All listings and programs pass compliance checks inspired by{' '}
-                <a
-                  href="https://www.aicte-india.org/"
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="font-medium text-primary underline-offset-4 hover:underline"
-                >
-                  AICTE
-                </a>{' '}
-                and curated data from the{' '}
-                <a
-                  href="https://ndl.iitkgp.ac.in/"
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="font-medium text-primary underline-offset-4 hover:underline"
-                >
-                  National Digital Library of India
-                </a>
-                .
+                Promotions you configure in the admin dashboard are featured here instantly.
               </p>
             </div>
-            <ul className="space-y-4 text-sm text-muted-foreground">
-              <li className="rounded-2xl bg-background/80 p-4 shadow-sm">
-                <span className="block text-base font-semibold text-foreground">Verified PG booking and hostel discovery</span>
-                <span>Match with accredited accommodations near NIRF-recognized institutes in minutes.</span>
-              </li>
-              <li className="rounded-2xl bg-background/80 p-4 shadow-sm">
-                <span className="block text-base font-semibold text-foreground">Real-time library seat booking</span>
-                <span>Reserve quiet zones or collaborative pods with just-in-time availability updates.</span>
-              </li>
-              <li className="rounded-2xl bg-background/80 p-4 shadow-sm">
-                <span className="block text-base font-semibold text-foreground">Student marketplace safeguards</span>
-                <span>Trade essentials securely with escrow-style payments and ID-verified peers.</span>
-              </li>
-            </ul>
-            <Button variant="secondary" className="w-full" asChild>
-              <Link href="/vendor-dashboard">Partner with UniNest</Link>
-            </Button>
-          </aside>
+            <div className="hidden gap-3 sm:flex">
+              <CarouselPrevious className="relative" data-hero="true" />
+              <CarouselNext className="relative" data-hero="true" />
+            </div>
+          </div>
+
+          <Carousel opts={{ align: 'center', loop: true }} plugins={[heroAutoplay]} className="w-full">
+            <CarouselContent>
+              {heroSlides.map((slide, index) => (
+                <CarouselItem key={slide.id ?? `${slide.title}-${index}`} className="md:basis-full">
+                  <div className="relative overflow-hidden rounded-3xl border border-border/60 bg-background/80 shadow-xl">
+                    <div className="absolute inset-0">
+                      {slide.imageUrl ? (
+                        <Image
+                          src={slide.imageUrl}
+                          alt={slide.title}
+                          fill
+                          priority={index === 0}
+                          className="object-cover"
+                          sizes="(min-width: 1024px) 960px, 100vw"
+                        />
+                      ) : (
+                        <div className="h-full w-full bg-muted" aria-hidden="true" />
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/30" aria-hidden="true" />
+                    </div>
+                    <div className="relative grid gap-6 px-6 py-12 sm:px-10 lg:px-16">
+                      <div className="space-y-4 text-white">
+                        {slide.tag && (
+                          <span className="inline-flex w-max items-center gap-2 rounded-full bg-white/15 px-4 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-white">
+                            {slide.tag}
+                          </span>
+                        )}
+                        <h2 className="text-4xl font-headline font-bold leading-tight sm:text-5xl">
+                          {slide.title}
+                        </h2>
+                        {slide.subtitle && (
+                          <p className="max-w-3xl text-lg text-white/80">{slide.subtitle}</p>
+                        )}
+                      </div>
+                      <div className="flex flex-col gap-3 sm:flex-row">
+                        {slide.ctaHref && slide.ctaLabel && (
+                          <Button size="lg" asChild>
+                            <Link href={slide.ctaHref}>{slide.ctaLabel}</Link>
+                          </Button>
+                        )}
+                        {slide.secondaryCtaHref && slide.secondaryCtaLabel && (
+                          <Button size="lg" variant="outline" asChild>
+                            <Link href={slide.secondaryCtaHref}>{slide.secondaryCtaLabel}</Link>
+                          </Button>
+                        )}
+                      </div>
+                      <StealthAppDownload />
+                    </div>
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <div className="mt-6 flex items-center justify-center gap-3 sm:hidden">
+              <CarouselPrevious className="relative" />
+              <CarouselNext className="relative" />
+            </div>
+          </Carousel>
         </div>
       </section>
+
+      {quickAccessCards.length > 0 && (
+        <section className="border-t border-border/60 bg-muted/30 px-4 py-16 sm:px-6 lg:px-10 xl:px-16">
+          <div className="mx-auto max-w-6xl space-y-6">
+            <div className="space-y-2 text-center">
+              <span className="text-sm font-semibold uppercase tracking-[0.3em] text-primary">Quick Access</span>
+              <h2 className="text-3xl font-headline font-bold sm:text-4xl">Spotlight what's trending</h2>
+              <p className="text-muted-foreground">
+                Curate shortcuts for students to discover campaigns and destinations in a tap.
+              </p>
+            </div>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {quickAccessCards.map((card, index) => (
+                <Link
+                  key={card.id ?? `${card.title}-${index}`}
+                  href={card.href || '#'}
+                  className="group relative overflow-hidden rounded-2xl border border-border/60 bg-background/90 shadow-lg transition hover:-translate-y-1 hover:shadow-xl"
+                >
+                  <div className="relative h-44 w-full overflow-hidden">
+                    {card.imageUrl ? (
+                      <Image
+                        src={card.imageUrl}
+                        alt={card.title}
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        sizes="(min-width: 1024px) 320px, 100vw"
+                      />
+                    ) : (
+                      <div className="h-full w-full bg-muted" aria-hidden="true" />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-black/10 opacity-90" aria-hidden="true" />
+                  </div>
+                  <div className="space-y-3 p-6 text-left">
+                    <h3 className="text-xl font-semibold text-foreground">{card.title}</h3>
+                    <p className="text-sm text-muted-foreground">{card.description}</p>
+                    <span className="text-sm font-medium text-primary">Explore →</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {curatedCollections.length > 0 && (
+        <section className="border-t border-border/60 bg-background px-4 py-16 sm:px-6 lg:px-10 xl:px-16">
+          <div className="mx-auto max-w-6xl space-y-6">
+            <div className="space-y-2 text-center">
+              <span className="text-sm font-semibold uppercase tracking-[0.3em] text-primary">Featured Collections</span>
+              <h2 className="text-3xl font-headline font-bold sm:text-4xl">Handpicked experiences for students</h2>
+              <p className="text-muted-foreground">
+                Use curated blocks to surface services, playlists, or content that deserves attention.
+              </p>
+            </div>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {curatedCollections.map((collection, index) => (
+                <Link
+                  key={collection.id ?? `${collection.title}-${index}`}
+                  href={collection.href || '#'}
+                  className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border/60 bg-muted/20 shadow-md transition hover:-translate-y-1 hover:shadow-lg"
+                >
+                  <div className="relative h-48 w-full">
+                    {collection.imageUrl ? (
+                      <Image
+                        src={collection.imageUrl}
+                        alt={collection.title}
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        sizes="(min-width: 1024px) 360px, 100vw"
+                      />
+                    ) : (
+                      <div className="h-full w-full bg-muted" aria-hidden="true" />
+                    )}
+                  </div>
+                  <div className="flex flex-1 flex-col gap-3 p-6">
+                    <h3 className="text-xl font-semibold text-foreground">{collection.title}</h3>
+                    <p className="flex-1 text-sm text-muted-foreground">{collection.description}</p>
+                    <span className="text-sm font-medium text-primary">View collection →</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {stats.length > 0 && (
         <section className="border-t border-border/60 bg-muted/30 px-4 py-16 sm:px-6 lg:px-10 xl:px-16">
@@ -370,7 +466,7 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
                 Hear how UniNest simplifies housing, internships, competitions, and social life directly from real users.
               </p>
             </div>
-            <Carousel opts={{ align: 'center', loop: true }} plugins={[autoplayPlugin]} className="w-full">
+            <Carousel opts={{ align: 'center', loop: true }} plugins={[testimonialAutoplay]} className="w-full">
               <CarouselContent>
                 {testimonials.map((testimonial, index) => (
                   <CarouselItem key={`${testimonial.name}-${index}`} className="md:basis-1/2 lg:basis-1/3">
