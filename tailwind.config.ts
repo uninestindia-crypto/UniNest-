@@ -72,6 +72,16 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "slide-up": {
+          from: {
+            transform: "translateY(20px)",
+            opacity: "0",
+          },
+          to: {
+            transform: "translateY(0)",
+            opacity: "1",
+          },
+        },
         'fill-jar': {
           '0%': { height: '0%' },
           '100%': { height: '100%' },
@@ -80,6 +90,7 @@ export default {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "slide-up": "slide-up 0.35s ease-out",
         'fill-jar': 'fill-jar 2s ease-in-out forwards',
       },
     },

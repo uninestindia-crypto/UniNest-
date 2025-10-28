@@ -131,7 +131,7 @@ export type Notification = {
     created_at: string;
     user_id: string;
     sender_id: string;
-    type: 'new_follower' | 'new_post' | 'new_message';
+    type: 'new_follower' | 'new_post' | 'new_message' | 'new_competition' | 'new_internship';
     post_id: number | null;
     is_read: boolean;
     sender: {

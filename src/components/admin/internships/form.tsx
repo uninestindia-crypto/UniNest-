@@ -15,6 +15,7 @@ import { Loader2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { createInternship, updateInternship } from '@/app/admin/internships/actions';
 import Image from 'next/image';
+import { useAuth } from '@/hooks/use-auth';
 
 type Internship = {
     id: number;
@@ -48,6 +49,7 @@ export default function InternshipForm({ internship }: InternshipFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -64,6 +66,12 @@ export default function InternshipForm({ internship }: InternshipFormProps) {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
 
+    if (!user) {
+      toast({ variant: 'destructive', title: 'Authentication Required', description: 'Please sign in again to manage internships.' });
+      setIsLoading(false);
+      return;
+    }
+
     const formData = new FormData();
     formData.append('role', values.role);
     formData.append('company', values.company);
@@ -73,6 +81,10 @@ export default function InternshipForm({ internship }: InternshipFormProps) {
     formData.append('deadline', values.deadline);
     if (values.image) formData.append('image', values.image);
     if (values.details_pdf) formData.append('details_pdf', values.details_pdf);
+
+    if (!isEditMode) {
+      formData.append('creator_id', user.id);
+    }
 
     const result = isEditMode
         ? await updateInternship(internship.id, formData)
