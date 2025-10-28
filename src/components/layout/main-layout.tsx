@@ -24,7 +24,7 @@ import { Instagram, Loader2 } from 'lucide-react';
 import NotificationsDropdown from './notifications-dropdown';
 import UserDropdown from './user-dropdown';
 import { AppVersionWatcher } from '@/components/app-version-watcher';
-import { PwaInstallBanner } from '@/components/pwa-install-banner';
+import StealthAppDownload from '@/components/stealth-app-download';
 
 export default function MainLayout({ children }: { children: ReactNode }) {
   const { user, role, loading } = useAuth();
@@ -113,7 +113,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
   const isHomePage = pathname === '/';
 
   const versionWatcher = <AppVersionWatcher versionUrl="/api/version" />;
-  const pwaBanner = <PwaInstallBanner />;
+  const pwaBanner = <StealthAppDownload />;
 
   if (isAdminPage || isVendorPage) {
     return (

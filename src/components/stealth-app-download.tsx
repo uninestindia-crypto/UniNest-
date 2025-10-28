@@ -91,6 +91,8 @@ export default function StealthAppDownload() {
   const handleAndroidInstall = useCallback(async () => {
     if (!deferredPrompt) return
 
+    trackEvent('pwa_install_click', { platform: 'android' })
+
     deferredPrompt.prompt()
     const { outcome } = await deferredPrompt.userChoice
 
@@ -105,6 +107,7 @@ export default function StealthAppDownload() {
   // iOS Installation Instructions
   const handleIOSInstall = useCallback(() => {
     setShowIOSModal(true)
+    trackEvent('pwa_install_click', { platform: 'ios' })
     trackEvent('pwa_install_modal_open', { platform: 'ios' })
   }, [])
 
