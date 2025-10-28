@@ -85,3 +85,162 @@ left join other_participants op on ur.room_id = op.room_id
 left join last_messages lm on ur.room_id = lm.room_id
 order by lm.created_at desc;
 $$;
+
+-- -----------------------------------------------------------------------------
+-- Vendor data protections
+-- -----------------------------------------------------------------------------
+
+-- Vendor Metrics Summary
+ALTER TABLE IF EXISTS public.vendor_metrics_summary ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.vendor_metrics_summary FORCE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Vendors can read own metrics" ON public.vendor_metrics_summary;
+DROP POLICY IF EXISTS "Service role manages vendor metrics" ON public.vendor_metrics_summary;
+
+CREATE POLICY "Vendors can read own metrics" ON public.vendor_metrics_summary
+FOR SELECT
+USING (auth.uid()::uuid = vendor_id);
+
+CREATE POLICY "Service role manages vendor metrics" ON public.vendor_metrics_summary
+USING (auth.role() = 'service_role')
+WITH CHECK (auth.role() = 'service_role');
+
+-- Vendor Quick Replies
+ALTER TABLE IF EXISTS public.vendor_quick_replies ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.vendor_quick_replies FORCE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Vendors manage own quick replies" ON public.vendor_quick_replies;
+DROP POLICY IF EXISTS "Service role manages quick replies" ON public.vendor_quick_replies;
+
+CREATE POLICY "Vendors manage own quick replies" ON public.vendor_quick_replies
+FOR ALL
+USING (auth.uid()::uuid = vendor_id)
+WITH CHECK (auth.uid()::uuid = vendor_id);
+
+CREATE POLICY "Service role manages quick replies" ON public.vendor_quick_replies
+USING (auth.role() = 'service_role')
+WITH CHECK (auth.role() = 'service_role');
+
+-- Vendor Pricing Insights
+ALTER TABLE IF EXISTS public.vendor_pricing_insights ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.vendor_pricing_insights FORCE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Vendors can read own pricing insights" ON public.vendor_pricing_insights;
+DROP POLICY IF EXISTS "Service role manages pricing insights" ON public.vendor_pricing_insights;
+
+CREATE POLICY "Vendors can read own pricing insights" ON public.vendor_pricing_insights
+FOR SELECT
+USING (auth.uid()::uuid = vendor_id);
+
+CREATE POLICY "Service role manages pricing insights" ON public.vendor_pricing_insights
+USING (auth.role() = 'service_role')
+WITH CHECK (auth.role() = 'service_role');
+
+-- Vendor Leads
+ALTER TABLE IF EXISTS public.vendor_leads ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.vendor_leads FORCE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Vendors manage own leads" ON public.vendor_leads;
+DROP POLICY IF EXISTS "Service role manages vendor leads" ON public.vendor_leads;
+
+CREATE POLICY "Vendors manage own leads" ON public.vendor_leads
+FOR ALL
+USING (auth.uid()::uuid = vendor_id)
+WITH CHECK (auth.uid()::uuid = vendor_id);
+
+CREATE POLICY "Service role manages vendor leads" ON public.vendor_leads
+USING (auth.role() = 'service_role')
+WITH CHECK (auth.role() = 'service_role');
+
+-- Vendor Booking Calendar
+ALTER TABLE IF EXISTS public.vendor_booking_calendar ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.vendor_booking_calendar FORCE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Vendors manage own booking calendar" ON public.vendor_booking_calendar;
+DROP POLICY IF EXISTS "Service role manages booking calendar" ON public.vendor_booking_calendar;
+
+CREATE POLICY "Vendors manage own booking calendar" ON public.vendor_booking_calendar
+FOR ALL
+USING (auth.uid()::uuid = vendor_id)
+WITH CHECK (auth.uid()::uuid = vendor_id);
+
+CREATE POLICY "Service role manages booking calendar" ON public.vendor_booking_calendar
+USING (auth.role() = 'service_role')
+WITH CHECK (auth.role() = 'service_role');
+
+-- Vendor Payouts (vendors can read their payouts, writes restricted to service role)
+ALTER TABLE IF EXISTS public.vendor_payouts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.vendor_payouts FORCE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Vendors can read own payouts" ON public.vendor_payouts;
+DROP POLICY IF EXISTS "Service role manages vendor payouts" ON public.vendor_payouts;
+
+CREATE POLICY "Vendors can read own payouts" ON public.vendor_payouts
+FOR SELECT
+USING (auth.uid()::uuid = vendor_id);
+
+CREATE POLICY "Service role manages vendor payouts" ON public.vendor_payouts
+USING (auth.role() = 'service_role')
+WITH CHECK (auth.role() = 'service_role');
+
+-- Vendor Marketing Boosters
+ALTER TABLE IF EXISTS public.vendor_marketing_boosters ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.vendor_marketing_boosters FORCE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Vendors manage own marketing boosters" ON public.vendor_marketing_boosters;
+DROP POLICY IF EXISTS "Service role manages marketing boosters" ON public.vendor_marketing_boosters;
+
+CREATE POLICY "Vendors manage own marketing boosters" ON public.vendor_marketing_boosters
+FOR ALL
+USING (auth.uid()::uuid = vendor_id)
+WITH CHECK (auth.uid()::uuid = vendor_id);
+
+CREATE POLICY "Service role manages marketing boosters" ON public.vendor_marketing_boosters
+USING (auth.role() = 'service_role')
+WITH CHECK (auth.role() = 'service_role');
+
+-- Vendor Nudges
+ALTER TABLE IF EXISTS public.vendor_nudges ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.vendor_nudges FORCE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Vendors manage own nudges" ON public.vendor_nudges;
+DROP POLICY IF EXISTS "Service role manages vendor nudges" ON public.vendor_nudges;
+
+CREATE POLICY "Vendors manage own nudges" ON public.vendor_nudges
+FOR ALL
+USING (auth.uid()::uuid = vendor_id)
+WITH CHECK (auth.uid()::uuid = vendor_id);
+
+CREATE POLICY "Service role manages vendor nudges" ON public.vendor_nudges
+USING (auth.role() = 'service_role')
+WITH CHECK (auth.role() = 'service_role');
+
+-- Vendor Optimizer Highlights
+ALTER TABLE IF EXISTS public.vendor_optimizer_highlights ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.vendor_optimizer_highlights FORCE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Vendors can read own optimizer highlights" ON public.vendor_optimizer_highlights;
+DROP POLICY IF EXISTS "Service role manages optimizer highlights" ON public.vendor_optimizer_highlights;
+
+CREATE POLICY "Vendors can read own optimizer highlights" ON public.vendor_optimizer_highlights
+FOR SELECT
+USING (auth.uid()::uuid = vendor_id);
+
+CREATE POLICY "Service role manages optimizer highlights" ON public.vendor_optimizer_highlights
+USING (auth.role() = 'service_role')
+WITH CHECK (auth.role() = 'service_role');
+
+-- Vendor Tier Metrics
+ALTER TABLE IF EXISTS public.vendor_tier_metrics ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.vendor_tier_metrics FORCE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Vendors can read own tier metrics" ON public.vendor_tier_metrics;
+DROP POLICY IF EXISTS "Service role manages vendor tier metrics" ON public.vendor_tier_metrics;
+
+CREATE POLICY "Vendors can read own tier metrics" ON public.vendor_tier_metrics
+FOR SELECT
+USING (auth.uid()::uuid = vendor_id);
+
+CREATE POLICY "Service role manages vendor tier metrics" ON public.vendor_tier_metrics
+USING (auth.role() = 'service_role')
+WITH CHECK (auth.role() = 'service_role');
