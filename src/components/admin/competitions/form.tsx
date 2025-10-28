@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { createCompetition, updateCompetition } from '@/app/admin/competitions/actions';
 import Image from 'next/image';
+import { useAuth } from '@/hooks/use-auth';
 
 type Competition = {
     id: number;
@@ -46,6 +47,7 @@ export default function CompetitionForm({ competition }: CompetitionFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -61,12 +63,22 @@ export default function CompetitionForm({ competition }: CompetitionFormProps) {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
 
+    if (!user) {
+      toast({ variant: 'destructive', title: 'Authentication Required', description: 'Please sign in again to manage competitions.' });
+      setIsLoading(false);
+      return;
+    }
+
     const formData = new FormData();
     Object.entries(values).forEach(([key, value]) => {
         if (value) {
             formData.append(key, value);
         }
     });
+
+    if (!isEditMode) {
+      formData.append('creator_id', user.id);
+    }
 
     const result = isEditMode 
         ? await updateCompetition(competition.id, formData)
