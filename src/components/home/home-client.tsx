@@ -415,10 +415,17 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
           <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Button size="lg" className="text-base" asChild>
               <Link href="/signup">Join Now</Link>
+            </Button>
+            <Button size="lg" variant="ghost" className="text-base" asChild>
+              <Link href="/internships">Start with Internships</Link>
+            </Button>
+            <Button size="lg" variant="outline" className="text-base" asChild>
+              <Link href="/housing">Find PGs Near You</Link>
+            </Button>
+          </div>
+        </div>
+      </section>
 
-export default function HomeClient() {
-  return (
-    <main className="space-y-24 bg-background text-foreground">
       <section className="px-4 sm:px-6 lg:px-10 xl:px-16">
         <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1.5fr,1fr]">
           <div className="space-y-6">
@@ -518,4 +525,3 @@ export default function HomeClient() {
       </section>
     </main>
   );
-}

@@ -1,9 +1,10 @@
 
 'use server';
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
 import { createClient as createServerClient } from '@/lib/supabase/server';
+import { ensureBucketExists } from '@/lib/supabase/storage';
 
 const getSupabaseAdmin = () => {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -15,14 +16,12 @@ const getSupabaseAdmin = () => {
     return createClient(supabaseUrl, supabaseServiceKey);
 }
 
-const uploadFile = async (supabaseAdmin: any, file: File, bucket: string, userId: string): Promise<string | null> => {
+const uploadFile = async (supabaseAdmin: SupabaseClient, file: File, bucket: string, userId: string): Promise<string | null> => {
     if (!file || file.size === 0) return null;
     const filePath = `applications/${userId}/${Date.now()}-${file.name}`;
 
     // Ensure bucket exists before uploading
-    const { error: bucketError } = await supabaseAdmin.storage
-      .from(bucket)
-      .ensureBucketExists();
+    const { error: bucketError } = await ensureBucketExists(supabaseAdmin, bucket);
     if (bucketError) {
       console.error('Bucket Error:', bucketError);
       return null;

@@ -117,34 +117,24 @@ export default function CompetitionApplicationForm({ competition }: CompetitionA
 
     const pitchFile = values.pitch as File;
 
-    if (!supabase) {
-      toast({ variant: 'destructive', title: 'Configuration Error', description: 'Supabase is not configured. Please contact support.' });
-      setIsLoading(false);
-      return;
-    }
-
     try {
       setIsUploadingPitch(true);
-      const fileExt = pitchFile.name.split('.').pop();
-      const sanitizedExt = fileExt ? fileExt.replace(/[^a-zA-Z0-9]/g, '') : 'pdf';
-      const filePath = `competition-pitches/${user.id}/${competition.id}-${Date.now()}.${sanitizedExt}`;
-      const { error: uploadError } = await supabase.storage
-        .from('competition-pitches')
-        .upload(filePath, pitchFile, { cacheControl: '3600', upsert: true });
+      const uploadData = new FormData();
+      uploadData.append('pitch', pitchFile);
+      uploadData.append('competitionId', String(competition.id));
 
-      if (uploadError) {
-        throw uploadError;
+      const response = await fetch('/api/storage/competition-pitch', {
+        method: 'POST',
+        body: uploadData,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result?.url) {
+        throw new Error(result?.error || 'Unexpected error while uploading pitch.');
       }
 
-      const { data: publicUrlData } = supabase.storage
-        .from('competition-pitches')
-        .getPublicUrl(filePath);
-
-      pitchUrlRef.current = publicUrlData?.publicUrl ?? null;
-
-      if (!pitchUrlRef.current) {
-        throw new Error('Failed to retrieve pitch file URL.');
-      }
+      pitchUrlRef.current = result.url;
     } catch (error) {
       console.error('Pitch upload error:', error);
       toast({ variant: 'destructive', title: 'Upload Error', description: 'Failed to upload your pitch. Please try again.' });
