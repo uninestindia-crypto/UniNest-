@@ -19,6 +19,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { defaultHomePosterConfig } from '@/lib/home-poster';
 import type { HomePosterConfig, HomeStat, HomeTestimonial } from '@/lib/types';
 import DonationModal from '@/components/home/donation-modal';
+import StealthAppDownload from '@/components/stealth-app-download';
 
 const iconMap: Record<string, LucideIcon> = {
   users: Users,
@@ -150,8 +151,8 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaMarkup) }}
       />
 
-      <section className="px-4 py-16 sm:px-6 lg:px-10 xl:px-16">
-        <div className="mx-auto max-w-6xl grid gap-10 lg:grid-cols-[1.15fr_minmax(280px,1fr)]">
+      <section className="flex min-h-[calc(100vh-4rem)] items-center px-4 py-16 sm:min-h-[calc(100vh-5rem)] sm:px-6 lg:min-h-[75vh] lg:px-10 xl:px-16">
+        <div className="mx-auto grid w-full max-w-6xl gap-10 lg:grid-cols-[1.15fr_minmax(280px,1fr)]">
           <div className="space-y-6">
             <span className="inline-flex w-max items-center gap-2 rounded-full bg-primary/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
               India's trusted student community platform
@@ -170,6 +171,7 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
                 <Link href="/housing">Explore Verified PGs</Link>
               </Button>
             </div>
+            <StealthAppDownload />
             <div className="grid gap-4 sm:grid-cols-3">
               <div className="rounded-2xl border border-border/60 bg-background/80 p-5 shadow-sm">
                 <p className="text-3xl font-bold">10k+</p>

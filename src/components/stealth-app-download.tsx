@@ -192,10 +192,11 @@ export default function StealthAppDownload() {
       {shouldShowAndroidButton && (
         <button
           onClick={handleAndroidInstall}
-          className="inline-flex items-center gap-2 rounded-lg bg-black px-6 py-3 text-white transition-colors hover:bg-gray-800"
+          className="inline-flex items-center gap-3 rounded-lg bg-black px-6 py-3 text-white transition-colors hover:bg-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           style={{
             fontFamily: 'Google Sans, sans-serif',
           }}
+          aria-label="Get UniNest on Google Play"
         >
           <svg className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M17.523 15.341c-.1-.3-.25-.6-.45-.9a4.9 4.9 0 00-1-1.1 5.1 5.1 0 00-1.5-.8 5.6 5.6 0 00-1.9-.3 5.6 5.6 0 00-1.9.3c-.6.2-1.1.5-1.5.8-.4.3-.8.7-1 1.1-.2.3-.4.6-.5.9-.1.3-.1.6-.1.9 0 .9.3 1.7.8 2.4.5.7 1.2 1.2 2.1 1.5v3.8c0 .4.3.8.8.8s.8-.3.8-.8v-3.5h2.1v3.5c0 .4.3.8.8.8s.8-.3.8-.8v-3.8c.9-.3 1.6-.8 2.1-1.5.5-.7.8-1.5.8-2.4 0-.3 0-.6-.1-.9zm-11.4-2.7l1.4 2.4c-.5.3-.9.7-1.2 1.2-.3.5-.5 1-.6 1.6l-2.4-1.4c.2-1.4.8-2.6 1.8-3.7zm7.4 3.7c-.3-.5-.7-.9-1.2-1.2l1.4-2.4c1 1.1 1.6 2.3 1.8 3.7l-2.4 1.4c-.1-.6-.3-1.1-.6-1.6zM12 4.5c.4 0 .8-.3.8-.8s-.3-.8-.8-.8-.8.3-.8.8.4.8.8.8z" />
@@ -210,17 +211,18 @@ export default function StealthAppDownload() {
       {shouldShowIOSButton && (
         <button
           onClick={handleIOSInstall}
-          className="inline-flex items-center gap-3 rounded-full bg-white px-6 py-3 text-black shadow-sm ring-1 ring-black/5 transition-colors hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-gray-900 dark:text-white dark:ring-white/10 dark:hover:bg-gray-800"
+          className="inline-flex items-center gap-3 rounded-lg bg-black px-6 py-3 text-white shadow transition-colors hover:bg-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           style={{
             fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
           }}
+          aria-label="Download UniNest on the App Store"
         >
           <svg className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M18.71 19.5C17.88 20.74 17 21.95 15.66 21.97C14.32 22 13.89 21.18 12.37 21.18C10.84 21.18 10.37 21.95 9.1 22C7.79 22.05 6.8 20.68 5.96 19.47C4.25 17 2.94 12.45 4.7 9.39C5.57 7.87 7.13 6.91 8.82 6.88C10.1 6.86 11.32 7.75 12.11 7.75C12.89 7.75 14.37 6.68 15.92 6.84C16.57 6.87 18.39 7.1 19.56 8.82C19.47 8.88 17.39 10.1 17.41 12.63C17.44 15.65 20.06 16.66 20.09 16.67C20.06 16.74 19.67 18.11 18.71 19.5M13 3.5C13.73 2.67 14.94 2.04 15.94 2C16.07 3.17 15.6 4.35 14.9 5.19C14.21 6.04 13.07 6.7 11.95 6.61C11.8 5.46 12.36 4.26 13 3.5Z" />
           </svg>
           <div className="text-left">
-            <div className="text-xs font-medium text-gray-500 dark:text-gray-400">Add UniNest to</div>
-            <div className="text-sm font-semibold">Home Screen</div>
+            <div className="text-xs opacity-80">Download on the</div>
+            <div className="text-sm font-semibold">App Store</div>
           </div>
         </button>
       )}
@@ -243,9 +245,9 @@ export default function StealthAppDownload() {
               <div className="mx-auto mb-5 h-1.5 w-12 rounded-full bg-gray-300 dark:bg-gray-700" aria-hidden="true" />
               <div className="mb-6 flex items-center justify-between">
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">Install UniNest</h3>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">Install UniNest App</h3>
                   <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                    Save the app on your {device?.isIpad ? 'iPad' : 'iPhone'} for a native-like experience.
+                    Add UniNest to your {device?.isIpad ? 'iPad' : 'iPhone'} for a full-screen, native experience.
                   </p>
                 </div>
                 <button
