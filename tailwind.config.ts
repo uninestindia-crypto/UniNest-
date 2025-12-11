@@ -82,6 +82,14 @@ export default {
             opacity: "1",
           },
         },
+        "fade-in-up": {
+          "0%": { opacity: "0", transform: "translateY(20px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        "pulse-soft": {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.8" },
+        },
         'fill-jar': {
           '0%': { height: '0%' },
           '100%': { height: '100%' },
@@ -91,6 +99,8 @@ export default {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "slide-up": "slide-up 0.35s ease-out",
+        "fade-in-up": "fade-in-up 0.5s ease-out forwards",
+        "pulse-soft": "pulse-soft 2s ease-in-out infinite",
         'fill-jar': 'fill-jar 2s ease-in-out forwards',
       },
     },
