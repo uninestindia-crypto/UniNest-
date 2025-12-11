@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { AlertCircle, Armchair, Clock, Loader2, MapPin, MessageSquare, QrCode, Star, StarOff } from 'lucide-react';
+import { AlertCircle, Armchair, Clock, Loader2, MapPin, QrCode, Star, StarOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import type { Product } from '@/lib/types';
@@ -63,7 +62,6 @@ const floors: Seat['floor'][] = ['Ground Floor', 'First Floor', 'Second Floor'];
 
 export default function LibraryDetailClient({ library, initialSeatProducts, initialOrders, currentUser }: LibraryDetailClientProps) {
     const { supabase } = useAuth();
-    const router = useRouter();
     const { toast } = useToast();
 
     const [filters, setFilters] = useState<Filters>({ floor: 'All', section: 'All', seatType: 'All', sort: 'best' });
@@ -197,23 +195,6 @@ export default function LibraryDetailClient({ library, initialSeatProducts, init
             supabase.removeChannel(channel);
         };
     }, [supabase, library.id, library.seller_id, initialSeatProducts]);
-
-    const handleChat = useCallback(async () => {
-        if (!currentUser || !supabase) {
-            toast({ variant: 'destructive', title: 'Login required', description: 'Log in to start a conversation.' });
-            return;
-        }
-        if (currentUser.id === library.seller_id) {
-            toast({ variant: 'destructive', title: 'Unavailable', description: 'You already manage this library.' });
-            return;
-        }
-        const { error } = await supabase.rpc('create_private_chat', { p_user1_id: currentUser.id, p_user2_id: library.seller_id });
-        if (error) {
-            toast({ variant: 'destructive', title: 'Could not initiate chat', description: 'Please try again in a moment.' });
-            return;
-        }
-        router.push('/chat');
-    }, [currentUser, supabase, toast, router, library.seller_id]);
 
     const handleSelectSeat = (seat: Seat) => {
         if (seat.status !== 'available') {
@@ -351,12 +332,8 @@ export default function LibraryDetailClient({ library, initialSeatProducts, init
                         </div>
                         <p className="text-muted-foreground leading-relaxed">{library.description}</p>
                         <div className="flex flex-col sm:flex-row gap-3">
-                            <Button size="lg" variant="outline" className="flex-1" onClick={handleChat}>
-                                <MessageSquare className="mr-2 h-5 w-5" />
-                                Chat with manager
-                            </Button>
                             <Link href={`/profile/${library.seller.handle}`} className="flex-1">
-                                <Button size="lg" variant="ghost" className="w-full border">
+                                <Button size="lg" variant="outline" className="w-full">
                                     Meet the team
                                 </Button>
                             </Link>

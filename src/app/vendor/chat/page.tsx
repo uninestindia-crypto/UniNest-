@@ -1,19 +1,25 @@
-
 'use client';
 
-import ChatLayout from '@/components/chat/chat-layout';
-import { Suspense } from 'react';
-import { Loader2 } from 'lucide-react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
-function VendorChatPageContent() {
-    return <ChatLayout />;
-}
-
-// This page is a wrapper to provide a vendor-specific route for the chat layout.
 export default function VendorChatPage() {
   return (
-    <Suspense fallback={<div className="flex h-full items-center justify-center"><Loader2 className="animate-spin text-primary size-8" /></div>}>
-        <VendorChatPageContent />
-    </Suspense>
+    <div className="max-w-xl mx-auto py-16 px-4 space-y-4 text-center">
+      <h1 className="text-3xl md:text-4xl font-headline font-bold text-primary">
+        Messaging has been turned off
+      </h1>
+      <p className="text-sm md:text-base text-muted-foreground">
+        Vendor messaging has been retired so we can double down on high-signal tools like bookings and orders.
+      </p>
+      <div className="pt-4 flex justify-center gap-3">
+        <Button asChild size="lg">
+          <Link href="/vendor/dashboard">Back to Vendor Dashboard</Link>
+        </Button>
+        <Button asChild size="lg" variant="outline">
+          <Link href="/vendor/orders">View Orders</Link>
+        </Button>
+      </div>
+    </div>
   );
 }

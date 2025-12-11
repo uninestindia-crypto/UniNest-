@@ -4,8 +4,8 @@ export const defaultHomePosterConfig: HomePosterConfig = {
   heroSlides: [
     {
       id: 'campus-life',
-      title: 'Make campus life feel organised, not chaotic',
-      subtitle: 'Track your stays, expenses, and opportunities from one clean UniNest dashboard.',
+      title: 'Campus life, finally organised',
+      subtitle: 'One UniNest dashboard for stays, expenses, notes, and every opportunity that actually matters.',
       imageUrl: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1600&q=80',
       ctaLabel: 'Open Workspace',
       ctaHref: '/workspace',
@@ -15,8 +15,8 @@ export const defaultHomePosterConfig: HomePosterConfig = {
     },
     {
       id: 'market-discoveries',
-      title: 'Discover Campus Essentials Instantly',
-      subtitle: 'Shop curated supplies, hostels, and services tailored for student life.',
+      title: 'Find campus essentials before you panic',
+      subtitle: 'From hostels to highlighters, shop trusted listings made for student budgets.',
       imageUrl: 'https://images.unsplash.com/photo-1528909514045-2fa4ac7a08ba?auto=format&fit=crop&w=1600&q=80',
       ctaLabel: 'Visit Marketplace',
       ctaHref: '/marketplace',
@@ -26,8 +26,8 @@ export const defaultHomePosterConfig: HomePosterConfig = {
     },
     {
       id: 'workspace-upskill',
-      title: 'Grow Faster with UniNest Workspace',
-      subtitle: 'Find internships, competitions, and learning tracks designed for ambitious students.',
+      title: 'Turn college hustle into real wins',
+      subtitle: 'Spot internships, competitions, and tracks that match where you actually want to go.',
       imageUrl: 'https://images.unsplash.com/photo-1529070538774-1843cb3265df?auto=format&fit=crop&w=1600&q=80',
       ctaLabel: 'Browse Workspace',
       ctaHref: '/workspace',
@@ -124,7 +124,7 @@ export const defaultHomePosterConfig: HomePosterConfig = {
     },
     {
       value: 3200,
-      label: 'Daily interactions',
+      label: 'Daily student actions',
       icon: 'message-square',
       isPlus: true,
     },

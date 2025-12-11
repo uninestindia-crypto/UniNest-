@@ -7,13 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { IndianRupee, Loader2, MessageSquare, MapPin, BedDouble } from 'lucide-react';
+import { IndianRupee, Loader2, MapPin, BedDouble } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import type { Product } from '@/lib/types';
 import type { User } from '@supabase/supabase-js';
 import { cn } from '@/lib/utils';
-import { useRouter } from 'next/navigation';
 
 type Room = Product & {
     status: 'available' | 'booked' | 'pending';
@@ -28,7 +27,6 @@ type HostelDetailClientProps = {
 
 export default function HostelDetailClient({ hostel, initialRooms, initialOrders, currentUser }: HostelDetailClientProps) {
     const { supabase } = useAuth();
-    const router = useRouter();
     const { toast } = useToast();
 
     const [rooms, setRooms] = useState<Room[]>([]);
@@ -138,31 +136,6 @@ export default function HostelDetailClient({ hostel, initialRooms, initialOrders
         setIsBooking(false);
     }
     
-    const handleChat = useCallback(async () => {
-        if (!currentUser || !supabase) {
-            toast({ variant: 'destructive', title: 'Login Required', description: 'Please log in to chat.' });
-            return;
-        }
-        if (currentUser.id === hostel.seller_id) {
-            toast({ variant: 'destructive', title: 'Error', description: 'You cannot start a chat with yourself.' });
-            return;
-        }
-
-        try {
-            const { error } = await supabase.rpc('create_private_chat', {
-                p_user1_id: currentUser.id,
-                p_user2_id: hostel.seller_id,
-            });
-
-            if (error) throw error;
-
-            router.push('/chat');
-        } catch (error) {
-            console.error('Error starting chat session:', error);
-            toast({ variant: 'destructive', title: 'Error', description: 'Could not start chat session.' });
-        }
-    }, [currentUser, supabase, toast, router, hostel.seller_id, hostel.name]);
-
     return (
         <div className="max-w-6xl mx-auto p-4 space-y-8">
             <div className="grid md:grid-cols-5 gap-8">
@@ -185,13 +158,6 @@ export default function HostelDetailClient({ hostel, initialRooms, initialOrders
                         <span className="font-semibold text-foreground">{hostel.location || 'Location not specified'}</span>
                     </div>
                     <p className="text-muted-foreground">{hostel.description}</p>
-                    
-                     <div className="flex flex-col sm:flex-row gap-4">
-                         <Button size="lg" variant="outline" className="flex-1 text-lg" onClick={handleChat}>
-                            <MessageSquare className="mr-2" />
-                            Chat with Manager
-                        </Button>
-                    </div>
 
                     <Card className="bg-muted/50">
                         <CardContent className="p-4">

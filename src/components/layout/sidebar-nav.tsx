@@ -157,11 +157,6 @@ export function MobileBottomNav() {
     { href: '/login', label: 'Login', icon: UserIcon, roles: ['guest'] },
   ];
 
-  const socialNavItems = [
-    { href: '/', label: 'Back', icon: ArrowLeft, roles: ['student', 'guest', 'admin'] },
-    { href: '/chat', label: 'Messages', icon: MessageSquare, roles: ['student', 'guest', 'admin'] },
-  ];
-
   const workspaceNavItems = [
     { href: '/workspace', label: 'Back', icon: ArrowLeft, roles: ['student', 'vendor', 'guest', 'admin'] },
     { href: '/workspace/competitions', label: 'Compete', icon: Trophy, roles: ['student', 'vendor', 'guest', 'admin'] },
@@ -169,9 +164,7 @@ export function MobileBottomNav() {
   ];
 
   let navItems;
-  if (pathname.startsWith('/chat')) {
-    navItems = socialNavItems.filter(item => item.roles.includes(role));
-  } else if (pathname.startsWith('/workspace/')) {
+  if (pathname.startsWith('/workspace/')) {
     navItems = workspaceNavItems.filter(item => item.roles.includes(role));
   } else {
     navItems = defaultNavItems.filter(item => item.roles.includes(role));

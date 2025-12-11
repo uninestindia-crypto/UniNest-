@@ -2,7 +2,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Package, ShoppingCart, Settings, Library, Utensils, Bed, Laptop, MessageSquare, PlusCircle, CheckCircle2, LineChart, Megaphone, ShieldCheck } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, Settings, Library, Utensils, Bed, Laptop, PlusCircle, CheckCircle2, LineChart, Megaphone, ShieldCheck } from 'lucide-react';
 import { SidebarMenu, SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
@@ -15,7 +15,6 @@ const generalNavItems = [
   { href: '/vendor/promotions', label: 'Promotions', icon: Megaphone },
   { href: '/vendor/products', label: 'All Products', icon: Package },
   { href: '/vendor/orders', label: 'All Orders', icon: ShoppingCart },
-  { href: '/vendor/chat', label: 'Messages', icon: MessageSquare },
 ];
 
 const categoryDashboards = [

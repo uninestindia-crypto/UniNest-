@@ -229,7 +229,7 @@ export default function WorkspaceClient() {
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="space-y-3">
             <h1 className="text-4xl font-bold tracking-tight text-primary sm:text-5xl">Workspace</h1>
-            <p className="text-muted-foreground">Discover competitions, internships, and campus gigs curated for UniNest students.</p>
+            <p className="text-muted-foreground">Your UniNest command centre for competitions, internships, and campus gigs - simplified and organized.</p>
             <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-muted-foreground">
               <span className="flex items-center gap-2 rounded-full bg-muted px-3 py-1">
                 <ShieldCheck className="size-4 text-primary" />
@@ -251,7 +251,7 @@ export default function WorkspaceClient() {
               <Input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search competitions or internships"
+                placeholder="Search competitions, internships, fests..."
                 className="pl-10 h-11 rounded-full"
               />
             </div>

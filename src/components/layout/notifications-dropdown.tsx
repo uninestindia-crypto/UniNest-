@@ -48,7 +48,7 @@ export default function NotificationsDropdown() {
              // router.push(`/profile/${notification.sender.handle}`);
         }
         if (notification.type === 'new_message') {
-            router.push('/chat');
+            router.push('/workspace');
         }
     }
 

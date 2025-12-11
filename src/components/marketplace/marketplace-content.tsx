@@ -370,31 +370,6 @@ export default function MarketplaceContent() {
         setPurchasingProductId(null);
     }
   }, [user, supabase, toast, openCheckout, router]);
-
-    const handleChat = useCallback(async (sellerId: string, productName: string) => {
-        if (!user || !supabase) {
-            toast({ variant: 'destructive', title: 'Login Required', description: 'Please log in to chat.' });
-            return;
-        }
-        if (user.id === sellerId) {
-            toast({ variant: 'destructive', title: 'Error', description: 'You cannot start a chat with yourself.' });
-            return;
-        }
-
-        try {
-            const { error } = await supabase.rpc('create_private_chat', {
-                p_user1_id: user.id,
-                p_user2_id: sellerId,
-            });
-
-            if (error) throw error;
-
-            router.push('/chat');
-        } catch (error) {
-            console.error('Error starting chat session:', error);
-            toast({ variant: 'destructive', title: 'Error', description: 'Could not start chat session.' });
-        }
-    }, [user, supabase, toast, router]);
   
   const createCategoryLink = (categoryName: string) => {
     if (selectedCategory === categoryName) {
@@ -500,7 +475,7 @@ return (
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-primary">Marketplace</h1>
-                    <p className="mt-1 text-muted-foreground">Buy, Sell & Support – by Students, for Students.</p>
+                    <p className="mt-1 text-muted-foreground">The campus marketplace for verified stays, supplies, and services–by students, for students.</p>
                 </div>
                 {user && (
                     <Button asChild className="self-start md:self-auto">
@@ -528,7 +503,7 @@ return (
                 <div className="relative flex-1 min-w-0">
                     <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
                     <Input
-                        placeholder="Search for textbooks, notes, bikes..."
+                        placeholder="Search textbooks, notes, bikes, and more..."
                         className="h-11 rounded-full border border-input bg-background/80 pl-10 pr-4 text-sm focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/30"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -660,7 +635,6 @@ return (
                         product={product}
                         user={user}
                         onBuyNow={handleBuyNow}
-                        onChat={handleChat}
                         isBuying={purchasingProductId === product.id}
                         isRazorpayLoaded={isLoaded}
                       />
@@ -669,7 +643,7 @@ return (
                 </div>
             ) : (
                 <div className="text-center text-muted-foreground py-16 bg-card rounded-2xl">
-                    <h2 className="text-xl font-semibold">No listings found</h2>
+                    <h2 className="text-xl font-semibold">No listings found (yet)</h2>
                     <p>{selectedCategory ? `There are no products in the "${selectedCategory}" category yet.` : 'No products have been listed on the marketplace yet.'} Check back later!</p>
                 </div>
             )}

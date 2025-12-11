@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, Star, Truck } from 'lucide-react';
+import { Star, Truck } from 'lucide-react';
 import type { Product } from '@/lib/types';
 import type { User } from '@supabase/supabase-js';
 import Link from 'next/link';
@@ -15,13 +15,12 @@ type ProductCardProps = {
   product: Product;
   user: User | null;
   onBuyNow: (product: Product) => void;
-  onChat: (sellerId: string, productName: string) => void;
   isBuying: boolean;
   isRazorpayLoaded: boolean;
   layout?: 'grid' | 'list';
 };
 
-export default function ProductCard({ product, user, onBuyNow, onChat, isBuying, isRazorpayLoaded, layout = 'grid' }: ProductCardProps) {
+export default function ProductCard({ product, user, onBuyNow, isBuying, isRazorpayLoaded, layout = 'grid' }: ProductCardProps) {
   const sellerName = typeof product.seller === 'object' && product.seller !== null 
     ? product.seller.full_name 
     : 'Anonymous';
@@ -39,12 +38,6 @@ export default function ProductCard({ product, user, onBuyNow, onChat, isBuying,
   const contentClassName = layout === 'list'
     ? 'p-4 flex-grow md:flex-1'
     : 'p-4 flex-grow';
-
-  const handleButtonClick = (e: React.MouseEvent<HTMLButtonElement>, action: () => void) => {
-    e.stopPropagation();
-    e.preventDefault();
-    action();
-  }
 
   const getCardLink = () => {
     if (product.category === 'Library') return `/marketplace/library/${product.id}`;
@@ -101,19 +94,13 @@ export default function ProductCard({ product, user, onBuyNow, onChat, isBuying,
                 <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-semibold text-emerald-600">Limited offer</span>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-            {canContact && (
-                <Button variant="outline" size="sm" className="rounded-full" onClick={(e) => handleButtonClick(e, () => onChat(product.seller_id, product.name))}>
-                    <MessageSquare className="mr-2 size-4"/>
-                    Chat now
-                </Button>
-            )}
             {isBookable && (
                 <Button size="sm" className="rounded-full" asChild>
                     <Link href={getCardLink()}>See details</Link>
                 </Button>
             )}
             {!isBookable && (
-                <Button size="sm" className="rounded-full" onClick={(e) => handleButtonClick(e, () => onBuyNow(product))}>
+                <Button size="sm" className="rounded-full" onClick={() => onBuyNow(product)} disabled={!isRazorpayLoaded || isBuying}>
                     Buy now
                 </Button>
             )}

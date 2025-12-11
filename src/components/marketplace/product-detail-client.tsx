@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
-import { IndianRupee, Loader2, MessageSquare, CheckCircle, Shield, ShoppingBag } from 'lucide-react';
+import { IndianRupee, Loader2, CheckCircle, Shield, ShoppingBag } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { useRazorpay } from '@/hooks/use-razorpay';
@@ -118,31 +118,6 @@ export default function ProductDetailClient({ product, currentUser }: ProductDet
         }
     }, [currentUser, supabase, toast, openCheckout, router, product]);
 
-    const handleChat = useCallback(async () => {
-        if (!currentUser || !supabase) {
-            toast({ variant: 'destructive', title: 'Login Required', description: 'Please log in to chat.' });
-            return;
-        }
-        if (currentUser.id === product.seller_id) {
-            toast({ variant: 'destructive', title: 'Error', description: 'You cannot start a chat with yourself.' });
-            return;
-        }
-
-        const { data: newRoomId, error } = await supabase.rpc('create_or_get_private_chat_room', {
-            p_user1_id: currentUser.id,
-            p_user2_id: product.seller_id,
-        });
-
-        if (error) {
-            console.error('Error starting chat session:', error);
-            toast({ variant: 'destructive', title: 'Error', description: 'Could not start chat session.' });
-            return;
-        }
-        
-        router.push('/chat');
-
-    }, [currentUser, supabase, toast, router, product.seller_id, product.name]);
-    
     const canInteract = currentUser && currentUser.id !== product.seller_id;
     const isBookable = ['Library', 'Hostels', 'Food Mess', 'Cyber Café'].includes(product.category);
 
@@ -190,12 +165,19 @@ export default function ProductDetailClient({ product, currentUser }: ProductDet
 
                     {canInteract && (
                         <div className="flex flex-col sm:flex-row gap-4">
-                            
-                            <Button size="lg" className="flex-1 text-lg" onClick={handleChat}>
-                                <MessageSquare className="mr-2" />
-                                Contact Seller
+                            <Button
+                              size="lg"
+                              className="flex-1 text-lg"
+                              onClick={handleBuyNow}
+                              disabled={!isLoaded || isBuying}
+                            >
+                              {isBuying ? (
+                                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                              ) : (
+                                <ShoppingBag className="mr-2 h-5 w-5" />
+                              )}
+                              Buy now
                             </Button>
-                            
                         </div>
                     )}
                     {currentUser && currentUser.id === product.seller_id && (
@@ -213,7 +195,7 @@ export default function ProductDetailClient({ product, currentUser }: ProductDet
                         <ul className="list-disc list-inside text-muted-foreground space-y-2">
                             <li>Directly support fellow students and campus vendors.</li>
                             <li>Secure payments powered by Razorpay.</li>
-                            <li>Integrated chat for easy communication.</li>
+                            <li>Clear order trail for every purchase.</li>
                             <li>All transactions contribute to the UniNest community.</li>
                         </ul>
                     </CardContent>
