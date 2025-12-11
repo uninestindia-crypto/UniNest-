@@ -1,91 +1,27 @@
 
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Newspaper, MessageSquare, Sparkles, Network } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Social Hub | UniNest',
-  description: 'Connect with the UniNest community through the social feed and direct messages.',
+  title: 'Social Area Retired | UniNest',
+  description: 'The UniNest social hub and feed have been retired as we focus on housing, marketplace, and workspace tools.',
 };
 
 export default function SocialPage() {
   return (
-    <div className="space-y-6">
-      <header className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold tracking-tight text-primary">UniNest Social</h1>
-      </header>
-
-      <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-8 max-w-4xl mx-auto">
-        <Card className="shadow-lg transition-shadow hover:shadow-xl">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-2xl">
-              <Newspaper className="text-blue-500" />
-              Social Feed
-            </CardTitle>
-            <CardDescription className="mt-2">
-              Catch up on the latest posts, news, and events from the campus community.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild className="w-full">
-              <Link href="/feed">Go to Feed</Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-lg transition-shadow hover:shadow-xl">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-2xl">
-              <Network className="text-red-500" />
-              Connections
-            </CardTitle>
-            <CardDescription className="mt-2">
-              View your followers and who you are following.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild className="w-full">
-              <Link href="/social/connections">Manage Connections</Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-lg transition-shadow hover:shadow-xl">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-2xl">
-              <MessageSquare className="text-green-500" />
-              Direct Messages
-            </CardTitle>
-            <CardDescription className="mt-2">
-              Chat directly with other students, vendors, and connections.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild className="w-full">
-              <Link href="/chat">Open Chats</Link>
-            </Button>
-             <p className="text-xs text-center text-muted-foreground mt-2">Login to access your chats.</p>
-          </CardContent>
-        </Card>
-
-         <Card className="shadow-lg transition-shadow hover:shadow-xl">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-2xl">
-              <Sparkles className="text-purple-500" />
-              AI Assistant
-            </CardTitle>
-            <CardDescription className="mt-2">
-              Ask questions, get summaries, and explore campus knowledge with your AI pal.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild className="w-full">
-              <Link href="/ai/chat">Chat with AI</Link>
-            </Button>
-          </CardContent>
-        </Card>
+    <div className="max-w-xl mx-auto py-16 px-4 space-y-4 text-center">
+      <h1 className="text-3xl md:text-4xl font-headline font-bold text-primary">
+        The social hub has signed off
+      </h1>
+      <p className="text-sm md:text-base text-muted-foreground">
+        We&apos;ve retired the UniNest social section so we can double down on what students use the most:
+        verified stays, smarter marketplace tools, and a focused workspace for internships and competitions.
+      </p>
+      <div className="pt-4 flex justify-center">
+        <Button asChild size="lg">
+          <Link href="/">Back to UniNest home</Link>
+        </Button>
       </div>
     </div>
   );

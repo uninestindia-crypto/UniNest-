@@ -3,15 +3,15 @@ import type { HomePosterConfig } from '@/lib/types';
 export const defaultHomePosterConfig: HomePosterConfig = {
   heroSlides: [
     {
-      id: 'social-energy',
-      title: 'Plug into the UniNest Social Hub',
-      subtitle: 'Share moments, follow friends, and stay in sync with every campus pulse.',
+      id: 'campus-life',
+      title: 'Make campus life feel organised, not chaotic',
+      subtitle: 'Track your stays, expenses, and opportunities from one clean UniNest dashboard.',
       imageUrl: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1600&q=80',
-      ctaLabel: 'Explore Social',
-      ctaHref: '/social',
-      secondaryCtaLabel: 'Jump to Feed',
-      secondaryCtaHref: '/feed',
-      tag: 'Student Life',
+      ctaLabel: 'Open Workspace',
+      ctaHref: '/workspace',
+      secondaryCtaLabel: 'Browse Marketplace',
+      secondaryCtaHref: '/marketplace',
+      tag: 'Campus Essentials',
     },
     {
       id: 'market-discoveries',
@@ -38,18 +38,18 @@ export const defaultHomePosterConfig: HomePosterConfig = {
   ],
   quickAccessCards: [
     {
-      id: 'quick-social',
-      title: 'Social Hub',
-      description: 'Catch up with trending posts from your community.',
-      href: '/social',
+      id: 'quick-study',
+      title: 'Study & Notes',
+      description: 'Keep your exam prep, shared notes, and class material in one place.',
+      href: '/notes',
       imageUrl: 'https://images.unsplash.com/photo-1521986329282-0436c1e63c86?auto=format&fit=crop&w=800&q=80',
       icon: 'users',
     },
     {
-      id: 'quick-feed',
-      title: 'Campus Feed',
-      description: 'Share updates, like posts, and join conversations.',
-      href: '/feed',
+      id: 'quick-booking',
+      title: 'Library Booking',
+      description: 'Reserve library seats and quiet corners before they fill up.',
+      href: '/booking',
       imageUrl: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80',
       icon: 'sparkles',
     },
@@ -72,10 +72,10 @@ export const defaultHomePosterConfig: HomePosterConfig = {
   ],
   curatedCollections: [
     {
-      id: 'collection-social',
-      title: 'Connect & Collaborate',
-      description: 'Jump into curated spaces built for meaningful interactions.',
-      href: '/social',
+      id: 'collection-workspace',
+      title: 'Career & Skill Tracks',
+      description: 'Follow curated paths that mix internships, competitions, and projects.',
+      href: '/workspace',
       imageUrl: 'https://images.unsplash.com/photo-1556740749-887f6717d7e4?auto=format&fit=crop&w=1400&q=80',
     },
     {
@@ -95,9 +95,9 @@ export const defaultHomePosterConfig: HomePosterConfig = {
   ],
   mobileDeals: [
     {
-      title: 'Daily Social Spotlight',
-      subtitle: 'See what batchmates are sharing right now.',
-      href: '/feed',
+      title: 'Last-Minute Library Slots',
+      subtitle: 'Grab remaining seats in reading rooms and labs before exams.',
+      href: '/booking',
       gradient: 'from-blue-500 via-purple-500 to-pink-500',
       icon: 'sparkles',
     },
@@ -138,13 +138,13 @@ export const defaultHomePosterConfig: HomePosterConfig = {
     },
     {
       name: 'Rohan Sharma',
-      quote: 'I discovered my internship and made new friends through the social hub in less than a week.',
+      quote: 'I discovered my internship and locked in a verified PG through UniNest in less than a week.',
       school: 'IIT Bombay',
       avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=256&q=80',
     },
     {
       name: 'Nandini Rao',
-      quote: 'It feels like my entire campus life lives in one app—marketplace, social feed, and more.',
+      quote: 'It feels like my entire campus life lives in one app—marketplace, workspace, and more.',
       school: 'Christ University',
       avatar: 'https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=256&q=80',
     },
@@ -164,8 +164,8 @@ export const defaultHomePosterConfig: HomePosterConfig = {
     },
     {
       year: '2024',
-      title: 'Social hub expansion',
-      description: 'Introduced community feeds, direct messaging, and intelligent matching.',
+      title: 'Campus tools expansion',
+      description: 'Introduced smarter booking, verification, and shared student resources.',
       icon: 'users',
     },
     {

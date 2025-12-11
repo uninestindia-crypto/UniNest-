@@ -40,7 +40,7 @@ export default function NotificationsDropdown() {
         }
         if (notification.type === 'new_post' && notification.post_id) {
             // This is a simplified navigation. A real app might need a dedicated post page.
-            router.push('/feed'); 
+            router.push('/workspace'); 
         }
         if (notification.type === 'new_follower' && notification.sender) {
              // You would need a way to get the handle. Assuming it's part of the sender object.

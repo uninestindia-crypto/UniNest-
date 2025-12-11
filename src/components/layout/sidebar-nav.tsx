@@ -13,7 +13,6 @@ import { Separator } from '../ui/separator';
 
 const mainNavItems = [
   { href: '/', label: 'Home', icon: Home, roles: ['student', 'vendor', 'guest', 'admin'] },
-  { href: '/social', label: 'Social', icon: Users, roles: ['student', 'guest', 'admin'] },
   { href: '/marketplace', label: 'Marketplace', icon: ShoppingBag, roles: ['student', 'guest', 'vendor', 'admin'] },
   { href: '/workspace', label: 'Workspace', icon: LayoutGrid, roles: ['student', 'vendor', 'guest', 'admin'] },
   { href: '/notes', label: 'Study Hub', icon: BookOpen, roles: ['student', 'vendor', 'guest', 'admin'] },
@@ -152,7 +151,6 @@ export function MobileBottomNav() {
   const defaultNavItems = [
     { href: '/', label: 'Home', icon: Home, roles: ['student', 'vendor', 'guest', 'admin'] },
     { href: '/marketplace', label: 'Market', icon: ShoppingBag, roles: ['student', 'vendor', 'guest', 'admin'] },
-    { href: '/social', label: 'Social', icon: Users, roles: ['student', 'guest', 'admin'] },
     { href: '/workspace', label: 'Work', icon: LayoutGrid, roles: ['student', 'vendor', 'guest', 'admin'] },
     { href: '/download', label: 'Download', icon: Download, roles: ['student', 'vendor', 'guest', 'admin'] },
     { href: profileLink, label: 'Profile', icon: 'avatar', roles: ['student', 'vendor', 'admin'] },
@@ -160,9 +158,7 @@ export function MobileBottomNav() {
   ];
 
   const socialNavItems = [
-    { href: '/social', label: 'Back', icon: ArrowLeft, roles: ['student', 'guest', 'admin'] },
-    { href: '/feed', label: 'Feed', icon: Newspaper, roles: ['student', 'guest', 'admin'] },
-    { href: '/social/connections', label: 'Connect', icon: Network, roles: ['student', 'guest', 'admin'] },
+    { href: '/', label: 'Back', icon: ArrowLeft, roles: ['student', 'guest', 'admin'] },
     { href: '/chat', label: 'Messages', icon: MessageSquare, roles: ['student', 'guest', 'admin'] },
   ];
 
@@ -173,7 +169,7 @@ export function MobileBottomNav() {
   ];
 
   let navItems;
-  if (pathname.startsWith('/social/') || pathname.startsWith('/feed') || pathname.startsWith('/chat')) {
+  if (pathname.startsWith('/chat')) {
     navItems = socialNavItems.filter(item => item.roles.includes(role));
   } else if (pathname.startsWith('/workspace/')) {
     navItems = workspaceNavItems.filter(item => item.roles.includes(role));
@@ -188,7 +184,6 @@ export function MobileBottomNav() {
           let isActive = pathname === item.href;
           // Special case for 'Back' button to not be active
           if (item.label === 'Back') isActive = false;
-          if (item.href === '/feed' && pathname.startsWith('/social')) isActive = false;
 
 
           return (

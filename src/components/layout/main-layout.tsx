@@ -47,7 +47,6 @@ export default function MainLayout({ children }: { children: ReactNode }) {
       '/marketplace',
       '/workspace',
       '/notes',
-      '/social',
       '/donate',
       '/support',
       '/about',
@@ -55,7 +54,6 @@ export default function MainLayout({ children }: { children: ReactNode }) {
       '/profile',
       '/hostels',
       '/booking',
-      '/feed',
     ];
 
     const isAllowedPublicRoute = allowedPublicPrefixes.some(prefix =>

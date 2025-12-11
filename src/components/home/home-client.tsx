@@ -408,7 +408,7 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
                 <Link href="/competitions">Discover Competitions</Link>
               </Button>
               <Button variant="outline" asChild>
-                <Link href="/social">Create a Team Space</Link>
+                <Link href="/workspace/competitions">Create a Team Space</Link>
               </Button>
             </div>
           </div>
