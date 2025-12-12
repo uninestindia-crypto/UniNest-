@@ -15,7 +15,6 @@ const mainNavItems = [
   { href: '/', label: 'Home', icon: Home, roles: ['student', 'vendor', 'guest', 'admin'] },
   { href: '/marketplace', label: 'Marketplace', icon: ShoppingBag, roles: ['student', 'guest', 'vendor', 'admin'] },
   { href: '/workspace', label: 'Workspace', icon: LayoutGrid, roles: ['student', 'vendor', 'guest', 'admin'] },
-  { href: '/download', label: 'Download', icon: Download, roles: ['student', 'vendor', 'guest', 'admin'] },
 ];
 
 const secondaryNavItems = [
@@ -151,7 +150,6 @@ export function MobileBottomNav() {
     { href: '/', label: 'Home', icon: Home, roles: ['student', 'vendor', 'guest', 'admin'] },
     { href: '/marketplace', label: 'Market', icon: ShoppingBag, roles: ['student', 'vendor', 'guest', 'admin'] },
     { href: '/workspace', label: 'Work', icon: LayoutGrid, roles: ['student', 'vendor', 'guest', 'admin'] },
-    { href: '/download', label: 'Download', icon: Download, roles: ['student', 'vendor', 'guest', 'admin'] },
     { href: profileLink, label: 'Profile', icon: 'avatar', roles: ['student', 'vendor', 'admin'] },
     { href: '/login', label: 'Login', icon: UserIcon, roles: ['guest'] },
   ];
