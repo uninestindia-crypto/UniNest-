@@ -20,7 +20,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { defaultHomePosterConfig } from '@/lib/home-poster';
 import type { HomePosterConfig, HomeStat, HomeTestimonial } from '@/lib/types';
 import DonationModal from '@/components/home/donation-modal';
-import StealthAppDownload from '@/components/stealth-app-download';
+
 import { cn } from '@/lib/utils';
 
 // ... (keep iconMap, schemaMarkup, resolveIcon, getInitials, constants same as before if not changing logic)
