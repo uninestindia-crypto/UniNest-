@@ -15,7 +15,6 @@ const mainNavItems = [
   { href: '/', label: 'Home', icon: Home, roles: ['student', 'vendor', 'guest', 'admin'] },
   { href: '/marketplace', label: 'Marketplace', icon: ShoppingBag, roles: ['student', 'guest', 'vendor', 'admin'] },
   { href: '/workspace', label: 'Workspace', icon: LayoutGrid, roles: ['student', 'vendor', 'guest', 'admin'] },
-  { href: '/notes', label: 'Study Hub', icon: BookOpen, roles: ['student', 'vendor', 'guest', 'admin'] },
   { href: '/download', label: 'Download', icon: Download, roles: ['student', 'vendor', 'guest', 'admin'] },
 ];
 
@@ -27,8 +26,8 @@ const secondaryNavItems = [
 type UserRole = 'student' | 'vendor' | 'admin' | 'guest';
 
 function getRole(user: any): UserRole {
-    if (!user) return 'guest';
-    return user.user_metadata?.role || 'student';
+  if (!user) return 'guest';
+  return user.user_metadata?.role || 'student';
 }
 
 export function SidebarNav() {
@@ -47,27 +46,27 @@ export function SidebarNav() {
       .map(item => {
         const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
         return (
-            <SidebarMenuItem key={item.href}>
+          <SidebarMenuItem key={item.href}>
             <SidebarMenuButton
-                asChild
-                isActive={isActive}
-                className="font-headline"
-                onClick={handleLinkClick}
+              asChild
+              isActive={isActive}
+              className="font-headline"
+              onClick={handleLinkClick}
             >
-                <Link href={item.href}>
+              <Link href={item.href}>
                 <item.icon className="size-5" />
                 <span>{item.label}</span>
-                </Link>
+              </Link>
             </SidebarMenuButton>
-            </SidebarMenuItem>
+          </SidebarMenuItem>
         )
       });
   };
-  
+
   return (
     <SidebarMenu>
       {renderNavItems(mainNavItems)}
-      
+
       <SidebarMenuItem>
         <Separator className="my-2" />
       </SidebarMenuItem>
@@ -75,66 +74,66 @@ export function SidebarNav() {
       {renderNavItems(secondaryNavItems)}
 
 
-        <div className='flex-grow' />
+      <div className='flex-grow' />
 
-         <SidebarMenuItem>
-            <SidebarMenuButton asChild className="bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-900 font-bold border-amber-200 dark:border-amber-800 border-2" onClick={handleLinkClick}>
-                <Link href="/donate">
-                    <Heart className="size-5" />
-                    <span>Donate</span>
-                </Link>
+      <SidebarMenuItem>
+        <SidebarMenuButton asChild className="bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-900 font-bold border-amber-200 dark:border-amber-800 border-2" onClick={handleLinkClick}>
+          <Link href="/donate">
+            <Heart className="size-5" />
+            <span>Donate</span>
+          </Link>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+
+      {role === 'admin' && (
+        <>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              isActive={pathname.startsWith('/admin') && !pathname.startsWith('/admin/marketing')}
+              className="font-headline"
+              onClick={handleLinkClick}
+            >
+              <Link href="/admin/dashboard">
+                <UserCog className="size-5" />
+                <span>Admin Panel</span>
+              </Link>
             </SidebarMenuButton>
-        </SidebarMenuItem>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              isActive={pathname.startsWith('/admin/marketing')}
+              className="font-headline"
+              onClick={handleLinkClick}
+            >
+              <Link href="/admin/marketing/donations">
+                <Sparkles className="size-5" />
+                <span>Donation Settings</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </>
+      )}
 
-        {role === 'admin' && (
-             <>
-                <SidebarMenuItem>
-                    <SidebarMenuButton
-                        asChild
-                        isActive={pathname.startsWith('/admin') && !pathname.startsWith('/admin/marketing')}
-                        className="font-headline"
-                        onClick={handleLinkClick}
-                    >
-                        <Link href="/admin/dashboard">
-                            <UserCog className="size-5" />
-                            <span>Admin Panel</span>
-                        </Link>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                    <SidebarMenuButton
-                        asChild
-                        isActive={pathname.startsWith('/admin/marketing')}
-                        className="font-headline"
-                        onClick={handleLinkClick}
-                    >
-                        <Link href="/admin/marketing/donations">
-                            <Sparkles className="size-5" />
-                            <span>Donation Settings</span>
-                        </Link>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-             </>
-        )}
-        
-        {user && (
-            <>
-                <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={pathname === '/settings'} className="font-headline" onClick={handleLinkClick}>
-                         <Link href="/settings">
-                            <Settings className="size-5" />
-                            <span>Settings</span>
-                        </Link>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => { handleLinkClick(); signOut(); }} className="font-headline text-red-500 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/50 dark:hover:text-red-400">
-                        <LogOut className="size-5" />
-                        <span>Logout</span>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-            </>
-        )}
+      {user && (
+        <>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={pathname === '/settings'} className="font-headline" onClick={handleLinkClick}>
+              <Link href="/settings">
+                <Settings className="size-5" />
+                <span>Settings</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton onClick={() => { handleLinkClick(); signOut(); }} className="font-headline text-red-500 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/50 dark:hover:text-red-400">
+              <LogOut className="size-5" />
+              <span>Logout</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </>
+      )}
     </SidebarMenu>
   );
 }
@@ -169,10 +168,10 @@ export function MobileBottomNav() {
   } else {
     navItems = defaultNavItems.filter(item => item.roles.includes(role));
   }
-  
+
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-card border-t shadow-t-lg z-50">
-      <div className="grid h-full w-full" style={{ gridTemplateColumns: `repeat(${navItems.length}, 1fr)`}}>
+      <div className="grid h-full w-full" style={{ gridTemplateColumns: `repeat(${navItems.length}, 1fr)` }}>
         {navItems.map(item => {
           let isActive = pathname === item.href;
           // Special case for 'Back' button to not be active
@@ -183,7 +182,7 @@ export function MobileBottomNav() {
             <Link
               key={item.href}
               href={item.href}
-              onClick={() => {}}
+              onClick={() => { }}
               className={cn(
                 "flex flex-col items-center justify-center gap-1 p-1 transition-colors",
                 isActive ? "text-primary font-bold" : "text-muted-foreground hover:text-primary"
