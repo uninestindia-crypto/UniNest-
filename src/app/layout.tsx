@@ -50,7 +50,7 @@ const baseMetadata: Metadata = {
     title: 'UniNest',
   },
   verification: {
-    google: 'YOUR_VERIFICATION_TOKEN',
+    google: 'google-site-verification=PLACEHOLDER_TOKEN', // Replace with actual token
   },
   other: {
     'meta-title': 'UniNest – India’s #1 Student Platform for Internships & Competitions',
@@ -85,23 +85,23 @@ export async function generateMetadata(): Promise<Metadata> {
 
   const icons = faviconUrl
     ? {
-        icon: [{ url: faviconUrl }],
-        shortcut: [{ url: faviconUrl }],
-        apple: appleIconUrl ? [{ url: appleIconUrl }] : undefined,
-      }
+      icon: [{ url: faviconUrl }],
+      shortcut: [{ url: faviconUrl }],
+      apple: appleIconUrl ? [{ url: appleIconUrl }] : undefined,
+    }
     : undefined;
 
   const openGraph: Metadata['openGraph'] = {
     ...baseOpenGraph,
     images: logoUrl
       ? [
-          {
-            url: logoUrl,
-            width: 512,
-            height: 512,
-            alt: 'UniNest Logo',
-          },
-        ]
+        {
+          url: logoUrl,
+          width: 512,
+          height: 512,
+          alt: 'UniNest Logo',
+        },
+      ]
       : undefined,
   };
 
