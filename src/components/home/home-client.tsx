@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import Autoplay from 'embla-carousel-autoplay';
-import { MessageSquare, Quote, Store, Users, type LucideIcon } from 'lucide-react';
+import { MessageSquare, Quote, Store, Users, ArrowRight, Star, ShieldCheck, MapPin, type LucideIcon } from 'lucide-react';
 
 import StatCard from '@/components/home/stat-card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -21,7 +21,9 @@ import { defaultHomePosterConfig } from '@/lib/home-poster';
 import type { HomePosterConfig, HomeStat, HomeTestimonial } from '@/lib/types';
 import DonationModal from '@/components/home/donation-modal';
 import StealthAppDownload from '@/components/stealth-app-download';
+import { cn } from '@/lib/utils';
 
+// ... (keep iconMap, schemaMarkup, resolveIcon, getInitials, constants same as before if not changing logic)
 const iconMap: Record<string, LucideIcon> = {
   users: Users,
   store: Store,
@@ -159,469 +161,423 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
   };
 
   return (
-    <main className="bg-background text-foreground">
+    <main className="bg-background text-foreground overflow-x-hidden">
       <DonationModal isOpen={donationModalOpen} onOpenChange={handleDonationModalOpenChange} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaMarkup) }}
       />
 
-      <section className="px-4 py-16 sm:px-6 lg:px-10 xl:px-16">
-        <div className="mx-auto max-w-6xl space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="space-y-2">
-              <span className="inline-flex w-max items-center gap-2 rounded-full bg-primary/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-                India's trusted student community platform
-              </span>
-              <h1 className="text-3xl font-headline font-bold sm:text-4xl">Discover what's new on UniNest</h1>
-              <p className="text-sm text-muted-foreground">
-                Promotions you configure in the admin dashboard are featured here instantly.
-              </p>
-            </div>
-            <div className="hidden gap-3 sm:flex">
-              <CarouselPrevious className="relative" data-hero="true" />
-              <CarouselNext className="relative" data-hero="true" />
-            </div>
-          </div>
+      {/* Hero Section */}
+      <section className="relative px-4 pt-10 pb-20 sm:px-6 lg:px-8 lg:pt-16 xl:px-16 overflow-hidden">
+        {/* Background Elements */}
+        <div className="absolute top-0 right-0 -z-10 h-[600px] w-[600px] rounded-full bg-primary/5 blur-3xl" />
+        <div className="absolute bottom-0 left-0 -z-10 h-[500px] w-[500px] rounded-full bg-accent/5 blur-3xl" />
 
+        <div className="mx-auto max-w-7xl">
           <Carousel opts={{ align: 'center', loop: true }} plugins={[heroAutoplay]} className="w-full">
             <CarouselContent>
               {heroSlides.map((slide, index) => (
-                <CarouselItem key={slide.id ?? `${slide.title}-${index}`} className="md:basis-full">
-                  <div className="relative overflow-hidden rounded-3xl border border-border/60 bg-background/80 shadow-xl">
-                    <div className="absolute inset-0">
-                      {slide.imageUrl ? (
-                        <Image
-                          src={slide.imageUrl}
-                          alt={slide.title}
-                          fill
-                          priority={index === 0}
-                          className="object-cover"
-                          sizes="(min-width: 1024px) 960px, 100vw"
-                        />
-                      ) : (
-                        <div className="h-full w-full bg-muted" aria-hidden="true" />
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/30" aria-hidden="true" />
-                    </div>
-                    <div className="relative grid gap-6 px-6 py-12 sm:px-10 lg:px-16">
-                      <div className="space-y-4 text-white">
-                        {slide.tag && (
-                          <span className="inline-flex w-max items-center gap-2 rounded-full bg-white/15 px-4 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-white">
-                            {slide.tag}
-                          </span>
-                        )}
-                        <h2 className="text-4xl font-headline font-bold leading-tight sm:text-5xl">
-                          {slide.title}
-                        </h2>
-                        {slide.subtitle && (
-                          <p className="max-w-3xl text-lg text-white/80">{slide.subtitle}</p>
-                        )}
+                <CarouselItem key={slide.id ?? `${slide.title}-${index}`} className="w-full">
+                  <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
+                    <div className="space-y-8 animate-fade-in-up">
+                      <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary shadow-sm backdrop-blur-sm">
+                        <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse"></span>
+                        {slide.tag || "What's New"}
                       </div>
-                      <div className="flex flex-col gap-3 sm:flex-row">
+
+                      <div className="space-y-4">
+                        <h1 className="text-4xl font-headline font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl text-gradient">
+                          {slide.title}
+                        </h1>
+                        <p className="text-lg text-muted-foreground sm:text-xl max-w-lg leading-relaxed">
+                          {slide.subtitle || "Experience the future of student living with UniNest. Connect, grow, and thrive."}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-wrap gap-4">
                         {slide.ctaHref && slide.ctaLabel && (
-                          <Button size="lg" asChild>
-                            <Link href={slide.ctaHref}>{slide.ctaLabel}</Link>
+                          <Button size="lg" className="h-12 px-8 text-base shadow-lg shadow-primary/20 transition-all hover:scale-105 hover:shadow-primary/30" asChild>
+                            <Link href={slide.ctaHref}>
+                              {slide.ctaLabel} <ArrowRight className="ml-2 h-4 w-4" />
+                            </Link>
                           </Button>
                         )}
                         {slide.secondaryCtaHref && slide.secondaryCtaLabel && (
-                          <Button size="lg" variant="outline" asChild>
+                          <Button size="lg" variant="outline" className="h-12 px-8 text-base border-primary/20 hover:bg-primary/5 transition-all hover:scale-105" asChild>
                             <Link href={slide.secondaryCtaHref}>{slide.secondaryCtaLabel}</Link>
                           </Button>
                         )}
                       </div>
-                      <StealthAppDownload />
+
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground pt-4">
+                        <div className="flex -space-x-3">
+                          {[1, 2, 3, 4].map(i => (
+                            <div key={i} className="h-8 w-8 rounded-full border-2 border-background bg-muted flex items-center justify-center text-[10px] overflow-hidden">
+                              <Avatar className="h-full w-full">
+                                <AvatarFallback className="bg-primary/10 text-primary">U{i}</AvatarFallback>
+                              </Avatar>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="flex gap-1">
+                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                          <span className="ml-1 font-medium text-foreground">5.0 from students</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="relative mx-auto w-full max-w-[500px] lg:max-w-none perspective-1000">
+                      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-3xl border border-white/20 bg-muted/20 shadow-2xl transition-transform duration-500 hover:rotate-1">
+                        {slide.imageUrl ? (
+                          <Image
+                            src={slide.imageUrl}
+                            alt={slide.title}
+                            fill
+                            priority={index === 0}
+                            className="object-cover"
+                            sizes="(min-width: 1024px) 600px, 100vw"
+                          />
+                        ) : (
+                          <div className="h-full w-full bg-gradient-to-br from-primary/5 to-accent/5 flex items-center justify-center">
+                            <Users className="h-24 w-24 text-muted-foreground/20" />
+                          </div>
+                        )}
+                        {/* Glass Overlays for Decorative Effect */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+                        <div className="absolute -bottom-6 -right-6 h-24 w-24 rounded-full bg-secondary/20 blur-2xl" />
+                        <div className="absolute -top-6 -left-6 h-24 w-24 rounded-full bg-primary/20 blur-2xl" />
+                      </div>
+                      {/* Floating card example */}
+                      <div className="absolute -bottom-6 -left-6 hidden sm:flex items-center gap-3 rounded-2xl border border-white/20 bg-white/80 p-4 shadow-xl backdrop-blur-md dark:bg-slate-900/80 dark:border-white/10 animate-bounce-slow">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-900/30">
+                          <ShieldCheck className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold">Verified</p>
+                          <p className="text-xs text-muted-foreground">Listings Checked</p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <div className="mt-6 flex items-center justify-center gap-3 sm:hidden">
-              <CarouselPrevious className="relative" />
-              <CarouselNext className="relative" />
+            <div className="mt-8 flex justify-center gap-2 lg:hidden">
+              <CarouselPrevious className="static translate-y-0" />
+              <CarouselNext className="static translate-y-0" />
             </div>
           </Carousel>
         </div>
       </section>
 
-      {quickAccessCards.length > 0 && (
-        <section className="border-t border-border/60 bg-muted/30 px-4 py-16 sm:px-6 lg:px-10 xl:px-16">
-          <div className="mx-auto max-w-6xl space-y-6">
-            <div className="space-y-2 text-center">
-              <span className="text-sm font-semibold uppercase tracking-[0.3em] text-primary">Quick Access</span>
-              <h2 className="text-3xl font-headline font-bold sm:text-4xl">Spotlight what's trending</h2>
-              <p className="text-muted-foreground">
-                Curate shortcuts for students to discover campaigns and destinations in a tap.
-              </p>
-            </div>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {quickAccessCards.map((card, index) => (
-                <Link
-                  key={card.id ?? `${card.title}-${index}`}
-                  href={card.href || '#'}
-                  className="group relative overflow-hidden rounded-2xl border border-border/60 bg-background/90 shadow-lg transition hover:-translate-y-1 hover:shadow-xl"
-                >
-                  <div className="relative h-44 w-full overflow-hidden">
-                    {card.imageUrl ? (
-                      <Image
-                        src={card.imageUrl}
-                        alt={card.title}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                        sizes="(min-width: 1024px) 320px, 100vw"
-                      />
-                    ) : (
-                      <div className="h-full w-full bg-muted" aria-hidden="true" />
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-black/10 opacity-90" aria-hidden="true" />
-                  </div>
-                  <div className="space-y-3 p-6 text-left">
-                    <h3 className="text-xl font-semibold text-foreground">{card.title}</h3>
-                    <p className="text-sm text-muted-foreground">{card.description}</p>
-                    <span className="text-sm font-medium text-primary">Explore →</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {curatedCollections.length > 0 && (
-        <section className="border-t border-border/60 bg-background px-4 py-16 sm:px-6 lg:px-10 xl:px-16">
-          <div className="mx-auto max-w-6xl space-y-6">
-            <div className="space-y-2 text-center">
-              <span className="text-sm font-semibold uppercase tracking-[0.3em] text-primary">Featured Collections</span>
-              <h2 className="text-3xl font-headline font-bold sm:text-4xl">Handpicked experiences for students</h2>
-              <p className="text-muted-foreground">
-                Use curated blocks to surface services, playlists, or content that deserves attention.
-              </p>
-            </div>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {curatedCollections.map((collection, index) => (
-                <Link
-                  key={collection.id ?? `${collection.title}-${index}`}
-                  href={collection.href || '#'}
-                  className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border/60 bg-muted/20 shadow-md transition hover:-translate-y-1 hover:shadow-lg"
-                >
-                  <div className="relative h-48 w-full">
-                    {collection.imageUrl ? (
-                      <Image
-                        src={collection.imageUrl}
-                        alt={collection.title}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                        sizes="(min-width: 1024px) 360px, 100vw"
-                      />
-                    ) : (
-                      <div className="h-full w-full bg-muted" aria-hidden="true" />
-                    )}
-                  </div>
-                  <div className="flex flex-1 flex-col gap-3 p-6">
-                    <h3 className="text-xl font-semibold text-foreground">{collection.title}</h3>
-                    <p className="flex-1 text-sm text-muted-foreground">{collection.description}</p>
-                    <span className="text-sm font-medium text-primary">View collection →</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
+      {/* Trusted By / Stats Strip (Replaces old stats section) */}
       {stats.length > 0 && (
-        <section className="border-t border-border/60 bg-muted/30 px-4 py-16 sm:px-6 lg:px-10 xl:px-16">
-          <div className="mx-auto max-w-6xl space-y-8">
-            <div className="text-center space-y-3">
-              <span className="text-sm font-semibold uppercase tracking-[0.3em] text-primary">Trusted Growth</span>
-              <h2 className="text-3xl font-headline font-bold sm:text-4xl">Numbers that reflect UniNest confidence</h2>
-              <p className="text-muted-foreground">
-                Students, vendors, and partners rely on UniNest every day. These live metrics showcase our expanding, trusted community.
-              </p>
-            </div>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <section className="border-y border-border bg-muted/30 py-12">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-2 gap-8 md:grid-cols-4 lg:gap-12">
               {stats.map((stat, index) => (
-                <StatCard
-                  key={`${stat.label}-${index}`}
-                  value={stat.value}
-                  label={stat.label}
-                  icon={resolveIcon(stat.icon)}
-                  isPlus={stat.isPlus}
-                />
+                <div key={index} className="flex flex-col items-center justify-center text-center sm:items-start sm:text-left">
+                  <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    {(() => {
+                      const Icon = resolveIcon(stat.icon);
+                      return <Icon className="h-5 w-5" />;
+                    })()}
+                  </div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-3xl font-bold tracking-tight text-foreground">{stat.value}</span>
+                    {stat.isPlus && <span className="text-2xl font-bold text-primary">+</span>}
+                  </div>
+                  <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">{stat.label}</p>
+                </div>
               ))}
             </div>
-          </div>
-        </section>
-      )}
+            {/* Quick Access Grid */}
+            {quickAccessCards.length > 0 && (
+              <section className="py-24 bg-background">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                  <div className="mb-12 text-center max-w-2xl mx-auto">
+                    <h2 className="text-3xl font-headline font-bold sm:text-4xl">Explore UniNest</h2>
+                    <p className="mt-4 text-lg text-muted-foreground">
+                      Your gateway to verified student housing, internships, and exclusive campus deals.
+                    </p>
+                  </div>
 
-      <section className="border-t border-border/60 bg-muted/30 px-4 py-16 sm:px-6 lg:px-10 xl:px-16">
-        <div className="mx-auto max-w-5xl space-y-6 text-center">
-          <h2 className="text-3xl font-headline font-bold">About UniNest</h2>
-          <p className="text-lg text-muted-foreground">
-            UniNest is the student community platform designed to centralize campus life. From verified housing to vendor partnerships and collaborative study spaces, we combine technology, student feedback, and institutional oversight to keep every decision informed and trustworthy.
-          </p>
-          <p className="text-lg text-muted-foreground">
-            Get guided workflows, moderator-backed listings, and transparent analytics that show how your campus interactions evolve. UniNest ensures every member experiences modern design, soft pastel highlights, and mobile-first usability on any device.
-          </p>
-          <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Button size="lg" asChild>
-              <Link href="/about">Discover the UniNest Story</Link>
-            </Button>
-            <Button size="lg" variant="ghost" asChild>
-              <Link href="/study-spaces">Browse Study Spaces</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
+                  <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+                    {quickAccessCards.map((card, index) => (
+                      <Link
+                        key={card.id ?? `${card.title}-${index}`}
+                        href={card.href || '#'}
+                        className="group relative flex flex-col justify-end overflow-hidden rounded-3xl border border-border bg-background shadow-sm transition-all hover:shadow-2xl hover:-translate-y-1 h-[400px]"
+                      >
+                        {/* Background Image */}
+                        <div className="absolute inset-0 z-0 h-full w-full">
+                          {card.imageUrl ? (
+                            <Image
+                              src={card.imageUrl}
+                              alt={card.title}
+                              fill
+                              className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                              sizes="(min-width: 1024px) 384px, 100vw"
+                            />
+                          ) : (
+                            <div className="h-full w-full bg-muted/50" />
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                        </div>
 
-      <section className="px-4 py-16 sm:px-6 lg:px-10 xl:px-16">
-        <div className="mx-auto max-w-6xl grid gap-12 lg:grid-cols-2">
-          <div className="space-y-5">
-            <span className="text-sm font-semibold uppercase tracking-[0.3em] text-primary">Internship Hub</span>
-            <h2 className="text-3xl font-headline font-bold sm:text-4xl">Turn ambition into real experience.</h2>
-            <p className="text-lg text-muted-foreground">
-              The UniNest internship portal curates opportunities from verified companies and fast-growing startups. Each project includes mentor credentials, skill pathways, and realistic timelines so you can prepare with confidence.
-            </p>
-            <p className="text-lg text-muted-foreground">
-              Pair internship applications with prep materials, interview templates, and peer review loops. Sync schedules with your UniNest planner to balance classes, competitions, and part-time roles smoothly.
-            </p>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Button asChild>
-                <Link href="/internships">Explore Internships</Link>
-              </Button>
-              <Button variant="outline" asChild>
-                <Link href="/study-spaces">Plan Your Study Schedule</Link>
-              </Button>
-            </div>
-          </div>
-          <div className="space-y-5">
-            <span className="text-sm font-semibold uppercase tracking-[0.3em] text-primary">Competition Arena</span>
-            <h2 className="text-3xl font-headline font-bold sm:text-4xl">Compete, win, and showcase your edge.</h2>
-            <p className="text-lg text-muted-foreground">
-              Join hackathons, case study leagues, innovation challenges, and national cultural events without chasing scattered forms. UniNest highlights eligibility, prizes, and mentor access in one structured hub.
-            </p>
-            <p className="text-lg text-muted-foreground">
-              Rally teammates through collaboration spaces, share live updates, and store badges plus certificates on your profile. Every participation record strengthens your placement readiness and scholarship profile.
-            </p>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Button asChild>
-                <Link href="/competitions">Discover Competitions</Link>
-              </Button>
-              <Button variant="outline" asChild>
-                <Link href="/workspace/competitions">Create a Team Space</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
+                        {/* Content */}
+                        <div className="relative z-10 p-8">
+                          <div className="mb-4 h-1 w-12 rounded-full bg-primary transition-all group-hover:w-20" />
+                          <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-primary-foreground/90 transition-colors">{card.title}</h3>
+                          <p className="text-white/80 line-clamp-2 mb-4">{card.description}</p>
+                          <span className="inline-flex items-center text-sm font-semibold text-white/90 group-hover:text-primary-foreground group-hover:translate-x-1 transition-all">
+                            Discover <ArrowRight className="ml-2 h-4 w-4" />
+                          </span>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            )}
 
-      <section className="border-t border-border/60 bg-muted/20 px-4 py-16 sm:px-6 lg:px-10 xl:px-16">
-        <div className="mx-auto max-w-6xl grid gap-12 lg:grid-cols-[1.1fr_1fr]">
-          <div className="space-y-6">
-            <span className="text-sm font-semibold uppercase tracking-[0.3em] text-primary">Verified Housing & Study Spaces</span>
-            <h2 className="text-3xl font-headline font-bold sm:text-4xl">Book stays and seats with total certainty.</h2>
-            <p className="text-lg text-muted-foreground">
-              Browse hostel and PG listings audited by UniNest moderators. Compare commute times, amenities, curfew policies, and student reviews pulled from trusted communities. Every listing includes transparent pricing and verified owner details.
-            </p>
-            <p className="text-lg text-muted-foreground">
-              Need a quiet desk before exams? Reserve real-time library seats, co-study lounges, or focus pods that sync with your calendar. Automated reminders prevent double-booking so you can stay on track.
-            </p>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Button asChild>
-                <Link href="/housing">Find PGs Near You</Link>
-              </Button>
-              <Button variant="outline" asChild>
-                <Link href="/study-spaces">Book a Library Seat</Link>
-              </Button>
-            </div>
-          </div>
-          <div className="space-y-6">
-            <span className="text-sm font-semibold uppercase tracking-[0.3em] text-primary">Student Marketplace</span>
-            <h2 className="text-3xl font-headline font-bold sm:text-4xl">Swap essentials safely within your campus.</h2>
-            <p className="text-lg text-muted-foreground">
-              The UniNest student marketplace verifies every profile before transactions go live. Buy or rent textbooks, lab gear, gadgets, or event tickets using escrow-style payments that release funds only after inspection is confirmed.
-            </p>
-            <p className="text-lg text-muted-foreground">
-              Vendor partners get access to analytics, promotional tools, and CRM insights via the vendor dashboard. Promote services, launch student-only offers, and monitor campaign performance in real time.
-            </p>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Button asChild>
-                <Link href="/marketplace">Browse the Marketplace</Link>
-              </Button>
-              <Button variant="outline" asChild>
-                <Link href="/vendor-dashboard">Access Vendor Dashboard</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
+            {/* Curated Collections (Glassmorphism Cards) */}
+            {curatedCollections.length > 0 && (
+              <section className="py-24 relative overflow-hidden">
+                {/* Subtle bg blob */}
+                <div className="absolute top-1/2 left-1/2 -z-10 h-[800px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/5 blur-[100px]" />
 
-      {testimonials.length > 0 && (
-        <section className="px-4 py-16 sm:px-6 lg:px-10 xl:px-16">
-          <div className="mx-auto max-w-5xl space-y-10 text-center">
-            <div className="space-y-3">
-              <span className="text-sm font-semibold uppercase tracking-[0.3em] text-primary">Community Voices</span>
-              <h2 className="text-3xl font-headline font-bold sm:text-4xl">Students who thrive with UniNest</h2>
-              <p className="text-muted-foreground">
-                Hear how UniNest simplifies housing, internships, competitions, and social life directly from real users.
-              </p>
-            </div>
-            <Carousel opts={{ align: 'center', loop: true }} plugins={[testimonialAutoplay]} className="w-full">
-              <CarouselContent>
-                {testimonials.map((testimonial, index) => (
-                  <CarouselItem key={`${testimonial.name}-${index}`} className="md:basis-1/2 lg:basis-1/3">
-                    <Card className="h-full border border-border/60 bg-background/90 shadow-md">
-                      <CardContent className="flex h-full flex-col gap-6 p-6 text-left">
-                        <Quote className="size-10 text-primary" />
-                        <p className="text-base text-muted-foreground">“{testimonial.quote}”</p>
-                        <div className="mt-auto flex items-center gap-3">
-                          <Avatar className="size-12">
-                            {testimonial.avatar ? (
-                              <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
-                            ) : (
-                              <AvatarFallback>{getInitials(testimonial.name)}</AvatarFallback>
-                            )}
-                          </Avatar>
-                          <div>
-                            <p className="font-semibold text-foreground">{testimonial.name}</p>
-                            <p className="text-sm text-muted-foreground">{testimonial.school}</p>
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                  <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+                    <div className="max-w-2xl">
+                      <h2 className="text-3xl font-headline font-bold sm:text-4xl">Featured Collections</h2>
+                      <p className="mt-4 text-lg text-muted-foreground">Curated experiences handpicked for your student life.</p>
+                    </div>
+                    <Button variant="ghost" className="hidden md:flex gap-2">View All Collection <ArrowRight className="h-4 w-4" /></Button>
+                  </div>
+
+                  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    {curatedCollections.map((collection, index) => (
+                      <Link
+                        href={collection.href || '#'}
+                        key={index}
+                        className="group flex flex-col overflow-hidden rounded-2xl glass transition-all hover:shadow-xl hover:border-primary/30"
+                      >
+                        <div className="relative h-56 w-full overflow-hidden">
+                          {collection.imageUrl ? (
+                            <Image
+                              src={collection.imageUrl}
+                              alt={collection.title}
+                              fill
+                              className="object-cover transition-transform duration-500 group-hover:scale-105"
+                            />
+                          ) : (
+                            <div className="h-full w-full bg-muted flex items-center justify-center">
+                              <Store className="h-12 w-12 text-muted-foreground/30" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="p-6 flex-1 flex flex-col">
+                          <h3 className="text-xl font-bold group-hover:text-primary transition-colors">{collection.title}</h3>
+                          <p className="mt-2 text-muted-foreground text-sm flex-1">{collection.description}</p>
+                          <div className="mt-4 pt-4 border-t border-border/50 flex items-center justify-between text-sm font-medium">
+                            <span className="text-secondary">Premium Collection</span>
+                            <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary -translate-x-2 group-hover:translate-x-0 opacity-0 group-hover:opacity-100 transition-all" />
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <div className="mt-6 flex items-center justify-center gap-3">
-                <CarouselPrevious className="relative" />
-                <CarouselNext className="relative" />
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {/* Primary Value Prop: Verified Housing */}
+            <section className="py-24 bg-muted/20">
+              <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div className="grid lg:grid-cols-2 gap-16 items-center">
+                  <div className="order-2 lg:order-1 relative">
+                    {/* Abstract graphic or Placeholder for robust image */}
+                    <div className="relative aspect-square rounded-3xl overflow-hidden glass-card p-2 shadow-2xl">
+                      <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-accent/10 -z-10" />
+                      {/* Replace with actual high quality housing image if available */}
+                      <div className="h-full w-full rounded-2xl bg-muted/50 border border-border/50 overflow-hidden relative">
+                        <div className="absolute inset-0 bg-grid-slate-200 [mask-image:linear-gradient(0deg,white,transparent)] dark:bg-grid-slate-800" />
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
+                          <MapPin className="h-16 w-16 text-primary mx-auto mb-4" />
+                          <p className="font-bold text-lg">Verified Locations</p>
+                        </div>
+                      </div>
+                      {/* Stats overlay */}
+                      <div className="absolute bottom-8 right-8 bg-background/90 backdrop-blur p-4 rounded-xl shadow-lg border border-border">
+                        <p className="text-2xl font-bold text-foreground">100%</p>
+                        <p className="text-xs text-muted-foreground">Verified Listings</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="order-1 lg:order-2 space-y-6">
+                    <div className="inline-flex items-center gap-2 rounded-full bg-secondary/10 px-3 py-1 text-xs font-semibold uppercase text-secondary">
+                      <ShieldCheck className="h-3.5 w-3.5" /> Trusted Housing
+                    </div>
+                    <h2 className="text-3xl font-headline font-bold sm:text-4xl lg:text-5xl">Book your perfect stay with confidence.</h2>
+                    <p className="text-lg text-muted-foreground leading-relaxed">
+                      Say goodbye to uncertain PG hunts. UniNest verifies every listing, owner, and amenity. Compare commute times, check curfew policies, and read genuine reviews from students just like you.
+                    </p>
+                    <ul className="space-y-4 pt-4">
+                      {[
+                        "100% Verified Owners & Listings",
+                        "Transparent Pricing & No Hidden Fees",
+                        "Student Reviews & Safety Badges",
+                        "Direct Chat with Landlords"
+                      ].map((item, i) => (
+                        <li key={i} className="flex items-center gap-3">
+                          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-900/30">
+                            <ArrowRight className="h-3 w-3" />
+                          </div>
+                          <span className="font-medium">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="pt-6 flex gap-4">
+                      <Button size="lg" className="rounded-xl" asChild>
+                        <Link href="/housing">Find a PG</Link>
+                      </Button>
+                      <Button size="lg" variant="outline" className="rounded-xl" asChild>
+                        <Link href="/hostels">Explore Hostels</Link>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </Carousel>
-          </div>
-        </section>
-      )}
+            </section>
 
-      <section className="px-4 py-16 sm:px-6 lg:px-10 xl:px-16">
-        <div className="mx-auto max-w-5xl space-y-6 text-center">
-          <h2 className="text-3xl font-headline font-bold">Grow with UniNest Today</h2>
-          <p className="text-lg text-muted-foreground">
-            Create your UniNest profile, sync your preferences, and unlock instant access to PG booking tools, the internship hub, the competition arena, and the marketplace. Our support team guides first-time users through onboarding so you can start exploring in minutes.
-          </p>
-          <p className="text-lg text-muted-foreground">
-            We continually add features requested by the community—skill badges, volunteering boards, analytics dashboards, and more. Your feedback fuels a trusted platform that champions student experience, expertise, authoritativeness, and trustworthiness.
-          </p>
-          <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Button size="lg" className="text-base" asChild>
-              <Link href="/signup">Join Now</Link>
-            </Button>
-            <Button size="lg" variant="ghost" className="text-base" asChild>
-              <Link href="/internships">Start with Internships</Link>
-            </Button>
-            <Button size="lg" variant="outline" className="text-base" asChild>
-              <Link href="/housing">Find PGs Near You</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
+            {/* Secondary Value Prop: Internships & Competitions */}
+            <section className="py-24">
+              <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-3xl text-center mb-16">
+                  <h2 className="text-3xl font-headline font-bold text-foreground sm:text-4xl">Accelerate your career</h2>
+                  <p className="mt-4 text-lg text-muted-foreground">From internships at top startups to national-level hackathons, find opportunities that match your ambition.</p>
+                </div>
 
-      <section className="px-4 sm:px-6 lg:px-10 xl:px-16">
-        <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1.5fr,1fr]">
-          <div className="space-y-6">
-            <span className="text-sm font-semibold uppercase tracking-[0.3em] text-primary">
-              Housing & Study Tools
-            </span>
-            <h2 className="text-3xl font-headline font-bold sm:text-4xl">
-              Book stays and seats with total certainty.
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              Browse hostel and PG listings audited by UniNest moderators. Compare commute times, amenities, curfew policies, and student reviews pulled from trusted communities. Every listing includes transparent pricing and verified owner details.
-            </p>
-            <p className="text-lg text-muted-foreground">
-              Need a quiet desk before exams? Reserve real-time library seats, co-study lounges, or focus pods that sync with your calendar. Automated reminders prevent double-booking so you can stay on track.
-            </p>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Button asChild>
-                <Link href="/housing">Find PGs Near You</Link>
-              </Button>
-              <Button variant="outline" asChild>
-                <Link href="/study-spaces">Book a Library Seat</Link>
-              </Button>
-            </div>
-          </div>
-          <div className="rounded-3xl border border-primary/20 bg-primary/5 p-6 shadow-inner">
-            <div className="space-y-3">
-              <h3 className="text-lg font-semibold text-primary">Why students trust UniNest</h3>
-              <ul className="space-y-2 text-sm text-primary/80">
-                <li>Verified owners and transparent pricing on every listing</li>
-                <li>Attendance and slot reminders for study reservations</li>
-                <li>Peer reviews and safety badges curated by moderators</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
+                <div className="grid md:grid-cols-2 gap-8">
+                  {/* Internship Card */}
+                  <Card className="overflow-hidden border-none bg-muted/30 dark:bg-muted/10">
+                    <CardContent className="p-0">
+                      <div className="grid lg:grid-cols-2 h-full">
+                        <div className="p-8 lg:p-12 flex flex-col justify-center space-y-6">
+                          <div className="size-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center dark:bg-purple-900/20">
+                            <Users className="size-6" />
+                          </div>
+                          <h3 className="text-2xl font-bold">Internship Hub</h3>
+                          <p className="text-muted-foreground">
+                            Find verified roles with mentorship. Filter by stipend, remote options, and skill requirements.
+                          </p>
+                          <Button variant="link" className="w-fit p-0 h-auto font-semibold text-purple-600" asChild>
+                            <Link href="/internships">Browse Internships <ArrowRight className="ml-1 h-4 w-4" /></Link>
+                          </Button>
+                        </div>
+                        <div className="relative h-64 lg:h-auto bg-purple-50 dark:bg-purple-900/5">
+                          {/* Decorative element or image */}
+                          <div className="absolute inset-4 rounded-xl border-dashed border-2 border-purple-200 dark:border-purple-800 flex items-center justify-center">
+                            <span className="text-purple-300 font-bold text-6xl opacity-20">JOB</span>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
 
-      <section className="border-t border-border bg-background px-4 sm:px-6 lg:px-10 xl:px-16">
-        <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1fr,1fr]">
-          <div className="space-y-6">
-            <span className="text-sm font-semibold uppercase tracking-[0.3em] text-primary">
-              Student Marketplace
-            </span>
-            <h2 className="text-3xl font-headline font-bold sm:text-4xl">
-              Swap essentials safely within your campus.
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              The UniNest student marketplace verifies every profile before transactions go live. Buy or rent textbooks, lab gear, gadgets, or event tickets using escrow-style payments that release funds only after inspection is confirmed.
-            </p>
-            <p className="text-lg text-muted-foreground">
-              Vendor partners get access to analytics, promotional tools, and CRM insights via the vendor dashboard. Promote services, launch student-only offers, and monitor campaign performance in real time.
-            </p>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Button asChild>
-                <Link href="/marketplace">Browse the Marketplace</Link>
-              </Button>
-              <Button variant="outline" asChild>
-                <Link href="/vendor-dashboard">Access Vendor Dashboard</Link>
-              </Button>
-            </div>
-          </div>
-          <div className="rounded-3xl border border-primary/20 bg-card p-6 shadow-lg">
-            <div className="space-y-2">
-              <h3 className="text-lg font-semibold">Marketplace perks</h3>
-              <p className="text-sm text-muted-foreground">
-                Escrow-backed payments, campus delivery partners, and reputation scores keep peer-to-peer trades trustworthy.
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Vendors unlock tier badges, promo scheduling, and AI listing optimization tuned for student preferences.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+                  {/* Competition Card */}
+                  <Card className="overflow-hidden border-none bg-muted/30 dark:bg-muted/10">
+                    <CardContent className="p-0">
+                      <div className="grid lg:grid-cols-2 h-full">
+                        <div className="p-8 lg:p-12 flex flex-col justify-center space-y-6">
+                          <div className="size-12 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center dark:bg-orange-900/20">
+                            <Star className="size-6" />
+                          </div>
+                          <h3 className="text-2xl font-bold">Competition Arena</h3>
+                          <p className="text-muted-foreground">
+                            Join hackathons and leagues. Form teams, track prizes, and earn certificates for your profile.
+                          </p>
+                          <Button variant="link" className="w-fit p-0 h-auto font-semibold text-orange-600" asChild>
+                            <Link href="/competitions">View Challenges <ArrowRight className="ml-1 h-4 w-4" /></Link>
+                          </Button>
+                        </div>
+                        <div className="relative h-64 lg:h-auto bg-orange-50 dark:bg-orange-900/5">
+                          {/* Decorative element or image */}
+                          <div className="absolute inset-4 rounded-xl border-dashed border-2 border-orange-200 dark:border-orange-800 flex items-center justify-center">
+                            <span className="text-orange-300 font-bold text-6xl opacity-20">WIN</span>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </section>
 
-      <section className="px-4 pb-16 sm:px-6 lg:px-10 xl:px-16">
-        <div className="mx-auto max-w-5xl space-y-6 text-center">
-          <h2 className="text-3xl font-headline font-bold">Grow with UniNest Today</h2>
-          <p className="text-lg text-muted-foreground">
-            Create your UniNest profile, sync your preferences, and unlock instant access to PG booking tools, the internship hub, the competition arena, and the marketplace. Our support team guides first-time users through onboarding so you can start exploring in minutes.
-          </p>
-          <p className="text-lg text-muted-foreground">
-            We continually add features requested by the community—skill badges, volunteering boards, analytics dashboards, and more. Your feedback fuels a trusted platform that champions student experience, expertise, authoritativeness, and trustworthiness.
-          </p>
-          <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Button size="lg" className="text-base" asChild>
-              <Link href="/signup">Join Now</Link>
-            </Button>
-            <Button size="lg" variant="ghost" className="text-base" asChild>
-              <Link href="/internships">Start with Internships</Link>
-            </Button>
-            <Button size="lg" variant="outline" className="text-base" asChild>
-              <Link href="/housing">Find PGs Near You</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
-    </main>
-  );
+            {/* Testimonials */}
+            {testimonials.length > 0 && (
+              <section className="py-24 bg-background border-t border-border/50">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                  <div className="text-center mb-16">
+                    <h2 className="text-3xl font-headline font-bold">Student Stories</h2>
+                    <p className="mt-4 text-muted-foreground">Join 10,000+ students already using UniNest.</p>
+                  </div>
 
+                  <Carousel opts={{ align: 'start', loop: true }} plugins={[testimonialAutoplay]} className="w-full">
+                    <CarouselContent className="-ml-4">
+                      {testimonials.map((t, i) => (
+                        <CarouselItem key={i} className="pl-4 md:basis-1/2 lg:basis-1/3">
+                          <div className="h-full rounded-2xl border border-border bg-card p-8 shadow-sm transition-shadow hover:shadow-md">
+                            <Quote className="h-8 w-8 text-primary/20 mb-6" />
+                            <p className="text-lg font-medium leading-relaxed mb-6">"{t.quote}"</p>
+                            <div className="flex items-center gap-4">
+                              <Avatar>
+                                {t.avatar ? <AvatarImage src={t.avatar} /> : <AvatarFallback>{getInitials(t.name)}</AvatarFallback>}
+                              </Avatar>
+                              <div>
+                                <div className="font-bold text-sm text-foreground">{t.name}</div>
+                                <div className="text-xs text-muted-foreground">{t.school}</div>
+                              </div>
+                            </div>
+                          </div>
+                        </CarouselItem>
+                      ))}
+                    </CarouselContent>
+                    <div className="mt-8 flex justify-center gap-2">
+                      <CarouselPrevious className="static translate-y-0" />
+                      <CarouselNext className="static translate-y-0" />
+                    </div>
+                  </Carousel>
+                </div>
+              </section>
+            )}
+
+            {/* CTA Section */}
+            <section className="relative overflow-hidden py-24">
+              <div className="absolute inset-0 bg-primary -z-20" />
+              <div className="absolute inset-0 bg-[url('/patterns/grid.svg')] opacity-10 -z-10" />
+              <div className="mx-auto max-w-4xl px-4 text-center">
+                <h2 className="text-3xl font-headline font-bold text-white sm:text-5xl">Ready to upgrade your campus life?</h2>
+                <p className="mx-auto mt-6 max-w-2xl text-lg text-primary-foreground/80">
+                  Join the community today. Access exclusive internships, find verified housing, and connect with peers across India.
+                </p>
+                <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+                  <Button size="lg" variant="secondary" className="h-14 px-8 text-lg font-semibold shadow-xl" asChild>
+                    <Link href="/signup">Get Started for Free</Link>
+                  </Button>
+                  <Button size="lg" variant="outline" className="h-14 px-8 text-lg font-semibold bg-transparent text-white border-white/30 hover:bg-white/10 hover:text-white" asChild>
+                    <Link href="/about">Learn More</Link>
+                  </Button>
+                </div>
+              </div>
+            </section>
+          </main>
+          );
+}
 }

@@ -1,0 +1,23 @@
+{
+    "name": "studio-uninest-mcp-server",
+    "version": "1.0.0",
+    "description": "Custom MCP server for Studio Uninest Supabase integration",
+    "type": "module",
+    "main": "build/index.js",
+    "scripts": {
+        "build": "tsc",
+        "start": "node build/index.js",
+        "dev": "tsx src/index.ts"
+    },
+    "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.0.1",
+        "@supabase/supabase-js": "^2.45.1",
+        "dotenv": "^16.4.5",
+        "zod": "^3.22.4"
+    },
+    "devDependencies": {
+        "@types/node": "^20.11.24",
+        "tsx": "^4.7.1",
+        "typescript": "^5.3.3"
+    }
+}
