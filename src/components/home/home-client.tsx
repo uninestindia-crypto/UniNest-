@@ -584,4 +584,4 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
     </main>
   );
 }
-}
+
