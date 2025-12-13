@@ -11,11 +11,11 @@ describe('Avatar Component', () => {
     it('renders text fallback when no image source', () => {
         render(
             <TestWrapper>
-                <Avatar fallback="JB" />
+                <Avatar fallback="John Doe" />
             </TestWrapper>
         );
 
-        expect(screen.getByText('JB')).toBeTruthy();
+        expect(screen.getByText('JD')).toBeTruthy();
     });
 
     it('renders image when source provided', () => {

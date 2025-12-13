@@ -62,10 +62,11 @@ describe('Input Component', () => {
         fireEvent.press(toggleBtn);
 
         // Should now be visible (not secure)
-        expect(input.props.secureTextEntry).toBe(false); // Our component logic flips it
+        // Query again to get fresh props
+        expect(screen.getByPlaceholderText('Password').props.secureTextEntry).toBe(false);
 
         // Press again to hide
         fireEvent.press(toggleBtn);
-        expect(input.props.secureTextEntry).toBe(true);
+        expect(screen.getByPlaceholderText('Password').props.secureTextEntry).toBe(true);
     });
 });

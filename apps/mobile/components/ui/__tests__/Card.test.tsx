@@ -25,9 +25,9 @@ describe('Card Component', () => {
         render(
             <TestWrapper>
                 <Card>
-                    <CardHeader>Header</CardHeader>
-                    <CardContent>Body</CardContent>
-                    <CardFooter>Footer</CardFooter>
+                    <CardHeader><Text>Header</Text></CardHeader>
+                    <CardContent><Text>Body</Text></CardContent>
+                    <CardFooter><Text>Footer</Text></CardFooter>
                 </Card>
             </TestWrapper>
         );

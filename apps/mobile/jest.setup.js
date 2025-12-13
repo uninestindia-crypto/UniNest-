@@ -55,6 +55,25 @@ jest.mock('@supabase/supabase-js', () => ({
 // Silence the warning about useNativeDriver - use virtual mock for RN 0.76+
 jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper', () => ({}), { virtual: true });
 
+jest.mock('expo-image', () => {
+    const React = require('react');
+    const { View } = require('react-native');
+    return {
+        Image: (props) => React.createElement(View, { ...props, testID: 'expo-image-mock' }),
+    };
+});
+
+jest.mock('expo-haptics', () => ({
+    impactAsync: jest.fn(),
+    notificationAsync: jest.fn(),
+    selectionAsync: jest.fn(),
+    ImpactFeedbackStyle: {
+        Light: 'light',
+        Medium: 'medium',
+        Heavy: 'heavy',
+    },
+}));
+
 // Global test utilities
 global.console = {
     ...console,
