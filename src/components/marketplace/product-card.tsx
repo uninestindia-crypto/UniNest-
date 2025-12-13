@@ -42,7 +42,7 @@ export default function ProductCard({ product, user, onBuyNow, isBuying, isRazor
                         alt={product.name}
                         fill
                         className="object-cover transition-transform duration-500 group-hover:scale-105"
-                        sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+                        sizes="(min-width: 1536px) 25vw, (min-width: 1280px) 33vw, (min-width: 640px) 50vw, 100vw"
                     />
                 </Link>
                 <div className="absolute top-2 right-2 flex flex-col gap-2">

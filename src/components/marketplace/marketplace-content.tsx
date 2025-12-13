@@ -186,15 +186,21 @@ function FilterControls({
   );
 }
 
-export default function MarketplaceContent() {
+type MarketplaceContentProps = {
+  initialProducts: Product[];
+};
+
+export default function MarketplaceContent({ initialProducts }: MarketplaceContentProps) {
   const { user, supabase } = useAuth();
   const searchParams = useSearchParams();
   const router = useRouter();
   const { toast } = useToast();
   const { openCheckout, isLoaded } = useRazorpay();
 
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState<Product[]>(initialProducts);
+  // Loading is false by default because we have data! 
+  // (unless we want to show loading during navigation, but Suspense handles that mostly)
+  const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [purchasingProductId, setPurchasingProductId] = useState<number | null>(null);
   const [selectedLocation, setSelectedLocation] = useState('all');
@@ -388,54 +394,13 @@ export default function MarketplaceContent() {
     return `/marketplace?category=${encodeURIComponent(categoryName)}`;
   };
 
+  /* REMOVED: useEffect fetching logic. Data is now passed from Server Component. */
+
+  // Initialize with server data, but allow updates if needed (though navigating categories will remount/update prop)
   useEffect(() => {
-    const fetchProducts = async () => {
-      if (!supabase) return;
-      setLoading(true);
-      let query = supabase
-        .from('products')
-        .select(`
-          *,
-          profiles:seller_id (
-            full_name
-          )
-        `);
-
-      if (selectedCategory) {
-        let categoryQuery = selectedCategory;
-        if (selectedCategory === 'Other Products') {
-          // A bit of a hack to show products not in the main categories
-          query = query.not('category', 'in', '("Books", "Hostels", "Food Mess", "Cyber Café", "Library", "Hostel Room", "Library Seat")');
-        } else {
-          query = query.eq('category', selectedCategory);
-        }
-      } else {
-        // Exclude child products from main view
-        query = query.not('category', 'in', '("Hostel Room", "Library Seat")');
-      }
-
-
-      const { data, error } = await query.order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching products:', error);
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: 'Could not fetch product listings.',
-        });
-      } else {
-        const mappedData = data.map(p => ({
-          ...p,
-          seller: p.profiles
-        }));
-        setProducts(mappedData as Product[]);
-      }
-      setLoading(false);
-    };
-
-    fetchProducts();
-  }, [selectedCategory, supabase, toast]);
+    setProducts(initialProducts);
+    setLoading(false);
+  }, [initialProducts]);
 
   const filteredProducts = useMemo(() => {
     const trimmedQuery = searchQuery.trim().toLowerCase();

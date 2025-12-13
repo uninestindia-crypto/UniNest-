@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useAuth } from '@/hooks/use-auth';
+
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
@@ -27,6 +27,7 @@ type ProfileContent = {
   posts: PostWithAuthor[];
   followers: Profile[];
   following: Profile[];
+  purchases?: Product[];
 }
 
 type ProfileClientProps = {
@@ -40,6 +41,51 @@ export default function ProfileClient({ initialProfile, initialContent }: Profil
 
   const [profile, setProfile] = useState<ProfileWithCounts>(initialProfile);
   const [followerCount, setFollowerCount] = useState(initialProfile.follower_count?.[0]?.count ?? 0);
+  const [favoriteProducts, setFavoriteProducts] = useState<Product[]>([]);
+
+  // Load favorites from local storage and fetch their details
+  useEffect(() => {
+    const loadFavorites = async () => {
+      if (typeof window === 'undefined' || !supabase) return;
+      const stored = localStorage.getItem('uninest_favorites');
+      if (!stored) return;
+
+      try {
+        const ids = JSON.parse(stored);
+        if (!Array.isArray(ids) || ids.length === 0) {
+          setFavoriteProducts([]);
+          return;
+        }
+
+        // Fetch full product details for these IDs
+        const { data, error } = await supabase
+          .from('products')
+          .select('*, profiles:seller_id(full_name, avatar_url, handle, user_metadata)')
+          .in('id', ids)
+          .eq('status', 'active'); // Only show active items
+
+        if (data) {
+          const validProducts = data.map((p: any) => ({ ...p, seller: p.profiles }));
+          setFavoriteProducts(validProducts as Product[]);
+        }
+      } catch (e) {
+        console.error("Error loading favorites", e);
+      }
+    };
+
+    loadFavorites();
+
+    // Listen for storage events (if user favorites something in another tab/window)
+    const handleStorageChange = () => loadFavorites();
+    window.addEventListener('storage', handleStorageChange);
+    // Custom event for same-window updates
+    window.addEventListener('favorites-updated', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('favorites-updated', handleStorageChange);
+    }
+  }, [supabase]);
 
   const [isFollowing, setIsFollowing] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
@@ -307,17 +353,52 @@ export default function ProfileClient({ initialProfile, initialContent }: Profil
           </div>
         </TabsContent>
         <TabsContent value="purchases" className="mt-6 animation-fade-in">
-          <div className="text-center py-12 bg-muted/20 rounded-2xl border border-dashed">
-            <ShoppingBag className="mx-auto h-12 w-12 text-muted-foreground/30 mb-3" />
-            <h3 className="text-lg font-medium">No purchases yet</h3>
-            <p className="text-muted-foreground text-sm">Items you buy will show up here.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {initialContent.purchases && initialContent.purchases.length > 0 ? (
+              initialContent.purchases.map((product, idx) => (
+                <div key={`${product.id}-${idx}`} className="h-full">
+                  <ProductCard
+                    product={product}
+                    user={user}
+                    onBuyNow={() => { }} // Already purchased
+                    isBuying={false}
+                    isRazorpayLoaded={false}
+                  />
+                </div>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12 bg-muted/20 rounded-2xl border border-dashed">
+                <ShoppingBag className="mx-auto h-12 w-12 text-muted-foreground/30 mb-3" />
+                <h3 className="text-lg font-medium">No purchases yet</h3>
+                <p className="text-muted-foreground text-sm">Items you buy will show up here.</p>
+              </div>
+            )}
           </div>
         </TabsContent>
         <TabsContent value="favorites" className="mt-6 animation-fade-in">
-          <div className="text-center py-12 bg-muted/20 rounded-2xl border border-dashed">
-            <Heart className="mx-auto h-12 w-12 text-muted-foreground/30 mb-3" />
-            <h3 className="text-lg font-medium">No favorites yet</h3>
-            <p className="text-muted-foreground text-sm">Items you save will appear here.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Note: Favorites fetching would ideally verify IDs against backend to get latest data */}
+            {/* For now, we rely on what we can get or show empty state if we haven't fetched all details yet. 
+                     Typically, we'd need to fetch full product details for these favorite IDs. */}
+            {favoriteProducts.length > 0 ? (
+              favoriteProducts.map(product => (
+                <div key={product.id} className="h-full">
+                  <ProductCard
+                    product={product}
+                    user={user}
+                    onBuyNow={() => { }}
+                    isBuying={false}
+                    isRazorpayLoaded={true} // Allow buying favorites
+                  />
+                </div>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12 bg-muted/20 rounded-2xl border border-dashed">
+                <Heart className="mx-auto h-12 w-12 text-muted-foreground/30 mb-3" />
+                <h3 className="text-lg font-medium">No favorites yet</h3>
+                <p className="text-muted-foreground text-sm">Tap the heart on items you like to save them here.</p>
+              </div>
+            )}
           </div>
         </TabsContent>
         <TabsContent value="followers" className="mt-6 animation-fade-in">

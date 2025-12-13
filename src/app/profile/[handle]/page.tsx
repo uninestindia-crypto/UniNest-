@@ -28,6 +28,8 @@ async function getProfileData(handle: string) {
   }
 
   const userId = profileData.id;
+  const isMyProfile = user ? user.id === profileData.id : false;
+  const isMyProfile = user ? user.id === profileData.id : false;
 
   // 2. Get related content
   const [
@@ -35,24 +37,42 @@ async function getProfileData(handle: string) {
     postsRes,
     followersRes,
     followingRes,
-    likedPostsRes
+    likedPostsRes,
+    ordersRes
   ] = await Promise.all([
-    supabase.from('products').select('*, profiles:seller_id(full_name)').eq('seller_id', userId),
-    supabase.from('posts').select(`*, profiles:user_id ( full_name, avatar_url, handle ), likes ( count ), comments ( id )`).eq('user_id', userId).order('created_at', { ascending: false }),
+    supabase.from('products').select('*, profiles:seller_id(full_name, avatar_url, handle, user_metadata)').eq('seller_id', userId).eq('status', 'active').order('created_at', { ascending: false }),
+    supabase.from('posts').select('*, likes:post_likes(count), comments:comments(count), profiles:user_id(full_name, avatar_url, handle)').eq('user_id', userId).order('created_at', { ascending: false }),
     supabase.from('followers').select('profiles!follower_id(*)').eq('following_id', userId),
     supabase.from('followers').select('profiles!following_id(*)').eq('follower_id', userId),
-    user ? supabase.from('likes').select('post_id').eq('user_id', user.id) : Promise.resolve({ data: [] })
+    user ? supabase.from('likes').select('post_id').eq('user_id', user.id) : Promise.resolve({ data: [] }),
+    isMyProfile
+      ? supabase.from('orders')
+        .select('*, order_items(product_id, products(*, seller:seller_id(full_name, avatar_url, handle, user_metadata)))')
+        .eq('buyer_id', userId)
+        .order('created_at', { ascending: false })
+      : Promise.resolve({ data: [] })
   ]);
 
-  const likedPostIds = new Set(likedPostsRes.data?.map(p => p.post_id) || []);
+  const likedPostIds = new Set(likedPostsRes.data?.map((p: any) => p.post_id) || []);
+
+  // Transform orders into a list of products for the 'Purchases' tab
+  const purchasedProducts = (ordersRes.data || []).flatMap((order: any) =>
+    order.order_items.map((item: any) => ({
+      ...item.products,
+      // Add context that this is a purchased item if needed, 
+      // but strictly adhering to Product type for ProductCard
+      seller: item.products.seller || {}, // Ensure seller object/dummy exists if missing
+      purchaseDate: order.created_at, // Optional metadata
+    }))
+  ).filter(p => !!p);
 
   const content = {
     listings: (listingsRes.data as any[] || []).map(p => ({ ...p, seller: p.profiles })) as Product[],
     posts: (postsRes.data || []).map(p => ({ ...p, isLiked: likedPostIds.has(p.id) })) as PostWithAuthor[],
     followers: (followersRes.data?.map((f: any) => f.profiles) as Profile[]) || [],
     following: (followingRes.data?.map((f: any) => f.profiles) as Profile[]) || [],
-    purchases: [], // Placeholder for future implementation
-    favorites: [], // Placeholder for future implementation
+    purchases: purchasedProducts as Product[],
+    favorites: [], // Favorites are handled client-side via LocalStorage for now
   };
 
   const isMyProfile = user ? user.id === profileData.id : false;
