@@ -1,8 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { getBrandingAssets, getDefaultBrandingAssets } from '@/lib/branding';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const revalidate = 3600; // Cache manifest for 1 hour
 
 const FALLBACK_SCREENSHOTS = {
   desktop: {
@@ -61,20 +60,20 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
 
   const desktopScreenshot = brandingAssets.pwaScreenshotDesktopUrl
     ? {
-        src: brandingAssets.pwaScreenshotDesktopUrl,
-        sizes: '1280x720',
-        type: 'image/png',
-        form_factor: 'wide' as const,
-      }
+      src: brandingAssets.pwaScreenshotDesktopUrl,
+      sizes: '1280x720',
+      type: 'image/png',
+      form_factor: 'wide' as const,
+    }
     : FALLBACK_SCREENSHOTS.desktop;
 
   const mobileScreenshot = brandingAssets.pwaScreenshotMobileUrl
     ? {
-        src: brandingAssets.pwaScreenshotMobileUrl,
-        sizes: '540x960',
-        type: 'image/png',
-        form_factor: 'narrow' as const,
-      }
+      src: brandingAssets.pwaScreenshotMobileUrl,
+      sizes: '540x960',
+      type: 'image/png',
+      form_factor: 'narrow' as const,
+    }
     : FALLBACK_SCREENSHOTS.mobile;
 
   return {

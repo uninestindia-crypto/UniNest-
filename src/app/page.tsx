@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   },
 };
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60; // Cache for 60 seconds, revalidate in background
 
 async function getPosterConfig(): Promise<HomePosterConfig> {
   try {

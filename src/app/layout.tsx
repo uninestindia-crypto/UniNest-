@@ -5,12 +5,11 @@ import { cn } from '@/lib/utils';
 import { Toaster } from "@/components/ui/toaster";
 import MainLayout from '@/components/layout/main-layout';
 import { AuthProvider } from '@/hooks/use-auth';
-import ClientOnly from '@/components/client-only';
 import { BrandingAssetsProvider } from '@/components/branding/branding-provider';
 import { getBrandingAssets } from '@/lib/branding';
 import { Poppins } from 'next/font/google';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60; // Cache for 60 seconds, revalidate in background
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -133,6 +132,11 @@ export default async function RootLayout({
   const brandingAssets = await getBrandingAssets();
   return (
     <html lang="en" suppressHydrationWarning className={poppins.variable}>
+      <head>
+        {/* Preconnect to Supabase for faster API calls */}
+        <link rel="preconnect" href="https://dfkgefoqodjccrrqmqis.supabase.co" />
+        <link rel="dns-prefetch" href="https://dfkgefoqodjccrrqmqis.supabase.co" />
+      </head>
       <body className={cn(
         "min-h-screen bg-background font-body antialiased"
       )}>
@@ -154,15 +158,13 @@ export default async function RootLayout({
             }),
           }}
         />
-        <ClientOnly>
-          <AuthProvider>
-            <BrandingAssetsProvider initialAssets={brandingAssets}>
-              <MainLayout>
-                {children}
-              </MainLayout>
-            </BrandingAssetsProvider>
-          </AuthProvider>
-        </ClientOnly>
+        <AuthProvider>
+          <BrandingAssetsProvider initialAssets={brandingAssets}>
+            <MainLayout>
+              {children}
+            </MainLayout>
+          </BrandingAssetsProvider>
+        </AuthProvider>
         <Toaster />
       </body>
     </html>

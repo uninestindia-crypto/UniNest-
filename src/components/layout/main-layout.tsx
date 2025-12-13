@@ -123,13 +123,8 @@ export default function MainLayout({ children }: { children: ReactNode }) {
     );
   }
 
-  if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader2 className="size-8 animate-spin" />
-      </div>
-    )
-  }
+  // Note: Removed loading spinner - layout now renders immediately.
+  // User-specific content hydrates when auth is ready.
 
   const userHandle = user?.user_metadata?.handle;
   const profileLink = user ? (userHandle ? `/profile/${userHandle}` : '/profile') : '/login';
@@ -207,8 +202,8 @@ export default function MainLayout({ children }: { children: ReactNode }) {
             "flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 lg:p-8",
             // Remove padding on mobile home for full-bleed feel if desired, but general padding needed for other pages
             isMobile && isHomePage && "p-0 py-4",
-             // Ensure bottom padding for nav bar on mobile/tablet (anything < lg)
-             "pb-24 lg:pb-8"
+            // Ensure bottom padding for nav bar on mobile/tablet (anything < lg)
+            "pb-24 lg:pb-8"
           )}>
             {children}
           </main>
@@ -216,7 +211,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
 
         {/* Mobile/Tablet Bottom Navigation - Visible below lg breakpoint */}
         <div className="lg:hidden">
-           <MobileBottomNav />
+          <MobileBottomNav />
         </div>
       </SidebarProvider>
     </>
