@@ -17,14 +17,15 @@ ALTER FUNCTION public.handle_new_follower() SET search_path = public;
 ALTER FUNCTION public.handle_new_post() SET search_path = public;
 
 -- 6. get_chat_rooms_for_user
-ALTER FUNCTION public.get_chat_rooms_for_user() SET search_path = public;
+-- Takes a user_id (uuid)
+ALTER FUNCTION public.get_chat_rooms_for_user(uuid) SET search_path = public;
 
 -- 7. set_updated_at
 ALTER FUNCTION public.set_updated_at() SET search_path = public;
 
 -- 8. is_room_participant
--- Note: Check arguments if this fails, assuming standard signature or no args if not overloaded
-ALTER FUNCTION public.is_room_participant(uuid) SET search_path = public;
+-- Takes (room_id, user_id) presumably, or similar
+ALTER FUNCTION public.is_room_participant(uuid, uuid) SET search_path = public;
 
 -- 9. get_user_role
 ALTER FUNCTION public.get_user_role() SET search_path = public;

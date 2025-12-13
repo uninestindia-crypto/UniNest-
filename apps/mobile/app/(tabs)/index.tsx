@@ -150,6 +150,24 @@ export default function HomeScreen() {
                 </Link>
             )}
 
+            {/* Workspace Banner */}
+            <Link href="/workspace" asChild>
+                <TouchableOpacity
+                    style={[styles.vendorBanner, { backgroundColor: theme.colors.card, marginBottom: 24, marginHorizontal: 16 }]}
+                >
+                    <Ionicons name="briefcase-outline" size={20} color={theme.colors.foreground} />
+                    <View style={{ flex: 1 }}>
+                        <Text style={[styles.vendorBannerText, { color: theme.colors.foreground }]}>
+                            Explore Workspace
+                        </Text>
+                        <Text style={{ fontSize: 12, color: theme.colors.mutedForeground }}>
+                            Competitions, Internships & More
+                        </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color={theme.colors.mutedForeground} />
+                </TouchableOpacity>
+            </Link>
+
             {/* Section Title */}
             <Text style={[styles.sectionTitle, { color: theme.colors.foreground }]}>
                 {selectedCategory === 'all' ? 'Popular Listings' : CATEGORIES.find(c => c.id === selectedCategory)?.label}
