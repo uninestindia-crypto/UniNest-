@@ -37,8 +37,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
             usesNonExemptEncryption: false,
         },
         infoPlist: {
-            NSCameraUsageDescription: 'Used to upload photos for listings',
-            NSPhotoLibraryUsageDescription: 'Used to select photos for listings',
+            NSCameraUsageDescription: 'Used to take photos for listings and profile pictures',
+            NSPhotoLibraryUsageDescription: 'Used to select photos for listings and profile pictures',
         },
         associatedDomains: ['applinks:uninest.app'],
     },
@@ -80,8 +80,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         [
             'expo-image-picker',
             {
-                photosPermission: 'Allow Uninest to access your photos for listing uploads',
-                cameraPermission: 'Allow Uninest to use your camera for listing photos',
+                photosPermission: 'Allow Uninest to access your photos for listings and profile pictures',
+                cameraPermission: 'Allow Uninest to use your camera for listings and profile pictures',
             },
         ],
     ],
