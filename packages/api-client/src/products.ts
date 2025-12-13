@@ -67,5 +67,20 @@ export function createProductsApi(supabase: SupabaseClient) {
             if (error) throw error;
             return data as Product[];
         },
+
+        /**
+         * Get rooms for a specific hostel (by seller ID)
+         */
+        async getHostelRooms(sellerId: string): Promise<Product[]> {
+            const { data, error } = await supabase
+                .from('products')
+                .select('*')
+                .eq('seller_id', sellerId)
+                .eq('category', 'Hostel Room')
+                .eq('status', 'active');
+
+            if (error) throw error;
+            return data as Product[];
+        },
     };
 }
