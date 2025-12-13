@@ -7,6 +7,7 @@ export type Profile = {
     avatar_url: string | null;
     handle: string | null;
     bio?: string | null;
+    phone?: string | null;
     followers?: { count: number }[];
     following?: { count: number }[];
     preferences?: {

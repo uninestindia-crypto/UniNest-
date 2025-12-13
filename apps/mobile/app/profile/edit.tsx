@@ -240,8 +240,8 @@ export default function EditProfileScreen() {
                             accessibilityRole="button"
                         >
                             <Avatar
-                                source={avatarUri}
-                                fallback={profile?.full_name}
+                                source={avatarUri ?? undefined}
+                                fallback={profile?.full_name ?? undefined}
                                 size="2xl"
                             />
                             <View
