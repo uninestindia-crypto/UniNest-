@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/theme';
 import { useAuth } from '@/hooks/useAuth';
 import { productsApi } from '@/services/supabase';
+import { supabase } from '@/services/supabase';
 
 const { width } = Dimensions.get('window');
 
@@ -66,9 +67,53 @@ export default function ProductDetailScreen() {
         router.push(`/booking/${product.id}`);
     };
 
+    // Favorites Logic
+    const [isFavorited, setIsFavorited] = useState(false);
+
+    useEffect(() => {
+        if (!user || !product) return;
+
+        const checkFavorite = async () => {
+            const { data } = await supabase
+                .from('favorites')
+                .select('product_id')
+                .eq('user_id', user.id)
+                .eq('product_id', product.id)
+                .single();
+            setIsFavorited(!!data);
+        };
+        checkFavorite();
+    }, [user, product]);
+
+    const toggleFavorite = async () => {
+        if (!user) return;
+
+        const newStatus = !isFavorited;
+        setIsFavorited(newStatus); // Optimistic
+
+        if (newStatus) {
+            await supabase.from('favorites').insert({ user_id: user.id, product_id: product.id });
+        } else {
+            await supabase.from('favorites').delete().eq('user_id', user.id).eq('product_id', product.id);
+        }
+    };
+
     return (
         <>
-            <Stack.Screen options={{ headerTitle: product.name }} />
+            <Stack.Screen
+                options={{
+                    headerTitle: product.name,
+                    headerRight: () => (
+                        <TouchableOpacity onPress={toggleFavorite}>
+                            <Ionicons
+                                name={isFavorited ? "heart" : "heart-outline"}
+                                size={24}
+                                color={isFavorited ? "#ef4444" : theme.colors.foreground}
+                            />
+                        </TouchableOpacity>
+                    )
+                }}
+            />
             <ScrollView
                 style={[styles.container, { backgroundColor: theme.colors.background }]}
                 showsVerticalScrollIndicator={false}

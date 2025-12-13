@@ -152,6 +152,34 @@ export default async function AdminDashboardPage() {
     .map(([name, revenue]) => ({ name, revenue }))
     .reverse();
 
+  const recentActivity = [
+    ...donations.map(d => ({
+      id: `donation-${d.created_at}`,
+      user: {
+        name: d.profiles?.full_name || 'Anonymous',
+        email: 'Donor', // We don't fetch email for donors here effectively, keeping generic
+        avatar: d.profiles?.avatar_url
+      },
+      amount: d.amount,
+      type: 'donation' as const,
+      status: 'completed' as const,
+      created_at: d.created_at
+    })),
+    ...competitionEntries.map(c => ({
+      id: `comp-${c.created_at}`,
+      user: {
+        name: 'Competition Entrant', // We didn't fetch profile for entries in original code
+        email: 'User',
+        avatar: null
+      },
+      amount: c.competitions?.entry_fee || 0,
+      type: 'competition' as const,
+      status: 'completed' as const,
+      created_at: c.created_at
+    }))
+  ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, 6);
+
   const categoryCounts = productCategories.reduce((acc, { category }) => {
     const key = category || 'Uncategorized';
     acc[key] = (acc[key] || 0) + 1;
@@ -168,6 +196,7 @@ export default async function AdminDashboardPage() {
         stats={stats}
         revenueData={revenueData}
         categoryData={categoryData}
+        recentActivity={recentActivity}
       />
     </div>
   );

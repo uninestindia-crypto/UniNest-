@@ -8,7 +8,7 @@ import { Card, CardContent } from '../ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Edit, Loader2, Package, Newspaper, UserPlus, Users, ShoppingBag, Heart } from 'lucide-react';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
 import type { PostWithAuthor, Product, Profile } from '@/lib/types';
 import ProductCard from '../marketplace/product-card';
@@ -28,6 +28,7 @@ type ProfileContent = {
   followers: Profile[];
   following: Profile[];
   purchases?: Product[];
+  favorites: Product[];
 }
 
 type ProfileClientProps = {
@@ -41,51 +42,26 @@ export default function ProfileClient({ initialProfile, initialContent }: Profil
 
   const [profile, setProfile] = useState<ProfileWithCounts>(initialProfile);
   const [followerCount, setFollowerCount] = useState(initialProfile.follower_count?.[0]?.count ?? 0);
-  const [favoriteProducts, setFavoriteProducts] = useState<Product[]>([]);
+  const [favoriteProducts, setFavoriteProducts] = useState<Product[]>(initialContent.favorites || []);
 
-  // Load favorites from local storage and fetch their details
+  const router = useRouter();
+
+  // Listen for favorite updates (from ProductCard) and refresh data
   useEffect(() => {
-    const loadFavorites = async () => {
-      if (typeof window === 'undefined' || !supabase) return;
-      const stored = localStorage.getItem('uninest_favorites');
-      if (!stored) return;
-
-      try {
-        const ids = JSON.parse(stored);
-        if (!Array.isArray(ids) || ids.length === 0) {
-          setFavoriteProducts([]);
-          return;
-        }
-
-        // Fetch full product details for these IDs
-        const { data, error } = await supabase
-          .from('products')
-          .select('*, profiles:seller_id(full_name, avatar_url, handle, user_metadata)')
-          .in('id', ids)
-          .eq('status', 'active'); // Only show active items
-
-        if (data) {
-          const validProducts = data.map((p: any) => ({ ...p, seller: p.profiles }));
-          setFavoriteProducts(validProducts as Product[]);
-        }
-      } catch (e) {
-        console.error("Error loading favorites", e);
-      }
-    };
-
-    loadFavorites();
-
-    // Listen for storage events (if user favorites something in another tab/window)
-    const handleStorageChange = () => loadFavorites();
-    window.addEventListener('storage', handleStorageChange);
-    // Custom event for same-window updates
-    window.addEventListener('favorites-updated', handleStorageChange);
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('favorites-updated', handleStorageChange);
+    const handleUpdate = () => {
+      // Refetch data by refreshing the route
+      router.refresh();
     }
-  }, [supabase]);
+    window.addEventListener('favorites-updated', handleUpdate);
+    return () => window.removeEventListener('favorites-updated', handleUpdate);
+  }, [router]);
+
+  // Sync from props if they change (e.g. after router.refresh())
+  useEffect(() => {
+    if (initialContent.favorites) {
+      setFavoriteProducts(initialContent.favorites);
+    }
+  }, [initialContent.favorites]);
 
   const [isFollowing, setIsFollowing] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);

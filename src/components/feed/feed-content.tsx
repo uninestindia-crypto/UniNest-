@@ -8,7 +8,10 @@ import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import type { PostWithAuthor } from './post-card';
-import TrendingSidebar from './trending-sidebar';
+import dynamic from 'next/dynamic';
+
+// Lazy load secondary UI element
+const TrendingSidebar = dynamic(() => import('./trending-sidebar'), { ssr: false });
 
 export default function FeedContent() {
   const [posts, setPosts] = useState<PostWithAuthor[]>([]);
@@ -42,39 +45,39 @@ export default function FeedContent() {
     let finalPosts = (postsData as any[]) || [];
 
     if (user) {
-        const { data: likedPosts } = await supabase
-            .from('likes')
-            .select('post_id')
-            .eq('user_id', user.id);
-        
-        const { data: followedUsers } = await supabase
-            .from('followers')
-            .select('following_id')
-            .eq('follower_id', user.id);
+      const { data: likedPosts } = await supabase
+        .from('likes')
+        .select('post_id')
+        .eq('user_id', user.id);
 
-        const likedPostIds = new Set(likedPosts?.map(p => p.post_id));
-        const followedUserIds = new Set(followedUsers?.map(f => f.following_id));
+      const { data: followedUsers } = await supabase
+        .from('followers')
+        .select('following_id')
+        .eq('follower_id', user.id);
 
-        finalPosts = finalPosts.map(p => ({
-            ...p,
-            isLiked: likedPostIds.has(p.id),
-            isFollowed: followedUserIds.has(p.user_id),
-            comments: p.comments.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
-        }));
+      const likedPostIds = new Set(likedPosts?.map(p => p.post_id));
+      const followedUserIds = new Set(followedUsers?.map(f => f.following_id));
 
-        // Prioritize posts from followed users
-        finalPosts.sort((a, b) => {
-            const aFollowed = followedUserIds.has(a.user_id);
-            const bFollowed = followedUserIds.has(b.user_id);
-            if (aFollowed && !bFollowed) return -1;
-            if (!aFollowed && bFollowed) return 1;
-            return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-        });
+      finalPosts = finalPosts.map(p => ({
+        ...p,
+        isLiked: likedPostIds.has(p.id),
+        isFollowed: followedUserIds.has(p.user_id),
+        comments: p.comments.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
+      }));
+
+      // Prioritize posts from followed users
+      finalPosts.sort((a, b) => {
+        const aFollowed = followedUserIds.has(a.user_id);
+        const bFollowed = followedUserIds.has(b.user_id);
+        if (aFollowed && !bFollowed) return -1;
+        if (!aFollowed && bFollowed) return 1;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
 
     } else {
-        finalPosts = finalPosts.map(p => ({ ...p, isLiked: false, isFollowed: false }));
+      finalPosts = finalPosts.map(p => ({ ...p, isLiked: false, isFollowed: false }));
     }
-    
+
     setPosts(finalPosts);
     setLoading(false);
   }, [supabase, toast, user]);
@@ -111,9 +114,9 @@ export default function FeedContent() {
         isLiked: false,
         isFollowed: false, // You follow yourself implicitly, but not needed for button
       };
-      setPosts([ newPost, ...posts]);
+      setPosts([newPost, ...posts]);
       toast({ title: 'Post created successfully!' });
-      
+
       // Call the RPC to create notifications for followers
       const { error: rpcError } = await supabase.rpc('create_new_post_notifications', {
         post_id_param: newPost.id,
@@ -138,17 +141,17 @@ export default function FeedContent() {
   const editPost = async (id: number, newContent: string) => {
     if (!supabase) return;
     const { data: updatedPost, error } = await supabase
-        .from('posts')
-        .update({ content: newContent })
-        .eq('id', id)
-        .select()
-        .single();
-    
+      .from('posts')
+      .update({ content: newContent })
+      .eq('id', id)
+      .select()
+      .single();
+
     if (error) {
-       toast({ variant: 'destructive', title: 'Error', description: 'Could not update the post.' });
+      toast({ variant: 'destructive', title: 'Error', description: 'Could not update the post.' });
     } else {
-       setPosts(posts.map(p => p.id === id ? { ...p, content: updatedPost.content } : p));
-       toast({ title: 'Post Updated', description: 'Your post has been successfully updated.' });
+      setPosts(posts.map(p => p.id === id ? { ...p, content: updatedPost.content } : p));
+      toast({ title: 'Post Updated', description: 'Your post has been successfully updated.' });
     }
   };
 
@@ -157,73 +160,73 @@ export default function FeedContent() {
       toast({ variant: 'destructive', title: 'You must be logged in to comment.' });
       return;
     }
-    
+
     const { data: newComment, error } = await supabase
-        .from('comments')
-        .insert({ post_id: postId, user_id: user.id, content: commentContent})
-        .select('*, profiles (full_name, avatar_url, handle)')
-        .single();
+      .from('comments')
+      .insert({ post_id: postId, user_id: user.id, content: commentContent })
+      .select('*, profiles (full_name, avatar_url, handle)')
+      .single();
 
     if (error) {
-        toast({ variant: 'destructive', title: 'Error', description: 'Could not add comment.' });
+      toast({ variant: 'destructive', title: 'Error', description: 'Could not add comment.' });
     } else {
-        setPosts(posts.map(p => p.id === postId ? { ...p, comments: [newComment, ...p.comments]} : p));
+      setPosts(posts.map(p => p.id === postId ? { ...p, comments: [newComment, ...p.comments] } : p));
     }
   };
-  
+
   const updateLikes = async (postId: number, isLiked: boolean) => {
-     if (!user || !supabase) {
-        toast({ variant: 'destructive', title: 'You must be logged in to like posts.' });
-        return;
+    if (!user || !supabase) {
+      toast({ variant: 'destructive', title: 'You must be logged in to like posts.' });
+      return;
     }
 
     if (isLiked) {
-        // Unlike the post
-        const { error } = await supabase.from('likes').delete().match({ post_id: postId, user_id: user.id });
-         if (error) {
-            toast({ variant: 'destructive', title: 'Error', description: "Could not unlike the post." });
-        } else {
-            setPosts(posts.map(p => p.id === postId ? { ...p, isLiked: false, likes: p.likes.slice(1) } : p));
-        }
+      // Unlike the post
+      const { error } = await supabase.from('likes').delete().match({ post_id: postId, user_id: user.id });
+      if (error) {
+        toast({ variant: 'destructive', title: 'Error', description: "Could not unlike the post." });
+      } else {
+        setPosts(posts.map(p => p.id === postId ? { ...p, isLiked: false, likes: p.likes.slice(1) } : p));
+      }
     } else {
-        // Like the post
-        const { error } = await supabase.from('likes').insert({ post_id: postId, user_id: user.id });
-        if (error) {
-            toast({ variant: 'destructive', title: 'Error', description: "Could not like the post." });
-        } else {
-            setPosts(posts.map(p => p.id === postId ? { ...p, isLiked: true, likes: [...p.likes, {count: 1}] } : p));
-        }
+      // Like the post
+      const { error } = await supabase.from('likes').insert({ post_id: postId, user_id: user.id });
+      if (error) {
+        toast({ variant: 'destructive', title: 'Error', description: "Could not like the post." });
+      } else {
+        setPosts(posts.map(p => p.id === postId ? { ...p, isLiked: true, likes: [...p.likes, { count: 1 }] } : p));
+      }
     }
   }
 
   const handleFollow = async (userIdToFollow: string, isCurrentlyFollowed: boolean): Promise<boolean> => {
-      if (!user || !supabase) {
-        toast({ variant: 'destructive', title: 'You must be logged in to follow users.' });
+    if (!user || !supabase) {
+      toast({ variant: 'destructive', title: 'You must be logged in to follow users.' });
+      return false;
+    }
+
+    if (isCurrentlyFollowed) {
+      const { error } = await supabase.from('followers').delete().match({ follower_id: user.id, following_id: userIdToFollow });
+      if (error) {
+        toast({ variant: 'destructive', title: 'Error', description: "Could not unfollow user." });
         return false;
       }
-      
-      if (isCurrentlyFollowed) {
-          const { error } = await supabase.from('followers').delete().match({ follower_id: user.id, following_id: userIdToFollow });
-          if (error) {
-              toast({ variant: 'destructive', title: 'Error', description: "Could not unfollow user." });
-              return false;
-          }
+    } else {
+      const { error } = await supabase.from('followers').insert({ follower_id: user.id, following_id: userIdToFollow });
+      if (error) {
+        toast({ variant: 'destructive', title: 'Error', description: "Could not follow user." });
+        return false;
       } else {
-          const { error } = await supabase.from('followers').insert({ follower_id: user.id, following_id: userIdToFollow });
-           if (error) {
-              toast({ variant: 'destructive', title: 'Error', description: "Could not follow user." });
-              return false;
-          } else {
-              // Create a notification for the user who was followed
-              await supabase.rpc('create_new_follower_notification', {
-                  followed_id_param: userIdToFollow,
-                  follower_id_param: user.id
-              });
-          }
+        // Create a notification for the user who was followed
+        await supabase.rpc('create_new_follower_notification', {
+          followed_id_param: userIdToFollow,
+          follower_id_param: user.id
+        });
       }
-      // Update the followed state for all posts by this user in the feed
-      setPosts(posts.map(p => p.user_id === userIdToFollow ? { ...p, isFollowed: !isCurrentlyFollowed } : p));
-      return true;
+    }
+    // Update the followed state for all posts by this user in the feed
+    setPosts(posts.map(p => p.user_id === userIdToFollow ? { ...p, isFollowed: !isCurrentlyFollowed } : p));
+    return true;
   };
 
   return (
@@ -236,13 +239,13 @@ export default function FeedContent() {
         <div className="space-y-4">
           {loading ? (
             <div className="flex justify-center items-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           ) : posts.length > 0 ? (
             posts.map((post) => (
-              <PostCard 
-                key={post.id} 
-                post={post} 
+              <PostCard
+                key={post.id}
+                post={post}
                 onDelete={deletePost}
                 onEdit={editPost}
                 onComment={addComment}

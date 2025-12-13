@@ -4,20 +4,6 @@
 import React, { type ReactNode, useEffect, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import {
-  SidebarProvider,
-  Sidebar,
-  SidebarHeader,
-  SidebarContent,
-  SidebarFooter,
-  SidebarTrigger,
-  SidebarInset,
-} from '@/components/ui/sidebar';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { AdminSidebarNav } from '@/components/admin/admin-sidebar-nav';
-import { Logo } from '@/components/icons';
-import { LogOut, Settings, User as UserIcon, Instagram } from 'lucide-react';
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -28,7 +14,11 @@ import {
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Instagram, LogOut, Settings, User as UserIcon } from 'lucide-react';
+import { DashboardShell } from '@/components/ui/dashboard-shell';
+import { AdminSidebarNav } from '@/components/admin/admin-sidebar-nav';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const { user, signOut, role, loading } = useAuth();
@@ -72,21 +62,6 @@ type AdminLayoutShellProps = {
   user: User | null;
   signOut: () => Promise<void>;
 };
-
-import { DashboardShell } from '@/components/ui/dashboard-shell';
-import { AdminSidebarNav } from '@/components/admin/admin-sidebar-nav';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Instagram, LogOut, Settings, User as UserIcon } from 'lucide-react';
-import Link from 'next/link';
 
 function AdminLayoutShell({ children, user, signOut }: AdminLayoutShellProps) {
   const sidebarFooter = (

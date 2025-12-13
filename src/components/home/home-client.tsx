@@ -19,7 +19,10 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { defaultHomePosterConfig } from '@/lib/home-poster';
 import type { HomePosterConfig, HomeStat, HomeTestimonial } from '@/lib/types';
-import DonationModal from '@/components/home/donation-modal';
+import dynamic from 'next/dynamic';
+
+// Lazy load DonationModal - it's not needed until 12s after page load
+const DonationModal = dynamic(() => import('@/components/home/donation-modal'), { ssr: false });
 
 import { cn } from '@/lib/utils';
 

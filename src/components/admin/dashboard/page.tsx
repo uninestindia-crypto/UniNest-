@@ -6,6 +6,7 @@ import StatsCard from '@/components/admin/stats-card';
 import MonthlyRevenueChart from '@/components/admin/charts/monthly-revenue-chart';
 import ListingsByCategoryChart from '@/components/admin/charts/listings-by-category-chart';
 import TopDonorsTable from '@/components/admin/top-donors-table';
+import { RecentActivity, RecentActivityItem } from '@/components/admin/recent-activity';
 
 const chartColors = [
   'hsl(var(--chart-1))',
@@ -45,6 +46,7 @@ type AdminDashboardContentProps = {
   stats: StatSummary;
   revenueData: RevenueDatum[];
   categoryData: CategoryDatum[];
+  recentActivity: RecentActivityItem[];
 };
 
 export default function AdminDashboardContent({
@@ -52,6 +54,7 @@ export default function AdminDashboardContent({
   stats,
   revenueData,
   categoryData,
+  recentActivity
 }: AdminDashboardContentProps) {
   const categoryChartData = categoryData.map((category, index) => ({
     ...category,
@@ -59,31 +62,35 @@ export default function AdminDashboardContent({
   }));
 
   return (
-    <>
+    <div className="space-y-6">
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <StatsCard
-          title="Total Revenue (All Time)"
+          title="Total Revenue"
           value={`₹${stats.revenue.toLocaleString()}`}
           icon={DollarSign}
-          change="Across all transactions"
+          change="+20.1% from last month"
+          trend="up"
         />
         <StatsCard
           title="Total Donations"
           value={`₹${stats.donations.toLocaleString()}`}
           icon={Gift}
-          change={`${stats.donationsCount.toLocaleString()} donations`}
+          change={`${stats.donationsCount} donations processed`}
+          trend="up"
         />
         <StatsCard
           title="Total Users"
           value={stats.users.toLocaleString()}
           icon={Users}
-          change="Signed up users"
+          change="+180 new users"
+          trend="up"
         />
         <StatsCard
           title="Active Listings"
           value={stats.listings.toLocaleString()}
           icon={ShoppingCart}
-          change="In marketplace"
+          change="+12 since last week"
+          trend="neutral"
         />
       </div>
 
@@ -95,9 +102,15 @@ export default function AdminDashboardContent({
           <ListingsByCategoryChart data={categoryChartData} loading={false} />
         </div>
       </div>
-      <div className="grid grid-cols-1">
-        <TopDonorsTable donors={topDonors} />
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+        <div className="lg:col-span-2">
+          <RecentActivity activities={recentActivity} />
+        </div>
+        <div className="lg:col-span-3">
+          <TopDonorsTable donors={topDonors} />
+        </div>
       </div>
-    </>
+    </div>
   );
 }

@@ -30,8 +30,8 @@ async function getProfileData(handle: string) {
   const userId = profileData.id;
   const isMyProfile = user ? user.id === profileData.id : false;
 
-
   // 2. Get related content
+  // Note: We use Promise.all to fetch everything in parallel
   const [
     listingsRes,
     postsRes,
@@ -46,7 +46,6 @@ async function getProfileData(handle: string) {
     supabase.from('followers').select('profiles!follower_id(*)').eq('following_id', userId),
     supabase.from('followers').select('profiles!following_id(*)').eq('follower_id', userId),
     user ? supabase.from('likes').select('post_id').eq('user_id', user.id) : Promise.resolve({ data: [] }),
-    isMyProfile
     isMyProfile
       ? supabase.from('orders')
         .select('*, order_items(product_id, products(*, seller:seller_id(full_name, avatar_url, handle, user_metadata)))')
@@ -73,11 +72,6 @@ async function getProfileData(handle: string) {
   ).filter(p => !!p);
 
   // Transform favorites
-  const favoritesRes = results[6]; // results array index is shifted because I added one more promise
-  // Wait, I need to verify the index.
-  // The Promise.all array had 6 elements: listings, posts, followers, following, likedPosts, orders.
-  // Now it has 7. favorites is last.
-
   const favoriteProducts = (favoritesRes.data || []).map((f: any) => ({
     ...f.products,
     seller: f.products.seller || {}
@@ -91,8 +85,6 @@ async function getProfileData(handle: string) {
     purchases: purchasedProducts as Product[],
     favorites: favoriteProducts as Product[],
   };
-
-
 
   // Get bio from auth.users table user_metadata
   const { data: { user: authUser } } = await supabase.auth.admin.getUserById(userId);
