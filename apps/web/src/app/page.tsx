@@ -13,6 +13,7 @@ export const metadata: Metadata = {
   },
 };
 
+export const dynamic = 'force-dynamic'; // Required because we use cookies() for Supabase auth
 export const revalidate = 60; // Cache for 60 seconds, revalidate in background
 
 async function getPosterConfig(): Promise<HomePosterConfig> {

@@ -8,6 +8,7 @@ import {
     TouchableOpacity,
     Image,
     ActivityIndicator,
+    ScrollView,
 } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
