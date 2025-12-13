@@ -193,20 +193,30 @@ export default function WorkspaceScreen() {
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color={theme.colors.primary[500]} />
                 </View>
-            ) : (
+            ) : activeTab === 'competitions' ? (
                 <FlatList
-                    data={activeTab === 'competitions' ? competitions : internships}
+                    data={competitions}
                     keyExtractor={(item) => item.id.toString()}
                     contentContainerStyle={styles.listContent}
-                    renderItem={({ item }) => (
-                        activeTab === 'competitions'
-                            ? <CompetitionCard item={item as Competition} />
-                            : <InternshipCard item={item as Internship} />
-                    )}
+                    renderItem={({ item }) => <CompetitionCard item={item} />}
                     ListEmptyComponent={
                         <View style={styles.emptyContainer}>
                             <Text style={[styles.emptyText, { color: theme.colors.mutedForeground }]}>
-                                No {activeTab} found
+                                No competitions found
+                            </Text>
+                        </View>
+                    }
+                />
+            ) : (
+                <FlatList
+                    data={internships}
+                    keyExtractor={(item) => item.id.toString()}
+                    contentContainerStyle={styles.listContent}
+                    renderItem={({ item }) => <InternshipCard item={item} />}
+                    ListEmptyComponent={
+                        <View style={styles.emptyContainer}>
+                            <Text style={[styles.emptyText, { color: theme.colors.mutedForeground }]}>
+                                No internships found
                             </Text>
                         </View>
                     }

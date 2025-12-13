@@ -13,6 +13,7 @@
     "test": "turbo test"
   },
   "devDependencies": {
+    "next": "^14.2.33",
     "turbo": "^2.0.0",
     "typescript": "^5"
   }

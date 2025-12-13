@@ -1,7 +1,10 @@
 import { useEffect } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as SplashScreen from 'expo-splash-screen';
@@ -19,10 +22,15 @@ const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
             staleTime: 1000 * 60 * 5, // 5 minutes
-            gcTime: 1000 * 60 * 30, // 30 minutes
+            gcTime: 1000 * 60 * 60 * 24, // 24 hours (keep cache for a day for offline support)
             retry: 2,
         },
     },
+});
+
+const asyncStoragePersister = createAsyncStoragePersister({
+    storage: AsyncStorage,
+    throttleTime: 3000,
 });
 
 /**
@@ -102,7 +110,11 @@ export default function RootLayout() {
     return (
         <GestureHandlerRootView style={styles.container}>
             <SafeAreaProvider>
-                <QueryClientProvider client={queryClient}>
+                <PersistQueryClientProvider
+                    client={queryClient}
+                    persistOptions={{ persister: asyncStoragePersister }}
+                    onSuccess={() => console.log('Query cache restored')}
+                >
                     <ThemeProvider>
                         <AuthProvider>
                             <AuthGate>
@@ -131,6 +143,18 @@ export default function RootLayout() {
                                         }}
                                     />
                                     <Stack.Screen
+                                        name="hostels"
+                                        options={{
+                                            headerShown: false,
+                                        }}
+                                    />
+                                    <Stack.Screen
+                                        name="workspace"
+                                        options={{
+                                            headerShown: false, // Let workspace/_layout handle it
+                                        }}
+                                    />
+                                    <Stack.Screen
                                         name="notifications"
                                         options={{
                                             headerShown: true,
@@ -142,7 +166,7 @@ export default function RootLayout() {
                             </AuthGate>
                         </AuthProvider>
                     </ThemeProvider>
-                </QueryClientProvider>
+                </PersistQueryClientProvider>
             </SafeAreaProvider>
         </GestureHandlerRootView>
     );

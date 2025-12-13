@@ -130,8 +130,26 @@ export const shadows = {
     },
 } as const;
 
+export type ThemeColors = {
+    primary: typeof colors.primary;
+    background: string;
+    foreground: string;
+    card: string;
+    cardForeground: string;
+    muted: string;
+    mutedForeground: string;
+    border: string;
+    input: string;
+    destructive: string;
+    destructiveForeground: string;
+    success: string;
+    successForeground: string;
+    warning: string;
+    warningForeground: string;
+};
+
 export type Theme = {
-    colors: typeof colors;
+    colors: ThemeColors;
     spacing: typeof spacing;
     radius: typeof radius;
     typography: typeof typography;
@@ -140,7 +158,7 @@ export type Theme = {
 };
 
 export const lightTheme: Theme = {
-    colors,
+    colors: colors as ThemeColors,
     spacing,
     radius,
     typography,

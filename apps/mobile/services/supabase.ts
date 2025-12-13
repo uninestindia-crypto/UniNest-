@@ -1,5 +1,5 @@
 import Constants from 'expo-constants';
-import { getSupabaseClient } from '@uninest/api-client/native';
+import { getSupabaseClient } from '@uninest/api-client/src/client.native';
 import { createAuthApi, createProductsApi, createOrdersApi, createWorkspaceApi } from '@uninest/api-client';
 
 // Get environment variables
