@@ -19,6 +19,15 @@ jest.mock('expo-router', () => ({
     },
 }));
 
+jest.mock('@expo/vector-icons', () => {
+    const React = require('react');
+    const { View } = require('react-native');
+    // eslint-disable-next-line react/display-name
+    return {
+        Ionicons: (props) => React.createElement(View, { ...props, testID: 'ion-icon' }),
+    };
+});
+
 jest.mock('expo-secure-store', () => ({
     getItemAsync: jest.fn(),
     setItemAsync: jest.fn(),
