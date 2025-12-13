@@ -155,6 +155,7 @@ export function Button({
         >
             {loading ? (
                 <ActivityIndicator
+                    testID="button-loading"
                     size="small"
                     color={variant === 'primary' || variant === 'destructive' ? '#fff' : colors.primary[500]}
                 />
