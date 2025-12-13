@@ -25,29 +25,29 @@ export function initSentry() {
 
     Sentry.init({
         dsn: SENTRY_DSN,
-        
+
         // Set environment based on app variant
-        environment: Constants.expoConfig?.extra?.eas?.projectId 
+        environment: Constants.expoConfig?.extra?.eas?.projectId
             ? (process.env.APP_ENV || 'production')
             : 'development',
-        
+
         // Release tracking
         release: `${Constants.expoConfig?.name}@${Constants.expoConfig?.version}`,
         dist: Constants.expoConfig?.ios?.buildNumber || Constants.expoConfig?.android?.versionCode?.toString(),
-        
+
         // Performance Monitoring
         tracesSampleRate: __DEV__ ? 1.0 : 0.2, // 20% of transactions in production
-        
+
         // Enable automatic instrumentation
         enableAutoSessionTracking: true,
         sessionTrackingIntervalMillis: 30000,
-        
+
         // Attach stack traces to all messages
         attachStacktrace: true,
-        
+
         // Don't send events in development
         enabled: !__DEV__,
-        
+
         // Filter sensitive data
         beforeSend(event) {
             // Remove sensitive data from breadcrumbs
@@ -64,7 +64,7 @@ export function initSentry() {
             }
             return event;
         },
-        
+
         // Ignore certain errors
         ignoreErrors: [
             'Network request failed',
@@ -89,6 +89,8 @@ export function setSentryUser(user: { id: string; email?: string; role?: string 
     }
 }
 
+export type SentrySeverity = 'fatal' | 'error' | 'warning' | 'log' | 'info' | 'debug';
+
 /**
  * Add a breadcrumb for user actions
  */
@@ -96,13 +98,13 @@ export function addBreadcrumb(
     category: string,
     message: string,
     data?: Record<string, unknown>,
-    level: Sentry.SeverityLevel = 'info'
+    level: SentrySeverity = 'info'
 ) {
     Sentry.addBreadcrumb({
         category,
         message,
         data,
-        level,
+        level: level as any,
     });
 }
 
@@ -128,16 +130,19 @@ export function captureException(
  */
 export function captureMessage(
     message: string,
-    level: Sentry.SeverityLevel = 'info'
+    level: SentrySeverity = 'info'
 ) {
-    Sentry.captureMessage(message, level);
+    Sentry.captureMessage(message, level as any);
 }
 
 /**
  * Create a transaction for performance monitoring
  */
 export function startTransaction(name: string, op: string) {
-    return Sentry.startTransaction({ name, op });
+    // Cast to any to avoid type errors with different SDK versions
+    return (Sentry as any).startTransaction
+        ? (Sentry as any).startTransaction({ name, op })
+        : { finish: () => { } }; // Fallback stub
 }
 
 /**
