@@ -270,7 +270,7 @@ export class OfflineQueueService {
 }
 
 // Export singleton instance
-export const offlineQueue = new OfflineMutationQueue();
+export const offlineQueue = new OfflineQueueService();
 
 // React hook for offline queue
 import { useState, useEffect } from 'react';
