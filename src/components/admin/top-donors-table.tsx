@@ -18,10 +18,10 @@ type TopDonorsTableProps = {
 
 export default function TopDonorsTable({ donors }: TopDonorsTableProps) {
   return (
-    <Card>
+    <Card className="border-border/50 shadow-sm transition-all hover:shadow-md h-full">
       <CardHeader>
-        <CardTitle>Top Donors</CardTitle>
-        <CardDescription>Our most generous supporters this month.</CardDescription>
+        <CardTitle className="text-lg font-semibold text-foreground">Top Donors</CardTitle>
+        <CardDescription className="text-muted-foreground">Highest contributors this month.</CardDescription>
       </CardHeader>
       <CardContent>
         <Table>
@@ -33,28 +33,28 @@ export default function TopDonorsTable({ donors }: TopDonorsTableProps) {
           </TableHeader>
           <TableBody>
             {donors && donors.length > 0 ? (
-                donors.map((donor) => (
+              donors.map((donor) => (
                 <TableRow key={donor.userId}>
-                    <TableCell>
+                  <TableCell>
                     <div className="flex items-center gap-3">
-                        <Avatar className="h-9 w-9">
+                      <Avatar className="h-9 w-9">
                         <AvatarImage src={donor.avatar || ''} alt="Avatar" data-ai-hint="person face" />
                         <AvatarFallback>{donor.name.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <div className="grid gap-0.5">
+                      </Avatar>
+                      <div className="grid gap-0.5">
                         <p className="font-medium leading-none">{donor.name}</p>
-                        </div>
+                      </div>
                     </div>
-                    </TableCell>
-                    <TableCell className="text-right font-medium">₹{donor.total.toLocaleString()}</TableCell>
+                  </TableCell>
+                  <TableCell className="text-right font-medium">₹{donor.total.toLocaleString()}</TableCell>
                 </TableRow>
-                ))
+              ))
             ) : (
-                <TableRow>
-                    <TableCell colSpan={2} className="h-24 text-center">
-                        No donor data available.
-                    </TableCell>
-                </TableRow>
+              <TableRow>
+                <TableCell colSpan={2} className="h-24 text-center">
+                  No donor data available.
+                </TableCell>
+              </TableRow>
             )}
           </TableBody>
         </Table>

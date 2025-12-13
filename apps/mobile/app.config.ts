@@ -36,6 +36,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         config: {
             usesNonExemptEncryption: false,
         },
+        infoPlist: {
+            NSCameraUsageDescription: 'Used to upload photos for listings',
+            NSPhotoLibraryUsageDescription: 'Used to select photos for listings',
+        },
+        associatedDomains: ['applinks:uninest.app'],
     },
     android: {
         adaptiveIcon: {
@@ -43,6 +48,19 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
             backgroundColor: '#ffffff',
         },
         package: getBundleIdentifier(),
+        permissions: [
+            'android.permission.CAMERA',
+            'android.permission.READ_EXTERNAL_STORAGE',
+            'android.permission.VIBRATE',
+        ],
+        intentFilters: [
+            {
+                action: 'VIEW',
+                autoVerify: true,
+                data: [{ scheme: 'https', host: 'uninest.app', pathPrefix: '/' }],
+                category: ['BROWSABLE', 'DEFAULT'],
+            },
+        ],
     },
     web: {
         bundler: 'metro',
@@ -52,11 +70,19 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     plugins: [
         'expo-router',
         'expo-secure-store',
+        'expo-image',
         [
             'expo-notifications',
             {
                 icon: './assets/notification-icon.png',
                 color: '#3b82f6',
+            },
+        ],
+        [
+            'expo-image-picker',
+            {
+                photosPermission: 'Allow Uninest to access your photos for listing uploads',
+                cameraPermission: 'Allow Uninest to use your camera for listing photos',
             },
         ],
     ],
@@ -67,8 +93,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,
         supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
         razorpayKeyId: process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID,
+        apiUrl: process.env.EXPO_PUBLIC_API_URL,
         eas: {
             projectId: '00a3c9e9-4033-4bfa-a419-e29777796f7d',
         },
     },
 });
+

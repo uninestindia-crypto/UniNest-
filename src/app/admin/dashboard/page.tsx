@@ -11,13 +11,18 @@ type DonationRow = {
   profiles: {
     full_name: string | null;
     avatar_url: string | null;
-  } | null;
+  } | {
+    full_name: string | null;
+    avatar_url: string | null;
+  }[] | null;
 };
 
 type CompetitionEntryRow = {
   competitions: {
     entry_fee: number | null;
-  } | null;
+  } | {
+    entry_fee: number | null;
+  }[] | null;
   created_at: string;
 };
 
@@ -31,7 +36,7 @@ export default async function AdminDashboardPage() {
   const [donationsResult, competitionResult, usersResult, listingsResult, categoriesResult] = await Promise.all([
     supabase
       .from('donations')
-      .select('user_id, amount, created_at, profiles:profiles(full_name, avatar_url)'),
+      .select('user_id, amount, created_at, profiles(full_name, avatar_url)'),
     supabase
       .from('competition_entries')
       .select('competitions(entry_fee), created_at'),
@@ -56,8 +61,8 @@ export default async function AdminDashboardPage() {
     console.error('Error fetching product categories for dashboard:', categoriesResult.error.message);
   }
 
-  const donations = (donationsResult.data ?? []) as DonationRow[];
-  const competitionEntries = (competitionResult.data ?? []) as CompetitionEntryRow[];
+  const donations = (donationsResult.data ?? []) as unknown as DonationRow[];
+  const competitionEntries = (competitionResult.data ?? []) as unknown as CompetitionEntryRow[];
   const productCategories = (categoriesResult.data ?? []) as CategoryRow[];
   const usersCount = usersResult.count ?? 0;
   const listingsCount = listingsResult.count ?? 0;
@@ -80,10 +85,10 @@ export default async function AdminDashboardPage() {
         return;
       }
 
-      const profile = donation.profiles;
+      const profileData = Array.isArray(donation.profiles) ? donation.profiles[0] : donation.profiles;
       const existing = map.get(donation.user_id);
-      const name = profile?.full_name || 'Unknown Donor';
-      const avatar = profile?.avatar_url || null;
+      const name = profileData?.full_name || 'Unknown Donor';
+      const avatar = profileData?.avatar_url || null;
 
       if (existing) {
         existing.total += donation.amount;
