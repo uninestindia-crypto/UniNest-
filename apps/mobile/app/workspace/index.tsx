@@ -25,7 +25,7 @@ function CompetitionCard({ item }: { item: Competition }) {
     return (
         <TouchableOpacity
             style={[styles.card, { backgroundColor: theme.colors.card }, theme.shadows.sm]}
-            onPress={() => router.push(`/workspace/competitions/${item.id}`)}
+            onPress={() => router.push(`/workspace/competitions/${item.id}` as any)}
         >
             <View style={styles.cardHeader}>
                 <View style={[styles.badge, { backgroundColor: theme.colors.primary[50] }]}>
@@ -71,7 +71,7 @@ function InternshipCard({ item }: { item: Internship }) {
     return (
         <TouchableOpacity
             style={[styles.card, { backgroundColor: theme.colors.card }, theme.shadows.sm]}
-            onPress={() => router.push(`/workspace/internships/${item.id}`)}
+            onPress={() => router.push(`/workspace/internships/${item.id}` as any)}
         >
             <View style={styles.cardHeader}>
                 <View style={[styles.badge, { backgroundColor: '#f3e8ff' }]}>
