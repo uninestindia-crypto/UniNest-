@@ -130,6 +130,7 @@ export const Input = forwardRef<TextInput, InputProps>(
                         <Pressable
                             onPress={toggleSecureVisibility}
                             style={styles.rightIcon}
+                            testID="password-toggle"
                             accessibilityLabel={isSecureVisible ? 'Hide password' : 'Show password'}
                         >
                             <Ionicons
