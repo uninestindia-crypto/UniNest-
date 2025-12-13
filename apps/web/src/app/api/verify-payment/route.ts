@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
+import { sendPushNotification } from '@/lib/notifications';
 
 // This function creates a Supabase client that is authenticated on behalf of the user
 // by using the JWT token from the Authorization header.
@@ -158,6 +159,13 @@ export async function POST(request: NextRequest) {
 
             if (error) throw error;
 
+            // Send Push Notification
+            await sendPushNotification(
+                [user.id],
+                'Subscription Active',
+                `Your vendor subscription is active until ${new Date(billingPeriodEnd).toLocaleDateString()}.`
+            );
+
             return NextResponse.json({
                 success: true,
                 message: 'Vendor subscription recorded successfully.',
@@ -209,6 +217,13 @@ export async function POST(request: NextRequest) {
                 console.error('Failed to create order item:', itemError);
                 throw itemError;
             }
+
+            // 3. Send Push Notification
+            await sendPushNotification(
+                [user.id],
+                'Order Confirmed',
+                `Your order #${orderData.id} for the amount of ₹${amount} was successful.`
+            );
 
             return NextResponse.json({ success: true, message: 'Order placed successfully.', orderId: orderData.id });
 
