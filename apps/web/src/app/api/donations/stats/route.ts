@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 
+// Force dynamic rendering to ensure env vars are available at runtime
+export const dynamic = 'force-dynamic';
+
 const getServiceRoleClient = () => {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
