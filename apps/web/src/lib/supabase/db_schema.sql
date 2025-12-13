@@ -12,6 +12,7 @@ create or replace function is_chat_participant(room_id_to_check uuid)
 returns boolean
 language sql
 security definer
+set search_path = public
 as $$
   select exists (
     select 1
@@ -49,6 +50,7 @@ returns table (
 )
 language sql
 security definer
+set search_path = public
 as $$
 with user_rooms as (
   select room_id from chat_participants where user_id = auth.uid()
