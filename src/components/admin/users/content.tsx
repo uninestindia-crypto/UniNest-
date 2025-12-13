@@ -2,7 +2,7 @@
 'use client';
 
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { DataTable, ColumnDef } from "@/components/ui/data-table";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
@@ -11,12 +11,12 @@ import { format } from 'date-fns';
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-  DropdownMenuLabel,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+    DropdownMenuSeparator,
+    DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 import { MoreHorizontal, UserCog, UserX, Ban, UserCheck } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -57,12 +57,12 @@ export default function AdminUsersContent({ initialUsers, initialError }: AdminU
             setUsers(users.map(u => u.id === userId ? { ...u, role: newRole } : u));
         }
     }
-    
+
     const handleSuspendToggle = async (userId: string, isCurrentlySuspended: boolean) => {
         setUpdatingUserId(userId);
         const result = await suspendUser(userId, !isCurrentlySuspended);
         setUpdatingUserId(null);
-        
+
         if (result.error) {
             toast({ variant: 'destructive', title: 'Error', description: result.error });
         } else if (result.success) {
@@ -82,104 +82,119 @@ export default function AdminUsersContent({ initialUsers, initialError }: AdminU
 
     if (initialError) {
         return (
-             <Alert variant="destructive">
+            <Alert variant="destructive">
                 <AlertTitle>Error Fetching Users</AlertTitle>
                 <AlertDescription>{initialError}</AlertDescription>
             </Alert>
         )
     }
 
+    const columns: ColumnDef<UserProfile>[] = [
+        {
+            header: "User",
+            accessorKey: "full_name",
+            sortable: true,
+            cell: (user) => (
+                <div className="flex items-center gap-3">
+                    <Avatar className="size-9 border border-border">
+                        <AvatarImage src={user.avatar_url} alt={user.full_name} />
+                        <AvatarFallback>{user.full_name?.charAt(0) || user.email?.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                        <p className="font-medium text-sm text-foreground">{user.full_name || 'N/A'}</p>
+                        <p className="text-xs text-muted-foreground">{user.email}</p>
+                    </div>
+                </div>
+            )
+        },
+        {
+            header: "Role",
+            accessorKey: "role",
+            sortable: true,
+            cell: (user) => (
+                <Badge variant={getRoleBadgeVariant(user.role)} className="uppercase text-[10px]">
+                    {user.role}
+                </Badge>
+            )
+        },
+        {
+            header: "Status",
+            accessorKey: "is_suspended",
+            sortable: true,
+            cell: (user) => (
+                user.is_suspended
+                    ? <Badge variant="destructive" className="text-[10px]">Suspended</Badge>
+                    : <Badge variant="outline" className="text-green-600 bg-green-50 border-green-200 text-[10px]">Active</Badge>
+            )
+        },
+        {
+            header: "Joined",
+            accessorKey: "created_at",
+            sortable: true,
+            cell: (user) => (
+                <span className="text-sm text-muted-foreground whitespace-nowrap">
+                    {format(new Date(user.created_at), 'PPP')}
+                </span>
+            )
+        },
+        {
+            header: "Actions",
+            className: "text-right",
+            cell: (user) => (
+                <div className="flex justify-end">
+                    {updatingUserId === user.id ? (
+                        <Loader2 className="animate-spin size-4 text-muted-foreground" />
+                    ) : currentUser?.id === user.id ? (
+                        <span className="text-xs text-muted-foreground italic">You</span>
+                    ) : user.role === 'admin' ? (
+                        <span className="text-xs text-muted-foreground italic">Super Admin</span>
+                    ) : (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                    <MoreHorizontal className="size-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Manage User</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'co-admin')} disabled={user.role === 'co-admin'}>
+                                    <UserCog className="mr-2 size-4" />
+                                    Make Co-Admin
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'student')} disabled={user.role === 'student'}>
+                                    <UserX className="mr-2 size-4" />
+                                    Demote to Student
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                {user.is_suspended ? (
+                                    <DropdownMenuItem onClick={() => handleSuspendToggle(user.id, user.is_suspended)}>
+                                        <UserCheck className="mr-2 size-4" />
+                                        Unsuspend User
+                                    </DropdownMenuItem>
+                                ) : (
+                                    <DropdownMenuItem className="text-destructive" onClick={() => handleSuspendToggle(user.id, user.is_suspended)}>
+                                        <Ban className="mr-2 size-4" />
+                                        Suspend User
+                                    </DropdownMenuItem>
+                                )}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
+                </div>
+            )
+        }
+    ];
+
     return (
-        <Card>
-            <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>User</TableHead>
-                            <TableHead>Role</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Joined</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {users.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={5} className="text-center h-24">
-                                    No users found.
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            users.map(user => (
-                                <TableRow key={user.id} className={cn(user.is_suspended && "bg-muted/50")}>
-                                    <TableCell>
-                                        <div className="flex items-center gap-3">
-                                            <Avatar className="size-9">
-                                                <AvatarImage src={user.avatar_url} alt={user.full_name} data-ai-hint="person face" />
-                                                <AvatarFallback>{user.full_name?.charAt(0) || user.email?.charAt(0)}</AvatarFallback>
-                                            </Avatar>
-                                            <div>
-                                                <p className="font-medium">{user.full_name || 'N/A'}</p>
-                                                <p className="text-sm text-muted-foreground">{user.email}</p>
-                                            </div>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant={getRoleBadgeVariant(user.role)}>{user.role}</Badge>
-                                    </TableCell>
-                                     <TableCell>
-                                        {user.is_suspended 
-                                            ? <Badge variant="destructive">Suspended</Badge> 
-                                            : <Badge variant="default" className="bg-green-600">Active</Badge>
-                                        }
-                                    </TableCell>
-                                        <TableCell>
-                                        {format(new Date(user.created_at), 'PPP')}
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        {updatingUserId === user.id ? (
-                                            <Loader2 className="animate-spin" />
-                                        ) : currentUser?.id === user.id ? (
-                                            <span className="text-sm text-muted-foreground">This is you</span>
-                                        ) : user.role === 'admin' ? (
-                                            <span className="text-sm text-muted-foreground">Super Admin</span>
-                                        ) : (
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon"><MoreHorizontal /></Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent>
-                                                    <DropdownMenuLabel>Change Role</DropdownMenuLabel>
-                                                    <DropdownMenuSeparator/>
-                                                    <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'co-admin')} disabled={user.role === 'co-admin'}>
-                                                        <UserCog className="mr-2 size-4" />
-                                                        Make Co-Admin
-                                                    </DropdownMenuItem>
-                                                     <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'student')} disabled={user.role === 'student'}>
-                                                        <UserX className="mr-2 size-4" />
-                                                        Demote to Student
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuSeparator/>
-                                                    {user.is_suspended ? (
-                                                         <DropdownMenuItem onClick={() => handleSuspendToggle(user.id, user.is_suspended)}>
-                                                            <UserCheck className="mr-2 size-4" />
-                                                            Unsuspend User
-                                                        </DropdownMenuItem>
-                                                    ) : (
-                                                         <DropdownMenuItem className="text-destructive" onClick={() => handleSuspendToggle(user.id, user.is_suspended)}>
-                                                            <Ban className="mr-2 size-4" />
-                                                            Suspend User
-                                                        </DropdownMenuItem>
-                                                    )}
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        )}
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
+        <Card className="border-none shadow-none bg-transparent">
+            <CardContent className="p-0">
+                <DataTable
+                    data={users}
+                    columns={columns}
+                    searchKey="full_name"
+                    searchPlaceholder="Search users..."
+                />
             </CardContent>
         </Card>
     )

@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { DataTable, ColumnDef } from "@/components/ui/data-table";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
@@ -11,20 +11,20 @@ import type { Product, Profile } from "@/lib/types";
 import Link from 'next/link';
 import { MoreHorizontal, Trash2 } from "lucide-react";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
 import { deleteProductByAdmin } from '@/app/admin/listings/actions';
@@ -57,80 +57,101 @@ export default function ListingsTable({ initialListings }: ListingsTableProps) {
             setItemToDelete(null);
         }
     };
-    
+
+    const columns: ColumnDef<ProductWithProfile>[] = [
+        {
+            header: "Product",
+            accessorKey: "name",
+            sortable: true,
+            cell: (listing) => (
+                <Link href={`/marketplace/${listing.id}`} className="font-medium hover:underline text-foreground">
+                    {listing.name}
+                </Link>
+            )
+        },
+        {
+            header: "Seller",
+            accessorKey: "profiles", // Accessor for sorting might need refinement or custom sort logic, but 'profiles' is the object
+            cell: (listing) => (
+                <Link href={`/profile/${listing.profiles?.handle}`} className="block hover:underline">
+                    <div className="font-medium text-sm text-foreground">{listing.profiles?.full_name || 'N/A'}</div>
+                    <div className="text-xs text-muted-foreground">@{listing.profiles?.handle || 'N/A'}</div>
+                </Link>
+            )
+        },
+        {
+            header: "Category",
+            accessorKey: "category",
+            sortable: true,
+            cell: (listing) => (
+                <Badge variant="outline" className="text-[10px] uppercase tracking-wider">{listing.category}</Badge>
+            )
+        },
+        {
+            header: "Price",
+            accessorKey: "price",
+            sortable: true,
+            cell: (listing) => (
+                <span className="font-medium">₹{listing.price.toLocaleString()}</span>
+            )
+        },
+        {
+            header: "Listed On",
+            accessorKey: "created_at",
+            sortable: true,
+            cell: (listing) => (
+                <span className="text-sm text-muted-foreground whitespace-nowrap">
+                    {format(new Date(listing.created_at), 'PPP')}
+                </span>
+            )
+        },
+        {
+            header: "Actions",
+            className: "text-right",
+            cell: (listing) => (
+                <div className="flex justify-end">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <MoreHorizontal className="size-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem className="text-destructive" onClick={() => setItemToDelete(listing)}>
+                                <Trash2 className="mr-2 size-4" />Delete Listing
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+            )
+        }
+    ];
+
     return (
         <>
-            <Card>
-                <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Product</TableHead>
-                                <TableHead>Seller</TableHead>
-                                <TableHead>Category</TableHead>
-                                <TableHead>Price</TableHead>
-                                <TableHead>Listed On</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {listings.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={6} className="text-center h-24">
-                                        No listings found.
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                listings.map(listing => (
-                                    <TableRow key={listing.id}>
-                                        <TableCell className="font-medium">
-                                            <Link href={`/marketplace/${listing.id}`} className="hover:underline">
-                                                {listing.name}
-                                            </Link>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Link href={`/profile/${listing.profiles?.handle}`} className="hover:underline">
-                                                <div className="font-medium">{listing.profiles?.full_name || 'N/A'}</div>
-                                                <div className="text-sm text-muted-foreground">@{listing.profiles?.handle || 'N/A'}</div>
-                                            </Link>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge variant="outline">{listing.category}</Badge>
-                                        </TableCell>
-                                        <TableCell>₹{listing.price.toLocaleString()}</TableCell>
-                                        <TableCell>{format(new Date(listing.created_at), 'PPP')}</TableCell>
-                                        <TableCell className="text-right">
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon"><MoreHorizontal /></Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent>
-                                                    <DropdownMenuItem className="text-destructive" onClick={() => setItemToDelete(listing)}>
-                                                        <Trash2 className="mr-2 size-4" />Delete Listing
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
+            <Card className="border-none shadow-none bg-transparent">
+                <CardContent className="p-0">
+                    <DataTable
+                        data={listings}
+                        columns={columns}
+                        searchKey="name"
+                        searchPlaceholder="Search listings..."
+                    />
                 </CardContent>
             </Card>
             <AlertDialog open={!!itemToDelete} onOpenChange={(open) => !open && setItemToDelete(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        This will remove the listing from the marketplace. This action cannot be undone.
-                    </AlertDialogDescription>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This will remove the listing from the marketplace. This action cannot be undone.
+                        </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="bg-destructive hover:bg-destructive/90">
-                        {isDeleting ? 'Deleting...' : 'Continue'}
-                    </AlertDialogAction>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="bg-destructive hover:bg-destructive/90">
+                            {isDeleting ? 'Deleting...' : 'Continue'}
+                        </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>

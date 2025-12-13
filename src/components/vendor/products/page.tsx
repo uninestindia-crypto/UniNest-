@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import PageHeader from "@/components/admin/page-header";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { DataTable, ColumnDef } from "@/components/ui/data-table";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, Pencil, PlusCircle, Trash2 } from "lucide-react";
@@ -69,6 +69,73 @@ export default function VendorProductsContent({ initialProducts }: VendorProduct
     setProductToDelete(null);
   };
 
+  const columns: ColumnDef<Product>[] = [
+    {
+      header: "Product",
+      accessorKey: "name",
+      sortable: true,
+      cell: (product) => (
+        <span className="font-medium text-foreground">{product.name}</span>
+      )
+    },
+    {
+      header: "Category",
+      accessorKey: "category",
+      sortable: true,
+      cell: (product) => (
+        <Badge variant="outline" className="text-[10px] uppercase tracking-wider">{product.category}</Badge>
+      )
+    },
+    {
+      header: "Price",
+      accessorKey: "price",
+      sortable: true,
+      cell: (product) => (
+        <span className="font-medium">₹{product.price.toLocaleString()}</span>
+      )
+    },
+    {
+      header: "Listed On",
+      accessorKey: "created_at",
+      sortable: true,
+      cell: (product) => (
+        <span className="text-sm text-muted-foreground whitespace-nowrap">
+          {format(new Date(product.created_at), 'PPP')}
+        </span>
+      )
+    },
+    {
+      header: "Actions",
+      className: "text-right",
+      cell: (product) => (
+        <div className="flex justify-end">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <MoreHorizontal className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <Link href={`/vendor/products/${product.id}/edit`}>
+                  <Pencil className="mr-2 size-4" />
+                  Edit
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="text-destructive"
+                onSelect={() => setProductToDelete(product)}
+              >
+                <Trash2 className="mr-2 size-4" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      )
+    }
+  ];
+
   return (
     <>
       <div className="space-y-8">
@@ -84,63 +151,14 @@ export default function VendorProductsContent({ initialProducts }: VendorProduct
             </Link>
           </Button>
         </PageHeader>
-        <Card>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Product</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>Listed On</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {products && products.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center h-24">
-                      You haven't listed any products yet.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  products?.map(product => (
-                    <TableRow key={product.id}>
-                      <TableCell className="font-medium">{product.name}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{product.category}</Badge>
-                      </TableCell>
-                      <TableCell>₹{product.price.toLocaleString()}</TableCell>
-                      <TableCell>{format(new Date(product.created_at), 'PPP')}</TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem asChild>
-                              <Link href={`/vendor/products/${product.id}/edit`}>
-                                <Pencil className="mr-2 size-4" />
-                                Edit
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              className="text-destructive"
-                              onSelect={() => setProductToDelete(product)}
-                            >
-                                <Trash2 className="mr-2 size-4" />
-                                Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+        <Card className="border-none shadow-none bg-transparent">
+          <CardContent className="p-0">
+            <DataTable
+              data={products}
+              columns={columns}
+              searchKey="name"
+              searchPlaceholder="Search products..."
+            />
           </CardContent>
         </Card>
       </div>
