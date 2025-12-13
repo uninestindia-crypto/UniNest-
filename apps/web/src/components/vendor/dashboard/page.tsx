@@ -53,6 +53,57 @@ const leadStatusStyles = {
   followup: 'bg-violet-50 text-violet-600',
 } as const;
 
+const pricingDays = [
+  { label: 'Thu', occupancy: 75, rate: '₹4,200', highlight: false, demand: 'High demand' },
+  { label: 'Fri', occupancy: 92, rate: '₹5,500', highlight: true, demand: 'Peak demand' },
+  { label: 'Sat', occupancy: 95, rate: '₹6,000', highlight: true, demand: 'Peak demand' },
+  { label: 'Sun', occupancy: 60, rate: '₹3,800', highlight: false, demand: 'Moderate demand' },
+  { label: 'Mon', occupancy: 45, rate: '₹3,200', highlight: false, demand: 'Low demand' },
+  { label: 'Tue', occupancy: 40, rate: '₹3,000', highlight: false, demand: 'Low demand' },
+  { label: 'Wed', occupancy: 65, rate: '₹3,500', highlight: false, demand: 'Moderate demand' },
+];
+
+const crmLeads = [
+  { name: 'Rohan Gupta', initials: 'RG', status: 'new' as const, note: 'Asked about monthly rates for 3 PAX.', time: '2m ago' },
+  { name: 'Sarah Khan', initials: 'SK', status: 'warm' as const, note: 'Viewed listing 3 times today.', time: '15m ago' },
+  { name: 'Amit Verma', initials: 'AV', status: 'followup' as const, note: 'Requested callback for bulk booking.', time: '1h ago' },
+];
+
+const quickReplies = ['Send brochure', 'Confirm availability', 'Ask for budget'];
+
+const bookingCalendar = [
+  { day: 'Today', occupancy: 78, rate: '₹4,500', status: 'Filling fast' },
+  { day: 'Tomorrow', occupancy: 85, rate: '₹4,800', status: 'High demand' },
+  { day: 'Sat, 14 Dec', occupancy: 92, rate: '₹5,200', status: 'Almost full' },
+  { day: 'Sun, 15 Dec', occupancy: 65, rate: '₹3,900', status: 'Open slots' },
+];
+
+const payouts = [
+  { id: '#PY-8832', listing: 'Uninest Elite', amount: '₹42,500', status: 'Processing' },
+  { id: '#PY-8831', listing: 'Uninest Lite', amount: '₹18,200', status: 'Paid' },
+];
+
+const marketingBoosters = [
+  { title: 'Weekend Flash Sale', detail: 'Boost visibility by 40% for 48 hours.' },
+  { title: 'Featured Listing', detail: 'Pin your hostel to top search results.' },
+];
+
+const optimizerHighlights = [
+  { title: 'Brighter Photos', detail: 'Lighting enhanced on 3 images.' },
+  { title: 'Sharper Text', detail: 'Description optimized for SEO.' },
+];
+
+const nudges = [
+  { title: 'Add breakfast option', detail: 'Increase bookings by 15%', accent: 'bg-orange-50 text-orange-700' },
+  { title: 'Enable instant book', detail: 'Reduce drop-offs by 20%', accent: 'bg-blue-50 text-blue-700' },
+];
+
+const tierMetrics = [
+  { label: 'Response Rate', value: '98%', progress: 98 },
+  { label: 'Review Score', value: '4.8', progress: 96 },
+  { label: 'Booking Acceptance', value: '100%', progress: 100 },
+];
+
 export default function VendorDashboardContent({ userName, vendorCategories, stats }: VendorDashboardContentProps) {
   const normalizedVendorCategories = Array.isArray(vendorCategories)
     ? vendorCategories
