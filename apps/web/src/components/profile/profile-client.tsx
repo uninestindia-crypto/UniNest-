@@ -1,27 +1,42 @@
 
 'use client';
 
-
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-import { Edit, Loader2, Package, Newspaper, UserPlus, Users, ShoppingBag, Heart } from 'lucide-react';
+import { Badge } from '../ui/badge';
+import { Separator } from '../ui/separator';
+import {
+  Edit,
+  Loader2,
+  Package,
+  Newspaper,
+  UserPlus,
+  Users,
+  ShoppingBag,
+  Heart,
+  MapPin,
+  Calendar,
+  LinkIcon,
+  Check,
+} from 'lucide-react';
 import Link from 'next/link';
 import { notFound, useRouter } from 'next/navigation';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import type { PostWithAuthor, Product, Profile } from '@/lib/types';
 import ProductCard from '../marketplace/product-card';
 import PostCard from '../feed/post-card';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import UserListCard from './user-list-card';
+import { cn } from '@/lib/utils';
 
 type ProfileWithCounts = Profile & {
   follower_count: { count: number }[];
   following_count: { count: number }[];
   isMyProfile: boolean;
-}
+};
 
 type ProfileContent = {
   listings: Product[];
@@ -30,34 +45,38 @@ type ProfileContent = {
   following: Profile[];
   purchases?: Product[];
   favorites: Product[];
-}
+};
 
 type ProfileClientProps = {
   initialProfile: ProfileWithCounts;
   initialContent: ProfileContent;
-}
+};
 
-export default function ProfileClient({ initialProfile, initialContent }: ProfileClientProps) {
+export default function ProfileClient({
+  initialProfile,
+  initialContent,
+}: ProfileClientProps) {
   const { user, loading: authLoading, supabase } = useAuth();
   const { toast } = useToast();
 
   const [profile, setProfile] = useState<ProfileWithCounts>(initialProfile);
-  const [followerCount, setFollowerCount] = useState(initialProfile.follower_count?.[0]?.count ?? 0);
-  const [favoriteProducts, setFavoriteProducts] = useState<Product[]>(initialContent.favorites || []);
+  const [followerCount, setFollowerCount] = useState(
+    initialProfile.follower_count?.[0]?.count ?? 0
+  );
+  const [favoriteProducts, setFavoriteProducts] = useState<Product[]>(
+    initialContent.favorites || []
+  );
 
   const router = useRouter();
 
-  // Listen for favorite updates (from ProductCard) and refresh data
   useEffect(() => {
     const handleUpdate = () => {
-      // Refetch data by refreshing the route
       router.refresh();
-    }
+    };
     window.addEventListener('favorites-updated', handleUpdate);
     return () => window.removeEventListener('favorites-updated', handleUpdate);
   }, [router]);
 
-  // Sync from props if they change (e.g. after router.refresh())
   useEffect(() => {
     if (initialContent.favorites) {
       setFavoriteProducts(initialContent.favorites);
@@ -67,56 +86,74 @@ export default function ProfileClient({ initialProfile, initialContent }: Profil
   const [isFollowing, setIsFollowing] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
 
-  // isMyProfile is now passed down from the server component
   const isMyProfile = profile.isMyProfile;
 
   useEffect(() => {
     const checkFollowingStatus = async () => {
       if (!user || isMyProfile || !supabase) return;
 
-      const { count } = await supabase.from('followers').select('*', { count: 'exact', head: true }).eq('follower_id', user.id).eq('following_id', profile.id);
+      const { count } = await supabase
+        .from('followers')
+        .select('*', { count: 'exact', head: true })
+        .eq('follower_id', user.id)
+        .eq('following_id', profile.id);
       setIsFollowing(count ? count > 0 : false);
     };
     checkFollowingStatus();
   }, [user, profile, isMyProfile, supabase]);
 
-
   const handleFollowToggle = async () => {
     if (!user || isMyProfile || !supabase) {
-      toast({ variant: 'destructive', title: 'Login Required', description: 'Please log in to follow users.' });
+      toast({
+        variant: 'destructive',
+        title: 'Login Required',
+        description: 'Please log in to follow users.',
+      });
       return;
     }
 
     setIsFollowLoading(true);
 
     if (isFollowing) {
-      const { error } = await supabase.from('followers').delete().match({ follower_id: user.id, following_id: profile.id });
+      const { error } = await supabase
+        .from('followers')
+        .delete()
+        .match({ follower_id: user.id, following_id: profile.id });
       if (error) {
-        toast({ variant: 'destructive', title: 'Error', description: 'Could not unfollow user.' });
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Could not unfollow user.',
+        });
       } else {
         setIsFollowing(false);
-        setFollowerCount(c => c - 1);
+        setFollowerCount((c) => c - 1);
       }
     } else {
-      const { error } = await supabase.from('followers').insert({ follower_id: user.id, following_id: profile.id });
+      const { error } = await supabase
+        .from('followers')
+        .insert({ follower_id: user.id, following_id: profile.id });
       if (error) {
-        toast({ variant: 'destructive', title: 'Error', description: 'Could not follow user.' });
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Could not follow user.',
+        });
       } else {
         setIsFollowing(true);
-        setFollowerCount(c => c + 1);
-        // Create notification for the followed user
+        setFollowerCount((c) => c + 1);
         await supabase.rpc('create_new_follower_notification', {
           followed_id_param: profile.id,
-          follower_id_param: user.id
+          follower_id_param: user.id,
         });
       }
     }
     setIsFollowLoading(false);
-  }
+  };
 
   const handlePostAction = () => {
     toast({ title: 'Action not fully implemented in profile view.' });
-  }
+  };
 
   if (authLoading) {
     return (
@@ -135,256 +172,357 @@ export default function ProfileClient({ initialProfile, initialContent }: Profil
   const followingCount = profile.following_count?.[0]?.count ?? 0;
   const postsCount = initialContent.posts.length;
   const listingsCount = initialContent.listings.length;
-  const highlightCandidates = initialContent.listings.slice(0, 5).map((item) => ({
-    id: `listing-${item.id}`,
-    label: item.name || 'Listing',
-    image: item.image_url,
-  }));
-  const displayHighlights = highlightCandidates.length > 0 ? highlightCandidates : [
-    {
-      id: 'profile-highlight',
-      label: profileFullName,
-      image: avatarUrl,
-    },
-  ];
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
-      <Card className="overflow-hidden">
-        <div className="hidden md:block h-32 md:h-48 primary-gradient" />
-        <CardContent className="p-4 md:p-6 md:pt-0">
-          <div className="md:-mt-16">
-            <div className="flex flex-col gap-4 md:flex-row md:items-end md:gap-6">
-              <div className="flex items-center gap-6 md:items-end md:gap-8">
-                <Avatar className="size-24 md:size-32 border-2 md:border-4 border-card">
-                  <AvatarImage src={avatarUrl || undefined} />
-                  <AvatarFallback className="text-4xl">{profileFullName?.[0]?.toUpperCase() || 'U'}</AvatarFallback>
-                </Avatar>
-                <div className="flex flex-1 items-center justify-around text-center text-xs font-semibold uppercase text-muted-foreground md:hidden">
-                  <div>
-                    <p className="text-lg font-bold text-foreground">{postsCount}</p>
-                    <p>Posts</p>
-                  </div>
-                  <div>
-                    <p className="text-lg font-bold text-foreground">{followerCount}</p>
-                    <p>Followers</p>
-                  </div>
-                  <div>
-                    <p className="text-lg font-bold text-foreground">{followingCount}</p>
-                    <p>Following</p>
-                  </div>
-                </div>
-              </div>
-              <div className="flex-1 space-y-3">
-                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                  <div>
-                    <h1 className="text-2xl md:text-3xl font-bold font-headline">{profileFullName}</h1>
-                    <p className="text-muted-foreground">@{profile.handle}</p>
-                    <p className="text-sm text-muted-foreground md:hidden">{listingsCount} listings · {postsCount} posts</p>
-                  </div>
-                  <div className="hidden md:flex items-center gap-8 text-sm">
-                    <div className="text-center">
-                      <span className="block text-xl font-semibold text-foreground">{postsCount}</span>
-                      <span className="text-muted-foreground">Posts</span>
-                    </div>
-                    <div className="text-center">
-                      <span className="block text-xl font-semibold text-foreground">{followerCount}</span>
-                      <span className="text-muted-foreground">Followers</span>
-                    </div>
-                    <div className="text-center">
-                      <span className="block text-xl font-semibold text-foreground">{followingCount}</span>
-                      <span className="text-muted-foreground">Following</span>
+    <div className="min-h-screen bg-gradient-to-b from-muted/30 to-background">
+      {/* Hero Section */}
+      <div className="relative">
+        {/* Cover Background */}
+        <div className="h-48 md:h-64 lg:h-72 w-full overflow-hidden relative">
+          <div className="absolute inset-0 primary-gradient opacity-90" />
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRjMC0yIDItNCAyLTRzMiAyIDIgNC0yIDQtMiA0LTItMi0yLTR6bTAgMGMwLTItMi00LTItNHMtMiAyLTIgNCAyIDQgMiA0IDItMiAyLTR6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
+        </div>
+
+        {/* Profile Info Card */}
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="relative -mt-24 md:-mt-28">
+            <Card className="glass-card border-0 shadow-2xl overflow-visible">
+              <CardContent className="p-6 md:p-8">
+                <div className="flex flex-col md:flex-row md:items-end gap-6">
+                  {/* Avatar */}
+                  <div className="relative -mt-20 md:-mt-24 flex-shrink-0 self-center md:self-auto">
+                    <div className="relative">
+                      <Avatar className="size-32 md:size-40 ring-4 ring-background shadow-xl">
+                        <AvatarImage src={avatarUrl || undefined} />
+                        <AvatarFallback className="text-4xl md:text-5xl font-bold bg-gradient-to-br from-primary to-purple-600 text-white">
+                          {profileFullName?.[0]?.toUpperCase() || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                      {isMyProfile && (
+                        <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground rounded-full p-1.5 shadow-lg">
+                          <Check className="size-4" />
+                        </div>
+                      )}
                     </div>
                   </div>
-                  <div className="hidden md:block">
+
+                  {/* Profile Details */}
+                  <div className="flex-1 text-center md:text-left space-y-4">
+                    <div className="space-y-1">
+                      <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                        <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold font-headline tracking-tight">
+                          {profileFullName}
+                        </h1>
+                        <Badge
+                          variant="secondary"
+                          className="self-center md:self-auto"
+                        >
+                          @{profile.handle}
+                        </Badge>
+                      </div>
+                      {profile.bio && (
+                        <p className="text-muted-foreground text-sm md:text-base max-w-xl mt-2">
+                          {profile.bio}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Stats Row */}
+                    <div className="flex items-center justify-center md:justify-start gap-6 md:gap-8">
+                      <StatItem value={postsCount} label="Posts" />
+                      <Separator
+                        orientation="vertical"
+                        className="h-8 hidden md:block"
+                      />
+                      <StatItem value={followerCount} label="Followers" />
+                      <Separator
+                        orientation="vertical"
+                        className="h-8 hidden md:block"
+                      />
+                      <StatItem value={followingCount} label="Following" />
+                      <Separator
+                        orientation="vertical"
+                        className="h-8 hidden md:block"
+                      />
+                      <StatItem value={listingsCount} label="Listings" />
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex-shrink-0 flex flex-col sm:flex-row gap-3 self-center md:self-end">
                     {isMyProfile ? (
                       <Link href="/settings">
-                        <Button variant="outline">
-                          <Edit className="mr-2 size-4" />
+                        <Button
+                          variant="outline"
+                          className="w-full sm:w-auto group hover:border-primary transition-colors"
+                        >
+                          <Edit className="mr-2 size-4 group-hover:text-primary transition-colors" />
                           Edit Profile
                         </Button>
                       </Link>
                     ) : (
-                      <Button onClick={handleFollowToggle} disabled={isFollowLoading || !user}>
-                        {isFollowLoading ? <Loader2 className="mr-2 size-4 animate-spin" /> : <UserPlus className="mr-2 size-4" />}
-                        {isFollowing ? 'Unfollow' : 'Follow'}
+                      <Button
+                        onClick={handleFollowToggle}
+                        disabled={isFollowLoading || !user}
+                        className={cn(
+                          'w-full sm:w-auto transition-all duration-300',
+                          isFollowing
+                            ? 'bg-muted text-muted-foreground hover:bg-destructive hover:text-destructive-foreground'
+                            : 'bg-primary hover:bg-primary/90'
+                        )}
+                      >
+                        {isFollowLoading ? (
+                          <Loader2 className="mr-2 size-4 animate-spin" />
+                        ) : isFollowing ? (
+                          <Check className="mr-2 size-4" />
+                        ) : (
+                          <UserPlus className="mr-2 size-4" />
+                        )}
+                        {isFollowing ? 'Following' : 'Follow'}
                       </Button>
                     )}
                   </div>
                 </div>
-                <div className="grid grid-cols-1 gap-2 md:hidden">
-                  {isMyProfile ? (
-                    <Link href="/settings">
-                      <Button variant="outline" className="w-full">
-                        <Edit className="mr-2 size-4" />
-                        Edit Profile
-                      </Button>
-                    </Link>
-                  ) : (
-                    <Button onClick={handleFollowToggle} disabled={isFollowLoading || !user} className="w-full">
-                      {isFollowLoading ? <Loader2 className="mr-2 size-4 animate-spin" /> : <UserPlus className="mr-2 size-4" />}
-                      {isFollowing ? 'Unfollow' : 'Follow'}
-                    </Button>
-                  )}
-                </div>
-                <p className="text-sm text-muted-foreground">{profile.bio || 'No bio yet.'}</p>
-                <div className="hidden md:flex items-center gap-6 text-sm">
-                  <div className="font-semibold text-foreground">{followingCount}</div>
-                  Following
-                  <div className="font-semibold text-foreground">{followerCount}</div>
-                  Followers
-                </div>
-              </div>
-            </div>
-            <div className="mt-4 flex gap-4 overflow-x-auto rounded-xl border border-muted/40 bg-muted/30 px-4 py-3 md:hidden">
-              {displayHighlights.map((item) => (
-                <div key={item.id} className="flex min-w-[72px] flex-col items-center gap-2">
-                  <Avatar className="size-16 border border-border">
-                    <AvatarImage src={item.image || undefined} />
-                    <AvatarFallback>{item.label?.[0]?.toUpperCase() || 'H'}</AvatarFallback>
-                  </Avatar>
-                  <span className="max-w-[72px] truncate text-center text-xs font-medium text-foreground">{item.label}</span>
-                </div>
-              ))}
-            </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+
+      {/* Content Tabs */}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Tabs defaultValue="activity" className="w-full">
+          <TabsList className="w-full flex-wrap justify-start bg-transparent border-b border-border h-auto p-0 pb-0 gap-1 rounded-none">
+            <TabTriggerStyled value="activity" icon={Newspaper} label="Feed" />
+            <TabTriggerStyled
+              value="listings"
+              icon={Package}
+              label="Listings"
+            />
             {isMyProfile && (
-              <div className="mt-4 rounded-xl border border-muted/40 bg-muted/20 p-3 text-xs text-muted-foreground md:hidden">
-                Professional dashboard previews and insights will appear here once available.
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      <Tabs defaultValue="activity" className="w-full">
-        <TabsList className="w-full justify-start overflow-x-auto bg-transparent border-b h-auto p-0 pb-1 rounded-none space-x-2 md:space-x-6">
-          <TabsTrigger value="activity" className="rounded-full px-4 py-2 border border-transparent data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 shrink-0">
-            <Newspaper className="mr-2 size-4" />Feed
-          </TabsTrigger>
-          <TabsTrigger value="listings" className="rounded-full px-4 py-2 border border-transparent data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 shrink-0">
-            <Package className="mr-2 size-4" />Listings
-          </TabsTrigger>
-          {isMyProfile && (
-            <>
-              <TabsTrigger value="purchases" className="rounded-full px-4 py-2 border border-transparent data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 shrink-0">
-                <ShoppingBag className="mr-2 size-4" />Purchases
-              </TabsTrigger>
-              <TabsTrigger value="favorites" className="rounded-full px-4 py-2 border border-transparent data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 shrink-0">
-                <Heart className="mr-2 size-4" />Favorites
-              </TabsTrigger>
-            </>
-          )}
-          <TabsTrigger value="followers" className="rounded-full px-4 py-2 border border-transparent data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 shrink-0">
-            <Users className="mr-2 size-4" />Followers
-          </TabsTrigger>
-          <TabsTrigger value="following" className="rounded-full px-4 py-2 border border-transparent data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 shrink-0">
-            <Users className="mr-2 size-4" />Following
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="activity" className="mt-6 animation-fade-in">
-          <div className="space-y-4">
-            {initialContent.posts.length > 0 ? (
-              initialContent.posts.map(post => (
-                <PostCard
-                  key={post.id}
-                  post={post}
-                  currentUser={user}
-                  onDelete={handlePostAction}
-                  onEdit={handlePostAction}
-                  onComment={handlePostAction}
-                  onLike={handlePostAction}
-                  onFollow={async () => false}
+              <>
+                <TabTriggerStyled
+                  value="purchases"
+                  icon={ShoppingBag}
+                  label="Purchases"
                 />
-              ))
-            ) : (
-              <div className="text-center py-12 bg-muted/20 rounded-2xl border border-dashed">
-                <Newspaper className="mx-auto h-12 w-12 text-muted-foreground/30 mb-3" />
-                <h3 className="text-lg font-medium">No posts yet</h3>
-                <p className="text-muted-foreground text-sm">When {profileFullName} shares updates, they'll appear here.</p>
-              </div>
+                <TabTriggerStyled
+                  value="favorites"
+                  icon={Heart}
+                  label="Favorites"
+                />
+              </>
             )}
-          </div>
-        </TabsContent>
-        <TabsContent value="listings" className="mt-6 animation-fade-in">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {initialContent.listings.length > 0 ? (
-              initialContent.listings.map(listing => (
-                <div key={listing.id} className="h-full">
-                  <ProductCard
-                    product={listing}
-                    user={user}
-                    onBuyNow={() => { }}
-                    isBuying={false}
-                    isRazorpayLoaded={false}
+            <TabTriggerStyled
+              value="followers"
+              icon={Users}
+              label="Followers"
+            />
+            <TabTriggerStyled
+              value="following"
+              icon={Users}
+              label="Following"
+            />
+          </TabsList>
+
+          <div className="mt-8">
+            <TabsContent
+              value="activity"
+              className="animate-fade-in-up m-0 focus-visible:outline-none focus-visible:ring-0"
+            >
+              <div className="space-y-6">
+                {initialContent.posts.length > 0 ? (
+                  initialContent.posts.map((post) => (
+                    <PostCard
+                      key={post.id}
+                      post={post}
+                      currentUser={user}
+                      onDelete={handlePostAction}
+                      onEdit={handlePostAction}
+                      onComment={handlePostAction}
+                      onLike={handlePostAction}
+                      onFollow={async () => false}
+                    />
+                  ))
+                ) : (
+                  <EmptyState
+                    icon={Newspaper}
+                    title="No posts yet"
+                    description={`When ${profileFullName} shares updates, they'll appear here.`}
                   />
-                </div>
-              ))
-            ) : (
-              <div className="col-span-full text-center py-12 bg-muted/20 rounded-2xl border border-dashed">
-                <Package className="mx-auto h-12 w-12 text-muted-foreground/30 mb-3" />
-                <h3 className="text-lg font-medium">No active listings</h3>
-                <p className="text-muted-foreground text-sm">Items listed for sale will appear here.</p>
+                )}
               </div>
-            )}
-          </div>
-        </TabsContent>
-        <TabsContent value="purchases" className="mt-6 animation-fade-in">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {initialContent.purchases && initialContent.purchases.length > 0 ? (
-              initialContent.purchases.map((product, idx) => (
-                <div key={`${product.id}-${idx}`} className="h-full">
-                  <ProductCard
-                    product={product}
-                    user={user}
-                    onBuyNow={() => { }} // Already purchased
-                    isBuying={false}
-                    isRazorpayLoaded={false}
-                  />
-                </div>
-              ))
-            ) : (
-              <div className="col-span-full text-center py-12 bg-muted/20 rounded-2xl border border-dashed">
-                <ShoppingBag className="mx-auto h-12 w-12 text-muted-foreground/30 mb-3" />
-                <h3 className="text-lg font-medium">No purchases yet</h3>
-                <p className="text-muted-foreground text-sm">Items you buy will show up here.</p>
+            </TabsContent>
+
+            <TabsContent
+              value="listings"
+              className="animate-fade-in-up m-0 focus-visible:outline-none focus-visible:ring-0"
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {initialContent.listings.length > 0 ? (
+                  initialContent.listings.map((listing) => (
+                    <div key={listing.id} className="h-full">
+                      <ProductCard
+                        product={listing}
+                        user={user}
+                        onBuyNow={() => { }}
+                        isBuying={false}
+                        isRazorpayLoaded={false}
+                      />
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-full">
+                    <EmptyState
+                      icon={Package}
+                      title="No active listings"
+                      description="Items listed for sale will appear here."
+                    />
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        </TabsContent>
-        <TabsContent value="favorites" className="mt-6 animation-fade-in">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Note: Favorites fetching would ideally verify IDs against backend to get latest data */}
-            {/* For now, we rely on what we can get or show empty state if we haven't fetched all details yet. 
-                     Typically, we'd need to fetch full product details for these favorite IDs. */}
-            {favoriteProducts.length > 0 ? (
-              favoriteProducts.map(product => (
-                <div key={product.id} className="h-full">
-                  <ProductCard
-                    product={product}
-                    user={user}
-                    onBuyNow={() => { }}
-                    isBuying={false}
-                    isRazorpayLoaded={true} // Allow buying favorites
-                  />
-                </div>
-              ))
-            ) : (
-              <div className="col-span-full text-center py-12 bg-muted/20 rounded-2xl border border-dashed">
-                <Heart className="mx-auto h-12 w-12 text-muted-foreground/30 mb-3" />
-                <h3 className="text-lg font-medium">No favorites yet</h3>
-                <p className="text-muted-foreground text-sm">Tap the heart on items you like to save them here.</p>
+            </TabsContent>
+
+            <TabsContent
+              value="purchases"
+              className="animate-fade-in-up m-0 focus-visible:outline-none focus-visible:ring-0"
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {initialContent.purchases &&
+                  initialContent.purchases.length > 0 ? (
+                  initialContent.purchases.map((product, idx) => (
+                    <div key={`${product.id}-${idx}`} className="h-full">
+                      <ProductCard
+                        product={product}
+                        user={user}
+                        onBuyNow={() => { }}
+                        isBuying={false}
+                        isRazorpayLoaded={false}
+                      />
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-full">
+                    <EmptyState
+                      icon={ShoppingBag}
+                      title="No purchases yet"
+                      description="Items you buy will show up here."
+                    />
+                  </div>
+                )}
               </div>
-            )}
+            </TabsContent>
+
+            <TabsContent
+              value="favorites"
+              className="animate-fade-in-up m-0 focus-visible:outline-none focus-visible:ring-0"
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {favoriteProducts.length > 0 ? (
+                  favoriteProducts.map((product) => (
+                    <div key={product.id} className="h-full">
+                      <ProductCard
+                        product={product}
+                        user={user}
+                        onBuyNow={() => { }}
+                        isBuying={false}
+                        isRazorpayLoaded={true}
+                      />
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-full">
+                    <EmptyState
+                      icon={Heart}
+                      title="No favorites yet"
+                      description="Tap the heart on items you like to save them here."
+                    />
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+
+            <TabsContent
+              value="followers"
+              className="animate-fade-in-up m-0 focus-visible:outline-none focus-visible:ring-0"
+            >
+              <UserListCard
+                users={initialContent.followers}
+                emptyMessage="Not followed by any users yet."
+              />
+            </TabsContent>
+
+            <TabsContent
+              value="following"
+              className="animate-fade-in-up m-0 focus-visible:outline-none focus-visible:ring-0"
+            >
+              <UserListCard
+                users={initialContent.following}
+                emptyMessage="Not following any users yet."
+              />
+            </TabsContent>
           </div>
-        </TabsContent>
-        <TabsContent value="followers" className="mt-6 animation-fade-in">
-          <UserListCard users={initialContent.followers} emptyMessage="Not followed by any users yet." />
-        </TabsContent>
-        <TabsContent value="following" className="mt-6 animation-fade-in">
-          <UserListCard users={initialContent.following} emptyMessage="Not following any users yet." />
-        </TabsContent>
-      </Tabs>
+        </Tabs>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                              Helper Components                             */
+/* -------------------------------------------------------------------------- */
+
+function StatItem({ value, label }: { value: number; label: string }) {
+  return (
+    <div className="text-center group cursor-default">
+      <p className="text-xl md:text-2xl font-bold text-foreground group-hover:text-primary transition-colors">
+        {value.toLocaleString()}
+      </p>
+      <p className="text-xs md:text-sm text-muted-foreground uppercase tracking-wide">
+        {label}
+      </p>
+    </div>
+  );
+}
+
+function TabTriggerStyled({
+  value,
+  icon: Icon,
+  label,
+}: {
+  value: string;
+  icon: React.ElementType;
+  label: string;
+}) {
+  return (
+    <TabsTrigger
+      value={value}
+      className="relative px-4 py-3 text-sm font-medium text-muted-foreground transition-all data-[state=active]:text-primary data-[state=active]:font-semibold border-b-2 border-transparent data-[state=active]:border-primary rounded-none bg-transparent hover:text-foreground focus-visible:outline-none focus-visible:ring-0"
+    >
+      <Icon className="mr-2 size-4 inline-block" />
+      <span className="hidden sm:inline">{label}</span>
+    </TabsTrigger>
+  );
+}
+
+function EmptyState({
+  icon: Icon,
+  title,
+  description,
+}: {
+  icon: React.ElementType;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="text-center py-16 bg-muted/30 rounded-2xl border border-dashed border-border">
+      <div className="inline-flex items-center justify-center size-16 rounded-full bg-muted mb-4">
+        <Icon className="size-8 text-muted-foreground/50" />
+      </div>
+      <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+      <p className="text-muted-foreground text-sm mt-1 max-w-xs mx-auto">
+        {description}
+      </p>
     </div>
   );
 }
