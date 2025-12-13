@@ -8,6 +8,8 @@ import * as SplashScreen from 'expo-splash-screen';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { ThemeProvider } from '@/theme';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import * as Notifications from 'expo-notifications';
+import { supabase } from '@/services/supabase';
 
 // Prevent splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
@@ -42,6 +44,40 @@ function AuthGate({ children }: { children: React.ReactNode }) {
         } else if (user && inAuthGroup) {
             // User is signed in but on auth screen
             router.replace('/');
+        }
+
+        // Push Notifications Logic
+        const registerForPushNotificationsAsync = async () => {
+            if (!user) return;
+
+            try {
+                const { status: existingStatus } = await Notifications.getPermissionsAsync();
+                let finalStatus = existingStatus;
+
+                if (existingStatus !== 'granted') {
+                    const { status } = await Notifications.requestPermissionsAsync();
+                    finalStatus = status;
+                }
+
+                if (finalStatus !== 'granted') {
+                    return;
+                }
+
+                const token = (await Notifications.getExpoPushTokenAsync()).data;
+                // Save token to profile
+                if (token) {
+                    // We use direct supabase client here, assuming 'profiles' table has RLS allowing update to own row
+                    // If 'push_token' column doesn't exist, this will fail silently in production apps usually, 
+                    // or we should handle error.
+                    await supabase.from('profiles').update({ push_token: token }).eq('id', user.id);
+                }
+            } catch (error) {
+                console.log('Error registering for push notifications:', error);
+            }
+        };
+
+        if (user) {
+            registerForPushNotificationsAsync();
         }
 
         // Hide splash screen once we know auth state

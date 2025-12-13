@@ -38,7 +38,8 @@ async function getProfileData(handle: string) {
     followersRes,
     followingRes,
     likedPostsRes,
-    ordersRes
+    ordersRes,
+    favoritesRes
   ] = await Promise.all([
     supabase.from('products').select('*, profiles:seller_id(full_name, avatar_url, handle, user_metadata)').eq('seller_id', userId).eq('status', 'active').order('created_at', { ascending: false }),
     supabase.from('posts').select('*, likes:post_likes(count), comments:comments(count), profiles:user_id(full_name, avatar_url, handle)').eq('user_id', userId).order('created_at', { ascending: false }),
@@ -46,9 +47,16 @@ async function getProfileData(handle: string) {
     supabase.from('followers').select('profiles!following_id(*)').eq('follower_id', userId),
     user ? supabase.from('likes').select('post_id').eq('user_id', user.id) : Promise.resolve({ data: [] }),
     isMyProfile
+    isMyProfile
       ? supabase.from('orders')
         .select('*, order_items(product_id, products(*, seller:seller_id(full_name, avatar_url, handle, user_metadata)))')
         .eq('buyer_id', userId)
+        .order('created_at', { ascending: false })
+      : Promise.resolve({ data: [] }),
+    isMyProfile
+      ? supabase.from('favorites')
+        .select('product_id, products(*, seller:seller_id(full_name, avatar_url, handle, user_metadata))')
+        .eq('user_id', userId)
         .order('created_at', { ascending: false })
       : Promise.resolve({ data: [] })
   ]);
@@ -59,12 +67,21 @@ async function getProfileData(handle: string) {
   const purchasedProducts = (ordersRes.data || []).flatMap((order: any) =>
     order.order_items.map((item: any) => ({
       ...item.products,
-      // Add context that this is a purchased item if needed, 
-      // but strictly adhering to Product type for ProductCard
-      seller: item.products.seller || {}, // Ensure seller object/dummy exists if missing
-      purchaseDate: order.created_at, // Optional metadata
+      seller: item.products.seller || {},
+      purchaseDate: order.created_at,
     }))
   ).filter(p => !!p);
+
+  // Transform favorites
+  const favoritesRes = results[6]; // results array index is shifted because I added one more promise
+  // Wait, I need to verify the index.
+  // The Promise.all array had 6 elements: listings, posts, followers, following, likedPosts, orders.
+  // Now it has 7. favorites is last.
+
+  const favoriteProducts = (favoritesRes.data || []).map((f: any) => ({
+    ...f.products,
+    seller: f.products.seller || {}
+  })).filter((p: any) => !!p);
 
   const content = {
     listings: (listingsRes.data as any[] || []).map(p => ({ ...p, seller: p.profiles })) as Product[],
@@ -72,7 +89,7 @@ async function getProfileData(handle: string) {
     followers: (followersRes.data?.map((f: any) => f.profiles) as Profile[]) || [],
     following: (followingRes.data?.map((f: any) => f.profiles) as Profile[]) || [],
     purchases: purchasedProducts as Product[],
-    favorites: [], // Favorites are handled client-side via LocalStorage for now
+    favorites: favoriteProducts as Product[],
   };
 
 

@@ -265,16 +265,16 @@ const SidebarHeader = React.forwardRef<
       className={cn("flex items-center p-4", displayState === 'collapsed' && 'justify-center', className)}
       {...props}
     >
-        <div className={cn('transition-opacity duration-200', displayState === 'collapsed' ? 'opacity-0 w-0' : 'opacity-100 w-auto')}>
-            {props.children}
-        </div>
-        <div className={cn('transition-opacity duration-200', displayState === 'expanded' ? 'opacity-0 w-0' : 'opacity-100 w-auto')}>
-             <Link href="/" className="flex items-center gap-2">
-                <div className="p-2 bg-gradient-to-br from-blue-400 to-purple-500 rounded-lg">
-                    <Logo className="size-6 text-white" />
-                </div>
-            </Link>
-        </div>
+      <div className={cn('transition-opacity duration-200', displayState === 'collapsed' ? 'opacity-0 w-0' : 'opacity-100 w-auto')}>
+        {props.children}
+      </div>
+      <div className={cn('transition-opacity duration-200', displayState === 'expanded' ? 'opacity-0 w-0' : 'opacity-100 w-auto')}>
+        <Link href="/" className="flex items-center gap-2">
+          <div className="p-2 bg-gradient-to-br from-blue-400 to-purple-500 rounded-lg">
+            <Logo className="size-6 text-white" />
+          </div>
+        </Link>
+      </div>
     </div>
   )
 })
@@ -284,16 +284,16 @@ const SidebarFooter = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div">
 >(({ className, ...props }, ref) => {
-    const { state, isMobile } = useSidebar();
-    const displayState = isMobile ? 'expanded' : state;
-    return (
-        <div
-        ref={ref}
-        data-sidebar="footer"
-        className={cn("p-4 mt-auto", displayState === 'collapsed' && 'p-2', className)}
-        {...props}
-        />
-    )
+  const { state, isMobile } = useSidebar();
+  const displayState = isMobile ? 'expanded' : state;
+  return (
+    <div
+      ref={ref}
+      data-sidebar="footer"
+      className={cn("p-4 mt-auto", displayState === 'collapsed' && 'p-2', className)}
+      {...props}
+    />
+  )
 })
 SidebarFooter.displayName = "SidebarFooter"
 
@@ -402,10 +402,10 @@ const SidebarMenuButton = React.forwardRef<
         {...props}
       >
         {displayState === 'expanded' ? (
-            children
+          children
         ) : (
-            // In collapsed state, only render the icon (the first child)
-            Array.isArray(children) ? children[0] : children
+          // In collapsed state, only render the icon (the first child)
+          Array.isArray(children) ? children[0] : children
         )}
       </Comp>
     )
@@ -413,12 +413,12 @@ const SidebarMenuButton = React.forwardRef<
     if (displayState === 'expanded') {
       return button;
     }
-    
+
     // Determine content for tooltip
     const tooltipContent = tooltip || (Array.isArray(children) && children.length > 1 ? children[1] : null);
 
     if (!tooltipContent) {
-        return button;
+      return button;
     }
 
     return (
@@ -429,13 +429,61 @@ const SidebarMenuButton = React.forwardRef<
           align="center"
           hidden={displayState !== "collapsed"}
         >
-            {tooltipContent}
+          {tooltipContent}
         </TooltipContent>
       </Tooltip>
     )
   }
 )
 SidebarMenuButton.displayName = "SidebarMenuButton"
+
+const SidebarGroup = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<"div">
+>(({ className, ...props }, ref) => {
+  return (
+    <div
+      ref={ref}
+      data-sidebar="group"
+      className={cn("relative flex w-full min-w-0 flex-col p-2", className)}
+      {...props}
+    />
+  )
+})
+SidebarGroup.displayName = "SidebarGroup"
+
+const SidebarGroupLabel = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<"div"> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : "div"
+
+  return (
+    <Comp
+      ref={ref}
+      data-sidebar="group-label"
+      className={cn(
+        "duration-200 flex h-8 shrink-0 items-center rounded-md px-2 text-xs font-medium text-muted-foreground/70 outline-none ring-ring transition-[margin,opa] ease-linear focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
+        className
+      )}
+      {...props}
+    />
+  )
+})
+SidebarGroupLabel.displayName = "SidebarGroupLabel"
+
+const SidebarGroupContent = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<"div">
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    data-sidebar="group-content"
+    className={cn("w-full text-sm", className)}
+    {...props}
+  />
+))
+SidebarGroupContent.displayName = "SidebarGroupContent"
 
 export {
   Sidebar,
@@ -448,6 +496,9 @@ export {
   SidebarMenuItem,
   SidebarProvider,
   SidebarTrigger,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarGroupContent,
   useSidebarContext,
   useSidebar,
 }

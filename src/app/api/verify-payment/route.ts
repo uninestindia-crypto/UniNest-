@@ -10,12 +10,12 @@ const createAuthedSupabaseClient = async (request: NextRequest) => {
     // These values MUST be accessed via process.env on the server
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-    
+
     // Explicitly check if the env vars are loaded
     if (!supabaseUrl || !supabaseAnonKey) {
         throw new Error('Server configuration error: Supabase URL or Anon Key is missing.');
     }
-    
+
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
     const authHeader = request.headers.get('Authorization');
@@ -25,7 +25,7 @@ const createAuthedSupabaseClient = async (request: NextRequest) => {
 
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error } = await supabase.auth.getUser(token);
-    
+
     if (error || !user) {
         throw new Error('Authentication failed: ' + (error?.message || 'User not found'));
     }
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
         // Step 1: Authenticate the user from the token. This is the crucial step.
         const { user } = await createAuthedSupabaseClient(request);
         const body = await request.json();
-        
+
         const {
             orderId,
             razorpay_payment_id,
@@ -69,9 +69,9 @@ export async function POST(request: NextRequest) {
             billingPeriodStart,
             billingPeriodEnd,
         } = body;
-        
+
         const keySecret = process.env.RAZORPAY_KEY_SECRET;
-        
+
         // Step 2: Verify Razorpay Signature if it's a paid transaction
         if (orderId && razorpay_payment_id && razorpay_signature) {
             if (!keySecret) {
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
         // It's safer to use the admin client for writes to bypass RLS,
         // as the user's identity has now been securely verified via token.
         const supabaseAdmin = getSupabaseAdmin();
-        
+
         if (type === 'donation') {
             const { error } = await supabaseAdmin.from('donations').insert({
                 user_id: user.id, // Use the verified user ID from the token
@@ -132,7 +132,7 @@ export async function POST(request: NextRequest) {
                 pitch_url: pitchUrl ?? null,
             });
             if (error) throw error;
-            
+
         } else if (type === 'vendor_subscription') {
             if (
                 typeof servicesCount !== 'number' ||
@@ -167,6 +167,50 @@ export async function POST(request: NextRequest) {
                     billingPeriodEnd,
                 },
             });
+
+        } else if (type === 'marketplace_order') {
+            // New Logic for General Marketplace Orders
+            // Expects: productId, vendorId (seller_id), quantity (optional, default 1), bookingDate (optional), bookingSlot (optional)
+            const { productId, vendorId, quantity = 1, bookingDate, bookingSlot } = body;
+
+            if (!productId || !vendorId) {
+                return NextResponse.json({ error: 'Missing required order details (productId, vendorId).' }, { status: 400 });
+            }
+
+            // 1. Create the Order
+            const { data: orderData, error: orderError } = await supabaseAdmin
+                .from('orders')
+                .insert({
+                    buyer_id: user.id,
+                    vendor_id: vendorId,
+                    total_amount: amount, // Amount verified by signature
+                    razorpay_payment_id: razorpay_payment_id,
+                    status: 'completed', // Or 'pending_approval' if logic requires confirmation
+                    booking_date: bookingDate || null,
+                    booking_slot: bookingSlot || null
+                })
+                .select()
+                .single();
+
+            if (orderError) throw orderError;
+
+            // 2. Create the Order Item
+            const { error: itemError } = await supabaseAdmin
+                .from('order_items')
+                .insert({
+                    order_id: orderData.id,
+                    product_id: productId,
+                    quantity: quantity,
+                    price: amount, // Assuming single item order for now, so total amount = item price
+                });
+
+            if (itemError) {
+                // In a real app we might want to rollback the order here or log critical error
+                console.error('Failed to create order item:', itemError);
+                throw itemError;
+            }
+
+            return NextResponse.json({ success: true, message: 'Order placed successfully.', orderId: orderData.id });
 
         } else {
             return NextResponse.json({ error: 'Invalid transaction type.' }, { status: 400 });

@@ -5,53 +5,52 @@
 @layer base {
   :root {
     /* Brand Colors - Deep Indigo & Vibrant Coral */
-    --primary: 249 72% 59%;
-    /* #4F46E5 - Deep Indigo */
-    --primary-foreground: 0 0% 100%;
+    /* Primary: Deep Indigo #4338CA (Indigo 700) */
+    --primary: 247 74% 50%; /* Adjusted for HSL compatibility */
+    --primary-foreground: 210 40% 98%;
 
-    --secondary: 21 90% 61%;
-    /* #F97316 - Vibrant Coral */
-    --secondary-foreground: 0 0% 100%;
+    /* Secondary: Vibrant Coral #F97316 (Orange 500) */
+    --secondary: 24 95% 53%; 
+    --secondary-foreground: 210 40% 98%;
 
-    --accent: 189 94% 43%;
-    /* #06B6D4 - Cyan/Teal */
-    --accent-foreground: 0 0% 100%;
+    /* Accent: Sky/Cyan for subtle highlights */
+    --accent: 199 89% 48%; /* #0EA5E9 Sky 500 */
+    --accent-foreground: 210 40% 98%;
 
-    /* Base Colors - Cleaner, brighter layout */
-    --background: 210 40% 98%;
-    /* #F8FAFC - Cool White */
-    --foreground: 222 47% 11%;
-    /* #0F172A - Slate 900 */
+    /* Base Colors - Premium Slate/Gray */
+    --background: 210 40% 98%; /* #F8FAFC - Slate 50 */
+    --foreground: 222 47% 11%; /* #0F172A - Slate 900 */
 
+    /* Surface Colors */
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
 
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* UI Colors */
+    --muted: 210 40% 96.1%; /* Slate 100 */
+    --muted-foreground: 215.4 16.3% 46.9%; /* Slate 500 */
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
+    --border: 214.3 31.8% 91.4%; /* Slate 200 */
     --input: 214.3 31.8% 91.4%;
-    --ring: 249 72% 59%;
+    --ring: 247 74% 50%; /* Match Primary */
 
-    --radius: 0.75rem;
+    --radius: 0.5rem; /* 8px - Cleaner, sharper compliance */
 
     /* Gradients */
-    --primary-start: 249 72% 59%;
-    --primary-end: 270 95% 75%;
-    /* Purple-ish shift */
+    --primary-start: 247 74% 50%;
+    --primary-end: 260 80% 60%; 
 
-    /* Charts */
-    --chart-1: 249 72% 59%;
-    --chart-2: 189 94% 43%;
-    --chart-3: 21 90% 61%;
-    --chart-4: 43 96% 56%;
-    --chart-5: 27 96% 61%;
+    /* Charts (New Palette) */
+    --chart-1: 247 74% 50%; /* Indigo */
+    --chart-2: 24 95% 53%; /* Coral */
+    --chart-3: 199 89% 48%; /* Sky */
+    --chart-4: 160 84% 39%; /* Emerald */
+    --chart-5: 45 93% 47%; /* Amber */
 
     /* Safe Areas */
     --safe-area-top: env(safe-area-inset-top, 0px);
@@ -61,45 +60,44 @@
   }
 
   .dark {
-    --background: 222 47% 11%;
-    /* #0F172A */
+    /* Base Colors - Deep Blue/Slate for Dark Mode */
+    --background: 222 47% 11%; /* #0F172A */
     --foreground: 210 40% 98%;
 
-    --card: 222 47% 10%;
-    /* Slightly darker than bg */
+    --card: 217 33% 17%; /* #1E293B Slate 800 - distinct card layer */
     --card-foreground: 210 40% 98%;
 
-    --popover: 222 47% 11%;
+    --popover: 217 33% 17%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 249 72% 65%;
-    /* Lighter/brighter for dark mode */
+    /* Brand adjustments for dark mode readability */
+    --primary: 247 74% 65%; /* Lighter Indigo */
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 21 90% 61%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 24 95% 60%; /* Lighter Coral */
+    --secondary-foreground: 210 40% 98%;
 
-    --accent: 189 94% 43%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 199 89% 58%;
+    --accent-foreground: 210 40% 98%;
 
-    --muted: 217.2 32.6% 17.5%;
+    --muted: 217 33% 20%; /* Slate 800ish */
     --muted-foreground: 215 20.2% 65.1%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 249 72% 65%;
+    --border: 217 33% 20%;
+    --input: 217 33% 20%;
+    --ring: 247 74% 65%;
 
-    --chart-1: 249 72% 65%;
-    --chart-2: 189 94% 43%;
-    --chart-3: 21 90% 61%;
-    --chart-4: 43 96% 56%;
-    --chart-5: 27 96% 61%;
+    --chart-1: 247 74% 65%;
+    --chart-2: 24 95% 60%;
+    --chart-3: 199 89% 58%;
+    --chart-4: 160 84% 49%;
+    --chart-5: 45 93% 57%;
 
-    --primary-start: 249 72% 65%;
-    --primary-end: 270 95% 75%;
+    --primary-start: 247 74% 65%;
+    --primary-end: 260 80% 70%;
   }
 }
 
