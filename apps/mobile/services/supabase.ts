@@ -1,6 +1,6 @@
 import Constants from 'expo-constants';
 import { getSupabaseClient } from '@uninest/api-client/native';
-import { createAuthApi, createProductsApi, createOrdersApi } from '@uninest/api-client';
+import { createAuthApi, createProductsApi, createOrdersApi, createWorkspaceApi } from '@uninest/api-client';
 
 // Get environment variables
 const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl || process.env.EXPO_PUBLIC_SUPABASE_URL;
@@ -17,3 +17,4 @@ export const supabase = getSupabaseClient(supabaseUrl, supabaseAnonKey);
 export const authApi = createAuthApi(supabase);
 export const productsApi = createProductsApi(supabase);
 export const ordersApi = createOrdersApi(supabase);
+export const workspaceApi = createWorkspaceApi(supabase);

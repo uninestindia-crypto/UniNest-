@@ -119,11 +119,11 @@ packages/
 - [ ] App preferences (theme toggle)
 - [ ] Logout confirmation
 
-#### 1.2 Chat/Messaging System
-- [ ] Create `apps/mobile/app/chat/` directory
-- [ ] Chat list screen
-- [ ] Individual chat screen with real-time updates
-- [ ] Add chat API to `@uninest/api-client`
+#### 1.2 Workspace Features (Promoted from Phase 2)
+- [ ] Create `packages/shared-types/src/workspace.ts` (Competitions/Internships)
+- [ ] Create `packages/api-client/src/workspace.ts`
+- [ ] Create `apps/mobile/app/workspace/` screens
+- [ ] Add entry point on Home Screen
 
 #### 1.3 Hostel Listings
 - [ ] Create `apps/mobile/app/hostels/` directory
@@ -135,6 +135,9 @@ packages/
 - [ ] Configure scheme handling in `app.config.ts` ✅ (already done)
 - [ ] Implement universal links for iOS
 - [ ] Implement App Links for Android
+
+#### [SKIPPED] Chat/Messaging System
+> **Note**: Chat is currently retired on the web platform to focus on bookings/workspace. Mobile implementation will be skipped to align with business logic.
 
 ### Phase 2: Enhanced Features (Priority: MEDIUM)
 

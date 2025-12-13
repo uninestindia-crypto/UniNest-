@@ -9,3 +9,6 @@ export * from './order';
 
 // Notification types
 export * from './notification';
+
+// Workspace types
+export * from './workspace';
