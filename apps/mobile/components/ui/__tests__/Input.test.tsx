@@ -57,10 +57,15 @@ describe('Input Component', () => {
         const input = screen.getByPlaceholderText('Password');
         expect(input.props.secureTextEntry).toBe(true);
 
-        // Find toggle button (icon)
-        // Note: We need to ensure the toggle button is findable.
-        // Assuming the icon has a testID or we find it by accessibility label if added.
-        // Since we didn't add accessibilityLabel to the right icon pressable in Input.tsx,
-        // we might fail here. Let's fix Input.tsx to have testID on the toggle button.
+        // Find toggle button and press it
+        const toggleBtn = screen.getByTestId('password-toggle');
+        fireEvent.press(toggleBtn);
+
+        // Should now be visible (not secure)
+        expect(input.props.secureTextEntry).toBe(false); // Our component logic flips it
+
+        // Press again to hide
+        fireEvent.press(toggleBtn);
+        expect(input.props.secureTextEntry).toBe(true);
     });
 });

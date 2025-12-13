@@ -86,7 +86,7 @@ export function Card({
         );
     }
 
-    return <View style={[styles.base, cardStyles, style]}>{children}</View>;
+    return <View {...props} style={[styles.base, cardStyles, style]}>{children}</View>;
 }
 
 // Card Header component
