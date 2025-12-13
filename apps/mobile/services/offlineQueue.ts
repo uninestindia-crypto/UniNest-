@@ -36,7 +36,7 @@ export interface QueuedMutation {
 // Mutation handler type
 type MutationHandler = (payload: unknown) => Promise<void>;
 
-class OfflineMutationQueue {
+export class OfflineQueueService {
     private queue: QueuedMutation[] = [];
     private handlers: Map<MutationType, MutationHandler> = new Map();
     private isProcessing = false;

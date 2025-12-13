@@ -33,11 +33,11 @@ describe('Input Component', () => {
         const onChangeTextMock = jest.fn();
         render(
             <TestWrapper>
-                <Input label="Test" onChangeText={onChangeTextMock} />
+                <Input label="Test" placeholder="Type here" onChangeText={onChangeTextMock} />
             </TestWrapper>
         );
 
-        fireEvent.changeText(screen.getByPlaceholderText(''), 'test value');
+        fireEvent.changeText(screen.getByPlaceholderText('Type here'), 'test value');
         expect(onChangeTextMock).toHaveBeenCalledWith('test value');
     });
 
