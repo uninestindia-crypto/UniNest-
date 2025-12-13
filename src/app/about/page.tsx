@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { GraduationCap, BookOpen, Store, Library, Rocket, Globe, UserCheck, Sparkles, Users, Instagram } from 'lucide-react';
+import { GraduationCap, BookOpen, Store, Library, Rocket, Globe, UserCheck, Sparkles, Users, Instagram, Heart, ArrowRight } from 'lucide-react';
 import AnimatedCounter from '@/components/animated-counter';
 
 export const metadata: Metadata = {
@@ -19,134 +19,216 @@ const timelineEvents = [
 ];
 
 const impactStats = [
-  { value: 10000, label: "Students Connected", icon: GraduationCap, isPlus: true },
-  { value: 200, label: "Vendors Empowering", icon: Store, isPlus: true },
-  { value: 50, label: "Libraries Managed", icon: Library, isPlus: true },
+  { value: 10000, label: "Students Connected", icon: GraduationCap, isPlus: true, color: "text-blue-500" },
+  { value: 200, label: "Vendors Empowering", icon: Store, isPlus: true, color: "text-orange-500" },
+  { value: 50, label: "Libraries Managed", icon: Library, isPlus: true, color: "text-purple-500" },
+  { value: 15, label: "Partner Universities", icon: BookOpen, isPlus: true, color: "text-emerald-500" },
 ];
 
 const coreValues = [
-    { title: "Innovation First", description: "We constantly build and iterate to solve real student problems.", icon: Rocket },
-    { title: "Community Matters", description: "Our platform is built for, and by, the student community.", icon: Users },
-    { title: "Education for All", description: "We believe in breaking down barriers to knowledge and opportunity.", icon: GraduationCap },
-    { title: "Student-Centered", description: "Every decision is driven by what's best for our students.", icon: UserCheck },
+  { title: "Innovation First", description: "We constantly build and iterate to solve real student problems.", icon: Rocket, color: "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400" },
+  { title: "Community Matters", description: "Our platform is built for, and by, the student community.", icon: Users, color: "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400" },
+  { title: "Education for All", description: "We believe in breaking down barriers to knowledge and opportunity.", icon: GraduationCap, color: "bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400" },
+  { title: "Student-Centered", description: "Every decision is driven by what's best for our students.", icon: UserCheck, color: "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400" },
 ];
 
 export default function AboutPage() {
   return (
-    <div className="space-y-16 md:space-y-24">
+    <div className="flex flex-col gap-20 pb-20 overflow-hidden">
       {/* Hero Section */}
-      <section className="text-center pt-8">
-        <h1 className="text-4xl md:text-6xl font-headline font-extrabold tracking-tight">
-            10,000+ Students. <span className="primary-gradient bg-clip-text text-transparent">One UniNest.</span>
-        </h1>
-        <p className="mt-6 max-w-3xl mx-auto text-lg text-muted-foreground">
-            UniNest is more than a platform — it’s a movement to connect, empower, and inspire students everywhere.
-        </p>
-         <div className="mt-8 relative h-60 w-full max-w-4xl mx-auto rounded-2xl overflow-hidden shadow-lg border">
-            <Image
-                src="https://picsum.photos/seed/about-hero/1200/400"
-                alt="Digital campus illustration"
-                fill
-                priority
-                className="object-cover"
-                data-ai-hint="digital campus illustration vibrant gradient"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-blue-500/30 to-purple-500/30"></div>
+      <section className="relative pt-20 pb-32 md:pt-32 md:pb-48 overflow-hidden">
+        {/* Background Elements */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none z-[-1]">
+          <div className="absolute top-20 left-[10%] w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-pulse-soft"></div>
+          <div className="absolute bottom-20 right-[10%] w-96 h-96 bg-secondary/10 rounded-full blur-3xl animate-pulse-soft" style={{ animationDelay: '1s' }}></div>
+        </div>
+
+        <div className="container px-4 md:px-6 relative z-10 text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-8 animate-fade-in-up">
+            <Sparkles className="size-4" />
+            <span>Revolutionizing Campus Life</span>
+          </div>
+
+          <h1 className="text-5xl md:text-7xl font-headline font-extrabold tracking-tight mb-8 max-w-5xl mx-auto animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+            10,000+ Students. <br className="hidden md:block" />
+            <span className="text-gradient">One Unified Campus.</span>
+          </h1>
+
+          <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            UniNest is more than a platform — it’s a movement. We are bridging the gap between students, knowledge, and opportunity to create the campus of the future.
+          </p>
+
+          <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+            <Button size="lg" className="h-14 px-8 text-lg rounded-full shadow-lg hover:shadow-primary/25 transition-all" asChild>
+              <Link href="/signup">
+                Join the Movement
+                <ArrowRight className="ml-2 size-5" />
+              </Link>
+            </Button>
+            <Button size="lg" variant="outline" className="h-14 px-8 text-lg rounded-full border-2" asChild>
+              <Link href="/contact">
+                Partner With Us
+              </Link>
+            </Button>
+          </div>
         </div>
       </section>
-      
-      {/* Mission Statement */}
-      <section className="text-center max-w-3xl mx-auto">
-        <h2 className="text-3xl font-headline font-bold mb-4">Our Mission</h2>
-        <p className="text-xl text-muted-foreground">
-           At UniNest, we believe every student deserves equal access to knowledge, opportunity, and community. We exist to break barriers, simplify campus life, and unlock potential for learners worldwide.
-        </p>
+
+      {/* Mission Section with Image */}
+      <section className="container px-4 md:px-6">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="relative aspect-video lg:aspect-square rounded-3xl overflow-hidden shadow-2xl rotate-1 hover:rotate-0 transition-transform duration-500">
+            <Image
+              src="https://picsum.photos/seed/uninest-mission/800/800"
+              alt="Students collaborating"
+              fill
+              className="object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-tr from-black/40 to-transparent"></div>
+            <div className="absolute bottom-8 left-8 right-8 text-white">
+              <p className="text-2xl font-bold font-headline">"Built by students, for students."</p>
+            </div>
+          </div>
+
+          <div className="space-y-8">
+            <div className="space-y-4">
+              <h2 className="text-3xl md:text-4xl font-headline font-bold">Our Mission</h2>
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                At UniNest, we believe every student deserves equal access to knowledge, opportunity, and community. The modern campus is fragmented — we exist to bring it all together in one seamless digital ecosystem.
+              </p>
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                From finding study materials to connecting with local vendors, we are simplifying the complexity of student life so you can focus on what matters most: learning and growing.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-6">
+              <div className="p-4 rounded-xl bg-card border shadow-sm">
+                <h3 className="text-3xl font-bold text-primary mb-1">98%</h3>
+                <p className="text-sm text-muted-foreground">Student Satisfaction</p>
+              </div>
+              <div className="p-4 rounded-xl bg-card border shadow-sm">
+                <h3 className="text-3xl font-bold text-secondary">24/7</h3>
+                <p className="text-sm text-muted-foreground">Platform Uptime</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
-      {/* Impact Counters */}
-      <section>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          {impactStats.map((stat, index) => (
-            <div key={index} className="bg-card border rounded-2xl p-6 text-center shadow-lg hover:shadow-xl transition-shadow">
-              <stat.icon className="size-8 text-primary mx-auto mb-3" />
-              <p className="text-3xl lg:text-4xl font-bold tracking-tighter">
-                <AnimatedCounter to={stat.value} />
-                {stat.isPlus && '+'}
-              </p>
-              <p className="text-sm text-muted-foreground">{stat.label}</p>
+      {/* Impact Stats */}
+      <section className="bg-muted/50 py-24">
+        <div className="container px-4 md:px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-headline font-bold mb-4">Our Impact in Numbers</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              We take pride in the tangible difference we're making in the daily lives of students and the wider academic community.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {impactStats.map((stat, index) => (
+              <div key={index} className="bg-card border rounded-2xl p-8 text-center shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                <div className={`mx-auto mb-6 p-4 rounded-full w-fit ${stat.color} bg-opacity-10 dark:bg-opacity-20`}>
+                  <stat.icon className={`size-8 ${stat.color}`} />
+                </div>
+                <h3 className="text-4xl font-bold tracking-tight mb-2">
+                  <AnimatedCounter to={stat.value} />
+                  {stat.isPlus && '+'}
+                </h3>
+                <p className="font-medium text-muted-foreground">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Core Values */}
+      <section className="container px-4 md:px-6">
+        <div className="text-center mb-16 max-w-3xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-headline font-bold mb-4">Driven by Values</h2>
+          <p className="text-muted-foreground">
+            Our core values guide every feature we build and every partnership we make. We are committed to integrity, innovation, and inclusivity.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-8">
+          {coreValues.map((value, index) => (
+            <div key={index} className="flex gap-6 p-6 rounded-2xl border bg-card hover:border-primary/50 transition-colors group">
+              <div className={`shrink-0 size-14 rounded-xl flex items-center justify-center ${value.color}`}>
+                <value.icon className="size-7" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold font-headline mb-2 group-hover:text-primary transition-colors">{value.title}</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  {value.description}
+                </p>
+              </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Growth Timeline Section */}
-      <section>
-        <h2 className="text-3xl font-headline font-bold text-center mb-12">Our Story of Growth</h2>
-        <div className="relative max-w-2xl mx-auto">
-            {/* The vertical line */}
-            <div className="absolute left-6 md:left-1/2 top-0 h-full w-0.5 bg-border -translate-x-1/2"></div>
-            
-            <div className="space-y-12">
-                {timelineEvents.map((event, index) => (
-                <div key={index} className="flex md:items-center gap-6 md:gap-12 flex-col md:flex-row">
-                    {/* Dot */}
-                    <div className="absolute left-6 md:left-1/2 top-auto w-5 h-5 rounded-full bg-primary border-4 border-background ring-4 ring-primary/20 -translate-x-1/2"></div>
+      {/* Timeline */}
+      <section className="container px-4 md:px-6">
+        <div className="bg-card border rounded-3xl p-8 md:p-16 shadow-lg">
+          <h2 className="text-3xl md:text-4xl font-headline font-bold text-center mb-16">Our Journey</h2>
 
-                    {/* Content Card */}
-                    <div className="bg-card border rounded-2xl p-6 shadow-md hover:scale-105 transition-transform w-full">
-                        <p className="text-sm font-bold text-primary mb-1">{event.year}</p>
-                        <h3 className="font-headline font-semibold text-xl mb-2 flex items-center gap-2">
-                          <event.icon className="size-5" />
-                          {event.title}
-                        </h3>
-                        <p className="text-muted-foreground">{event.description}</p>
+          <div className="relative max-w-4xl mx-auto">
+            {/* Vertical Line */}
+            <div className="absolute left-8 md:left-1/2 top-4 bottom-4 w-0.5 bg-gradient-to-b from-primary/20 via-primary to-primary/20 md:-translate-x-1/2"></div>
+
+            <div className="space-y-16">
+              {timelineEvents.map((event, index) => (
+                <div key={index} className={`relative flex flex-col md:flex-row gap-8 md:gap-0 ${index % 2 === 0 ? 'md:flex-row-reverse' : ''}`}>
+
+                  {/* Dot */}
+                  <div className="absolute left-8 md:left-1/2 top-0 w-4 h-4 rounded-full bg-background border-4 border-primary shadow-[0_0_0_4px_rgba(var(--primary),0.2)] md:-translate-x-1/2 z-10"></div>
+
+                  {/* Content Half */}
+                  <div className="md:w-1/2 pl-24 md:pl-0 md:px-12">
+                    <div className={`relative ${index % 2 === 0 ? 'md:text-left' : 'md:text-right'}`}>
+                      <span className="inline-block px-3 py-1 rounded-full bg-muted text-primary text-xs font-bold mb-3">
+                        {event.year}
+                      </span>
+                      <h3 className="text-2xl font-bold font-headline mb-2">{event.title}</h3>
+                      <p className="text-muted-foreground">{event.description}</p>
                     </div>
+                  </div>
+
+                  {/* Empty Half */}
+                  <div className="md:w-1/2"></div>
                 </div>
-                ))}
+              ))}
             </div>
+          </div>
         </div>
       </section>
 
-      {/* Core Values Section */}
-      <section className="bg-muted py-16 rounded-2xl">
-        <div className="container px-4 md:px-6">
-          <h2 className="text-3xl font-headline font-bold text-center mb-12">Our Core Values</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {coreValues.map((value) => (
-                <div key={value.title} className="text-center">
-                    <div className="mb-4 flex justify-center">
-                        <div className="bg-card text-primary rounded-full p-4 border shadow-sm">
-                            <value.icon className="size-8" />
-                        </div>
-                    </div>
-                    <h3 className="text-xl font-bold font-headline">{value.title}</h3>
-                    <p className="text-muted-foreground mt-1">{value.description}</p>
-                </div>
-            ))}
+      {/* CTA Section */}
+      <section className="container px-4 md:px-6">
+        <div className="relative rounded-3xl overflow-hidden bg-primary px-6 py-16 md:px-16 md:py-24 text-center text-primary-foreground">
+          {/* Abstract Background Shapes */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-black/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+
+          <div className="relative z-10 max-w-3xl mx-auto space-y-8">
+            <h2 className="text-3xl md:text-5xl font-headline font-bold">Ready to Shape the Future?</h2>
+            <p className="text-lg md:text-xl text-primary-foreground/90">
+              Be part of the journey with 10,000+ students shaping the future of education. Your next chapter starts here.
+            </p>
+            <div className="flex flex-wrap justify-center gap-4">
+              <Button size="lg" variant="secondary" className="h-14 px-8 text-lg rounded-full" asChild>
+                <Link href="/signup">Get Started Now</Link>
+              </Button>
+              <Button size="lg" variant="outline" className="h-14 px-8 text-lg rounded-full bg-transparent border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground" asChild>
+                <Link href="https://www.instagram.com/uninest_x" target="_blank" rel="noopener noreferrer">
+                  <Instagram className="mr-2 size-5" /> Follow Our Story
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
       </section>
-      
-      {/* Join the Movement CTA */}
-      <section className="text-center bg-card p-8 md:p-12 rounded-2xl shadow-xl max-w-4xl mx-auto border">
-          <h2 className="text-3xl font-bold font-headline primary-gradient bg-clip-text text-transparent">UniNest is just getting started.</h2>
-          <p className="mt-2 max-w-2xl mx-auto text-muted-foreground">
-            Be part of the journey with 10,000+ students shaping the future of education. Your next chapter starts here.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <Button size="lg" className="text-lg" asChild>
-                <Link href="/signup">Join 10,000+ Students 🚀</Link>
-            </Button>
-             <Button size="lg" variant="outline" className="text-lg" asChild>
-                <Link href="/donate">Support with a Donation 💙</Link>
-            </Button>
-            <Button size="lg" variant="outline" className="text-lg" asChild>
-                <Link href="https://www.instagram.com/uninest_x?igsh=MXhyaXhybmFndzY0NQ==" target="_blank" rel="noopener noreferrer">
-                    <Instagram className="mr-2"/> Follow on Instagram
-                </Link>
-            </Button>
-          </div>
-        </section>
     </div>
   );
 }

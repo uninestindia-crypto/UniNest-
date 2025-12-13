@@ -45,59 +45,65 @@ export default function ProductCard({ product, user, onBuyNow, isBuying, isRazor
                         sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
                     />
                 </Link>
-                <div className="absolute top-3 right-3 flex flex-col gap-2">
-                    <Badge className="bg-white/90 text-foreground backdrop-blur-sm border-0 shadow-sm hover:bg-white text-xs font-semibold px-2 py-1">
+                <div className="absolute top-2 right-2 flex flex-col gap-2">
+                    <Badge className="bg-white/90 text-foreground backdrop-blur-sm border-0 shadow-sm hover:bg-white text-[10px] sm:text-xs font-semibold px-1.5 py-0.5 sm:px-2 sm:py-1">
                         {product.category}
                     </Badge>
                 </div>
             </div>
 
-            <CardContent className="flex flex-col gap-2.5 p-5 flex-grow">
-                <div className="flex items-center gap-1 text-yellow-500 text-xs font-medium">
-                    <Star className="w-3.5 h-3.5 fill-current" />
+            <CardContent className="flex flex-col gap-2 p-3 sm:p-4 flex-grow relative">
+                <div className="flex justify-between items-start gap-2">
+                    <div className="flex-1 min-w-0">
+                        <Link href={getCardLink()} className="hover:underline focus:outline-none">
+                            <h3 className="font-bold text-sm sm:text-lg leading-tight line-clamp-2 group-hover:text-primary transition-colors" title={product.name}>
+                                {product.name}
+                            </h3>
+                        </Link>
+                    </div>
+                    <div className="flex flex-col items-end flex-shrink-0">
+                        <span className="font-bold text-sm sm:text-xl text-primary">
+                            {product.category === 'Library' ? `₹${product.price}/s` : `₹${product.price.toLocaleString()}`}
+                        </span>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-1 text-yellow-500 text-[10px] sm:text-xs font-medium">
+                    <Star className="w-3 h-3 fill-current" />
                     <span>{derivedRating}</span>
                     <span className="text-muted-foreground">({ratingCount})</span>
                 </div>
 
-                <Link href={getCardLink()} className="group-hover:text-primary transition-colors">
-                    <h3 className="font-bold text-lg leading-tight line-clamp-2">{product.name}</h3>
-                </Link>
+                <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 min-h-[2.5em]">
+                    {product.description}
+                </p>
 
-                <p className="text-sm text-muted-foreground line-clamp-2">{product.description}</p>
-
-                <div className="mt-auto pt-2 flex items-center gap-2 text-xs text-muted-foreground">
-                    <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                        <Truck className="w-3 h-3" />
+                <div className="mt-auto pt-2 flex items-center gap-2 text-[10px] sm:text-xs text-muted-foreground">
+                    <div className="w-4 h-4 rounded-full bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+                        <Truck className="w-2.5 h-2.5" />
                     </div>
-                    <span>Verified Seller: <span className="text-foreground font-medium">{sellerName}</span></span>
+                    <span className="truncate">Seller: <span className="text-foreground font-medium">{sellerName}</span></span>
                 </div>
             </CardContent>
 
-            <CardFooter className="p-5 pt-0 flex items-center justify-between gap-4">
-                <div className="flex flex-col">
-                    <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Price</span>
-                    <span className="text-xl font-bold text-primary">
-                        {product.category === 'Library' ? `₹${product.price.toLocaleString()}/seat` : `₹${product.price.toLocaleString()}`}
-                    </span>
-                </div>
-
+            <CardFooter className="p-3 sm:p-5 pt-0 flex gap-2">
                 {isBookable ? (
-                    <Button variant="outline" className="rounded-xl gap-2 hover:bg-primary hover:text-primary-foreground border-primary/20" asChild>
+                    <Button variant="outline" className="w-full rounded-xl gap-2 hover:bg-primary hover:text-primary-foreground border-primary/20 h-9 sm:h-10 text-xs sm:text-sm" asChild>
                         <Link href={getCardLink()}>
-                            Details <ArrowRight className="w-4 h-4" />
+                            Details <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
                         </Link>
                     </Button>
                 ) : (
                     <Button
                         onClick={() => onBuyNow(product)}
                         disabled={!isRazorpayLoaded || isBuying}
-                        className="rounded-xl gap-2 shadow-lg shadow-primary/20 transition-transform active:scale-95"
+                        className="w-full rounded-xl gap-2 shadow-lg shadow-primary/20 transition-transform active:scale-95 h-9 sm:h-10 text-xs sm:text-sm"
                     >
                         {isBuying ? (
                             'Processing...'
                         ) : (
                             <>
-                                <ShoppingBag className="w-4 h-4" /> Buy Now
+                                <ShoppingBag className="w-3 h-3 sm:w-4 sm:h-4" /> Buy Now
                             </>
                         )}
                     </Button>

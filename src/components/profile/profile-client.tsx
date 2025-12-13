@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-import { Edit, Loader2, Package, Newspaper, UserPlus, Users } from 'lucide-react';
+import { Edit, Loader2, Package, Newspaper, UserPlus, Users, ShoppingBag, Heart } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
@@ -17,21 +17,21 @@ import { useToast } from '@/hooks/use-toast';
 import UserListCard from './user-list-card';
 
 type ProfileWithCounts = Profile & {
-    follower_count: { count: number }[];
-    following_count: { count: number }[];
-    isMyProfile: boolean;
+  follower_count: { count: number }[];
+  following_count: { count: number }[];
+  isMyProfile: boolean;
 }
 
 type ProfileContent = {
-    listings: Product[];
-    posts: PostWithAuthor[];
-    followers: Profile[];
-    following: Profile[];
+  listings: Product[];
+  posts: PostWithAuthor[];
+  followers: Profile[];
+  following: Profile[];
 }
 
 type ProfileClientProps = {
-    initialProfile: ProfileWithCounts;
-    initialContent: ProfileContent;
+  initialProfile: ProfileWithCounts;
+  initialContent: ProfileContent;
 }
 
 export default function ProfileClient({ initialProfile, initialContent }: ProfileClientProps) {
@@ -40,7 +40,7 @@ export default function ProfileClient({ initialProfile, initialContent }: Profil
 
   const [profile, setProfile] = useState<ProfileWithCounts>(initialProfile);
   const [followerCount, setFollowerCount] = useState(initialProfile.follower_count?.[0]?.count ?? 0);
-  
+
   const [isFollowing, setIsFollowing] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
 
@@ -49,10 +49,10 @@ export default function ProfileClient({ initialProfile, initialContent }: Profil
 
   useEffect(() => {
     const checkFollowingStatus = async () => {
-        if (!user || isMyProfile || !supabase) return;
-        
-        const { count } = await supabase.from('followers').select('*', { count: 'exact', head: true }).eq('follower_id', user.id).eq('following_id', profile.id);
-        setIsFollowing(count ? count > 0 : false);
+      if (!user || isMyProfile || !supabase) return;
+
+      const { count } = await supabase.from('followers').select('*', { count: 'exact', head: true }).eq('follower_id', user.id).eq('following_id', profile.id);
+      setIsFollowing(count ? count > 0 : false);
     };
     checkFollowingStatus();
   }, [user, profile, isMyProfile, supabase]);
@@ -60,39 +60,39 @@ export default function ProfileClient({ initialProfile, initialContent }: Profil
 
   const handleFollowToggle = async () => {
     if (!user || isMyProfile || !supabase) {
-        toast({ variant: 'destructive', title: 'Login Required', description: 'Please log in to follow users.' });
-        return;
+      toast({ variant: 'destructive', title: 'Login Required', description: 'Please log in to follow users.' });
+      return;
     }
 
     setIsFollowLoading(true);
 
     if (isFollowing) {
-        const { error } = await supabase.from('followers').delete().match({ follower_id: user.id, following_id: profile.id });
-        if (error) {
-            toast({ variant: 'destructive', title: 'Error', description: 'Could not unfollow user.' });
-        } else {
-            setIsFollowing(false);
-            setFollowerCount(c => c - 1);
-        }
+      const { error } = await supabase.from('followers').delete().match({ follower_id: user.id, following_id: profile.id });
+      if (error) {
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not unfollow user.' });
+      } else {
+        setIsFollowing(false);
+        setFollowerCount(c => c - 1);
+      }
     } else {
-        const { error } = await supabase.from('followers').insert({ follower_id: user.id, following_id: profile.id });
-         if (error) {
-            toast({ variant: 'destructive', title: 'Error', description: 'Could not follow user.' });
-        } else {
-            setIsFollowing(true);
-            setFollowerCount(c => c + 1);
-            // Create notification for the followed user
-            await supabase.rpc('create_new_follower_notification', {
-                followed_id_param: profile.id,
-                follower_id_param: user.id
-            });
-        }
+      const { error } = await supabase.from('followers').insert({ follower_id: user.id, following_id: profile.id });
+      if (error) {
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not follow user.' });
+      } else {
+        setIsFollowing(true);
+        setFollowerCount(c => c + 1);
+        // Create notification for the followed user
+        await supabase.rpc('create_new_follower_notification', {
+          followed_id_param: profile.id,
+          follower_id_param: user.id
+        });
+      }
     }
     setIsFollowLoading(false);
   }
-  
+
   const handlePostAction = () => {
-      toast({ title: 'Action not fully implemented in profile view.' });
+    toast({ title: 'Action not fully implemented in profile view.' });
   }
 
   if (authLoading) {
@@ -232,59 +232,99 @@ export default function ProfileClient({ initialProfile, initialContent }: Profil
           </div>
         </CardContent>
       </Card>
-      
+
       <Tabs defaultValue="activity" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 rounded-lg bg-card shadow-sm">
-          <TabsTrigger value="activity" className="rounded-full py-2"><Newspaper className="mr-2 size-4" />Feed</TabsTrigger>
-          <TabsTrigger value="listings" className="rounded-full py-2"><Package className="mr-2 size-4" />Listings</TabsTrigger>
-          <TabsTrigger value="followers" className="rounded-full py-2"><Users className="mr-2 size-4" />Followers</TabsTrigger>
-          <TabsTrigger value="following" className="rounded-full py-2"><Users className="mr-2 size-4" />Following</TabsTrigger>
+        <TabsList className="w-full justify-start overflow-x-auto bg-transparent border-b h-auto p-0 pb-1 rounded-none space-x-2 md:space-x-6">
+          <TabsTrigger value="activity" className="rounded-full px-4 py-2 border border-transparent data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 shrink-0">
+            <Newspaper className="mr-2 size-4" />Feed
+          </TabsTrigger>
+          <TabsTrigger value="listings" className="rounded-full px-4 py-2 border border-transparent data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 shrink-0">
+            <Package className="mr-2 size-4" />Listings
+          </TabsTrigger>
+          {isMyProfile && (
+            <>
+              <TabsTrigger value="purchases" className="rounded-full px-4 py-2 border border-transparent data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 shrink-0">
+                <ShoppingBag className="mr-2 size-4" />Purchases
+              </TabsTrigger>
+              <TabsTrigger value="favorites" className="rounded-full px-4 py-2 border border-transparent data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 shrink-0">
+                <Heart className="mr-2 size-4" />Favorites
+              </TabsTrigger>
+            </>
+          )}
+          <TabsTrigger value="followers" className="rounded-full px-4 py-2 border border-transparent data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 shrink-0">
+            <Users className="mr-2 size-4" />Followers
+          </TabsTrigger>
+          <TabsTrigger value="following" className="rounded-full px-4 py-2 border border-transparent data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 shrink-0">
+            <Users className="mr-2 size-4" />Following
+          </TabsTrigger>
         </TabsList>
-        
-        <TabsContent value="activity" className="mt-6">
-            <div className="space-y-4">
+
+        <TabsContent value="activity" className="mt-6 animation-fade-in">
+          <div className="space-y-4">
             {initialContent.posts.length > 0 ? (
-                initialContent.posts.map(post => (
-                    <PostCard 
-                        key={post.id} 
-                        post={post} 
-                        currentUser={user}
-                        onDelete={handlePostAction}
-                        onEdit={handlePostAction}
-                        onComment={handlePostAction}
-                        onLike={handlePostAction}
-                        onFollow={async () => false}
-                    />
-                ))
+              initialContent.posts.map(post => (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  currentUser={user}
+                  onDelete={handlePostAction}
+                  onEdit={handlePostAction}
+                  onComment={handlePostAction}
+                  onLike={handlePostAction}
+                  onFollow={async () => false}
+                />
+              ))
             ) : (
-                <p className="text-center text-muted-foreground p-8">No posts yet.</p>
+              <div className="text-center py-12 bg-muted/20 rounded-2xl border border-dashed">
+                <Newspaper className="mx-auto h-12 w-12 text-muted-foreground/30 mb-3" />
+                <h3 className="text-lg font-medium">No posts yet</h3>
+                <p className="text-muted-foreground text-sm">When {profileFullName} shares updates, they'll appear here.</p>
+              </div>
             )}
-            </div>
+          </div>
         </TabsContent>
-        <TabsContent value="listings" className="mt-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <TabsContent value="listings" className="mt-6 animation-fade-in">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {initialContent.listings.length > 0 ? (
-                initialContent.listings.map(listing => (
-                    <ProductCard 
-                        key={listing.id} 
-                        product={listing} 
-                        user={user}
-                        onBuyNow={() => {}}
-                        onChat={() => {}}
-                        isBuying={false}
-                        isRazorpayLoaded={false}
-                    />
-                ))
+              initialContent.listings.map(listing => (
+                <div key={listing.id} className="h-full">
+                  <ProductCard
+                    product={listing}
+                    user={user}
+                    onBuyNow={() => { }}
+                    isBuying={false}
+                    isRazorpayLoaded={false}
+                  />
+                </div>
+              ))
             ) : (
-                <p className="text-center text-muted-foreground p-8 sm:col-span-2">No active listings.</p>
+              <div className="col-span-full text-center py-12 bg-muted/20 rounded-2xl border border-dashed">
+                <Package className="mx-auto h-12 w-12 text-muted-foreground/30 mb-3" />
+                <h3 className="text-lg font-medium">No active listings</h3>
+                <p className="text-muted-foreground text-sm">Items listed for sale will appear here.</p>
+              </div>
             )}
-            </div>
+          </div>
         </TabsContent>
-        <TabsContent value="followers" className="mt-6">
-             <UserListCard users={initialContent.followers} emptyMessage="Not followed by any users yet." />
+        <TabsContent value="purchases" className="mt-6 animation-fade-in">
+          <div className="text-center py-12 bg-muted/20 rounded-2xl border border-dashed">
+            <ShoppingBag className="mx-auto h-12 w-12 text-muted-foreground/30 mb-3" />
+            <h3 className="text-lg font-medium">No purchases yet</h3>
+            <p className="text-muted-foreground text-sm">Items you buy will show up here.</p>
+          </div>
         </TabsContent>
-        <TabsContent value="following" className="mt-6">
-            <UserListCard users={initialContent.following} emptyMessage="Not following any users yet." />
+        <TabsContent value="favorites" className="mt-6 animation-fade-in">
+          <div className="text-center py-12 bg-muted/20 rounded-2xl border border-dashed">
+            <Heart className="mx-auto h-12 w-12 text-muted-foreground/30 mb-3" />
+            <h3 className="text-lg font-medium">No favorites yet</h3>
+            <p className="text-muted-foreground text-sm">Items you save will appear here.</p>
+          </div>
+        </TabsContent>
+        <TabsContent value="followers" className="mt-6 animation-fade-in">
+          <UserListCard users={initialContent.followers} emptyMessage="Not followed by any users yet." />
+        </TabsContent>
+        <TabsContent value="following" className="mt-6 animation-fade-in">
+          <UserListCard users={initialContent.following} emptyMessage="Not following any users yet." />
         </TabsContent>
       </Tabs>
     </div>

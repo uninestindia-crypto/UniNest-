@@ -168,8 +168,8 @@ export function MobileBottomNav() {
   }
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-card border-t shadow-t-lg z-50">
-      <div className="grid h-full w-full" style={{ gridTemplateColumns: `repeat(${navItems.length}, 1fr)` }}>
+    <nav className="fixed bottom-0 left-0 right-0 h-16 bg-card border-t shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-50 py-1">
+      <div className="mx-auto max-w-lg grid h-full w-full" style={{ gridTemplateColumns: `repeat(${navItems.length}, 1fr)` }}>
         {navItems.map(item => {
           let isActive = pathname === item.href;
           // Special case for 'Back' button to not be active
@@ -182,21 +182,21 @@ export function MobileBottomNav() {
               href={item.href}
               onClick={() => { }}
               className={cn(
-                "flex flex-col items-center justify-center gap-1 p-1 transition-colors",
+                "flex flex-col items-center justify-center gap-1 p-1 transition-colors rounded-xl mx-1 hover:bg-muted/50",
                 isActive ? "text-primary font-bold" : "text-muted-foreground hover:text-primary"
               )}
             >
               {item.icon === 'avatar' ? (
-                <Avatar className="size-6">
+                <Avatar className={cn("size-6 transition-transform", isActive && "scale-110 ring-2 ring-primary ring-offset-2")}>
                   {user && <AvatarImage src={user.user_metadata?.avatar_url} />}
-                  <AvatarFallback className="text-xs">
+                  <AvatarFallback className="text-[10px]">
                     {user ? user.email?.[0].toUpperCase() : <UserIcon className="size-4" />}
                   </AvatarFallback>
                 </Avatar>
               ) : (
-                <item.icon className="size-5" />
+                <item.icon className={cn("size-6 transition-transform", isActive && "scale-110")} />
               )}
-              <span className="text-[10px]">{item.label}</span>
+              <span className="text-[10px] sm:text-xs">{item.label}</span>
             </Link>
           );
         })}

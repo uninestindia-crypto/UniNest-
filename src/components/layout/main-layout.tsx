@@ -139,7 +139,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
       {versionWatcher}
 
       <SidebarProvider>
-        <Sidebar className="hidden md:flex flex-col">
+        <Sidebar className="hidden lg:flex flex-col">
           <SidebarHeader>
             <Link href="/" className="flex items-center gap-2">
               <div className="p-2 bg-gradient-to-br from-primary to-accent rounded-xl shadow-lg shadow-primary/20">
@@ -184,7 +184,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
         </Sidebar>
         <SidebarInset>
           <header className="flex h-14 items-center justify-between border-b bg-background/95 px-2 md:px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="flex items-center gap-1 md:hidden">
+            <div className="flex items-center gap-1 lg:hidden">
               <SidebarTrigger className="-ml-1" />
               <Link href="/" className="flex items-center gap-2">
                 <Logo className="size-7 text-primary" />
@@ -204,17 +204,20 @@ export default function MainLayout({ children }: { children: ReactNode }) {
             </div>
           </header>
           <main className={cn(
-            "flex-1 overflow-y-auto overflow-x-hidden p-8",
+            "flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 lg:p-8",
+            // Remove padding on mobile home for full-bleed feel if desired, but general padding needed for other pages
             isMobile && isHomePage && "p-0 py-4",
-            isMobile && !isHomePage && "p-4",
-            isMobile && "pb-24"
+             // Ensure bottom padding for nav bar on mobile/tablet (anything < lg)
+             "pb-24 lg:pb-8"
           )}>
             {children}
           </main>
         </SidebarInset>
 
-        {/* Mobile Bottom Navigation */}
-        {isMobile && <MobileBottomNav />}
+        {/* Mobile/Tablet Bottom Navigation - Visible below lg breakpoint */}
+        <div className="lg:hidden">
+           <MobileBottomNav />
+        </div>
       </SidebarProvider>
     </>
   );

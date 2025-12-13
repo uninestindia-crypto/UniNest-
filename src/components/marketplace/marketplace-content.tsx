@@ -538,10 +538,10 @@ export default function MarketplaceContent() {
 
       {/* Categories Scroller */}
       <section>
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-4 md:mb-6 px-1">
           <h3 className="text-lg font-bold text-foreground">Browse Categories</h3>
         </div>
-        <div className="flex gap-4 overflow-x-auto pb-4 snap-x hide-scrollbar">
+        <div className="-mx-4 md:mx-0 px-4 md:px-0 flex gap-4 overflow-x-auto pb-4 snap-x hide-scrollbar scroll-pl-4">
           {categories.map(category => {
             const Icon = category.icon;
             const isSelected = selectedCategory === category.name;
@@ -552,16 +552,16 @@ export default function MarketplaceContent() {
                 className="snap-start"
               >
                 <div className={`
-                                flex flex-col items-center justify-center gap-3 p-6 min-w-[140px] rounded-2xl border transition-all duration-300 cursor-pointer
+                                flex flex-col items-center justify-center gap-3 p-4 md:p-6 min-w-[120px] md:min-w-[140px] rounded-2xl border transition-all duration-300 cursor-pointer
                                 ${isSelected
                     ? 'bg-primary text-primary-foreground border-primary shadow-lg scale-105'
                     : 'bg-card hover:border-primary/50 hover:shadow-md hover:-translate-y-1'
                   }
                             `}>
                   <div className={`p-3 rounded-full ${isSelected ? 'bg-white/20' : category.bg}`}>
-                    <Icon className={`w-6 h-6 ${isSelected ? 'text-white' : category.color}`} />
+                    <Icon className={`w-5 h-5 md:w-6 md:h-6 ${isSelected ? 'text-white' : category.color}`} />
                   </div>
-                  <span className="font-semibold text-sm text-center">{category.name}</span>
+                  <span className="font-semibold text-xs md:text-sm text-center line-clamp-1">{category.name}</span>
                 </div>
               </Link>
             );
@@ -570,7 +570,7 @@ export default function MarketplaceContent() {
       </section>
 
       {/* Main Content Grid */}
-      <section className="grid gap-8 lg:grid-cols-[300px_1fr]">
+      <section className="grid gap-6 lg:gap-8 lg:grid-cols-[280px_1fr] xl:grid-cols-[300px_1fr]">
         <aside className="hidden lg:block relative">
           <div className="sticky top-24 space-y-6 rounded-3xl border bg-card/50 backdrop-blur-sm p-6 shadow-sm">
             <FilterControls
@@ -594,10 +594,10 @@ export default function MarketplaceContent() {
 
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-card/30 p-4 rounded-2xl border border-transparent sm:border-border/50">
-            <div className="flex-1">
+            <div className="flex-1 w-full sm:w-auto">
               {appliedFilters.length > 0 ? (
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-sm text-muted-foreground mr-2">Active filters:</span>
+                  <span className="text-sm text-muted-foreground mr-2 hidden sm:inline">Active filters:</span>
                   {appliedFilters.map(filter => (
                     <Badge key={filter.id} variant="secondary" className="rounded-full px-3 py-1 text-xs font-medium bg-primary/10 text-primary border-primary/20">
                       {filter.label}
@@ -611,7 +611,7 @@ export default function MarketplaceContent() {
                     </Badge>
                   ))}
                   <Button variant="ghost" size="sm" onClick={resetFilters} className="text-xs h-7 ml-2 text-muted-foreground hover:text-foreground">
-                    Clear all
+                    Clear
                   </Button>
                 </div>
               ) : (
@@ -624,12 +624,12 @@ export default function MarketplaceContent() {
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="outline" className="lg:hidden flex-1 rounded-xl">
+                  <Button variant="outline" className="lg:hidden flex-1 sm:flex-initial rounded-xl bg-card">
                     <ListFilter className="w-4 h-4 mr-2" />
                     Filters {activeFilterCount > 0 && `(${activeFilterCount})`}
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-[300px] sm:w-[400px] overflow-y-auto">
+                <SheetContent side="left" className="w-[300px] sm:w-[400px] overflow-y-auto z-[60]">
                   <SheetHeader className="mb-6">
                     <SheetTitle className="text-left text-2xl font-bold">Filters</SheetTitle>
                   </SheetHeader>
@@ -658,7 +658,7 @@ export default function MarketplaceContent() {
               </Sheet>
 
               <Select value={sortOption} onValueChange={(value) => setSortOption(value as SortOption)}>
-                <SelectTrigger className="w-[180px] rounded-xl bg-background">
+                <SelectTrigger className="w-full sm:w-[180px] rounded-xl bg-card">
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent align="end">
@@ -677,9 +677,9 @@ export default function MarketplaceContent() {
               <p className="text-muted-foreground animate-pulse">Loading marketplace...</p>
             </div>
           ) : sortedProducts.length > 0 ? (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 md:gap-6">
               {sortedProducts.map((product, index) => (
-                <div key={product.id} className="animate-in fade-in slide-in-from-bottom-4 duration-500" style={{ animationDelay: `${index * 50}ms` }}>
+                <div key={product.id} className="animate-in fade-in slide-in-from-bottom-4 duration-500 w-full" style={{ animationDelay: `${index * 50}ms` }}>
                   <ProductCard
                     product={product}
                     user={user}
