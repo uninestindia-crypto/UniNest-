@@ -28,7 +28,7 @@ async function getProfileData(handle: string) {
   }
 
   const userId = profileData.id;
-
+  const isMyProfile = user ? user.id === profileData.id : false;
 
 
   // 2. Get related content
