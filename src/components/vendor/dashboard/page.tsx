@@ -31,16 +31,21 @@ import {
 
 type VendorCategoryInput = string | { id?: string | null; label?: string | null } | null | undefined;
 
+import StatsCard from '@/components/ui/stats-card';
+import { Package, ShoppingCart } from 'lucide-react';
+
 type VendorDashboardContentProps = {
   userName: string;
   vendorCategories: VendorCategoryInput[];
+  stats: {
+    products: number;
+    orders: number;
+    revenue: number;
+    rating: number;
+  };
 };
 
-const summaryTrendStyles = {
-  positive: 'bg-emerald-50 text-emerald-600',
-  neutral: 'bg-slate-100 text-slate-600',
-  negative: 'bg-rose-50 text-rose-600',
-} as const;
+// ... keep styles ...
 
 const leadStatusStyles = {
   new: 'bg-sky-50 text-sky-600',
@@ -48,131 +53,40 @@ const leadStatusStyles = {
   followup: 'bg-violet-50 text-violet-600',
 } as const;
 
-export default function VendorDashboardContent({ userName, vendorCategories }: VendorDashboardContentProps) {
+export default function VendorDashboardContent({ userName, vendorCategories, stats }: VendorDashboardContentProps) {
   const normalizedVendorCategories = Array.isArray(vendorCategories)
     ? vendorCategories
-        .map((category) => {
-          if (typeof category === 'string') {
-            return category;
+      .map((category) => {
+        if (typeof category === 'string') {
+          return category;
+        }
+        if (category && typeof category === 'object') {
+          if (category.id && typeof category.id === 'string') {
+            return category.id;
           }
-          if (category && typeof category === 'object') {
-            if (category.id && typeof category.id === 'string') {
-              return category.id;
-            }
-            if (category.label && typeof category.label === 'string') {
-              return category.label;
-            }
+          if (category.label && typeof category.label === 'string') {
+            return category.label;
           }
-          return null;
-        })
-        .filter((category): category is string => Boolean(category))
+        }
+        return null;
+      })
+      .filter((category): category is string => Boolean(category))
     : [];
-
-  const summaryMetrics = [
-    {
-      label: 'Occupancy rate',
-      value: '82%',
-      trend: '+5.4%',
-      tone: 'positive' as const,
-      description: 'Average occupancy across listings (30 days).',
-      icon: TrendingUp,
-    },
-    {
-      label: 'Monthly revenue',
-      value: '₹4.6L',
-      trend: '+₹38K',
-      tone: 'positive' as const,
-      description: 'Net payouts scheduled this month.',
-      icon: Wallet,
-    },
-    {
-      label: 'Active leads',
-      value: '28',
-      trend: '+7 new',
-      tone: 'positive' as const,
-      description: 'Leads in pipeline ready for response.',
-      icon: Users,
-    },
-    {
-      label: 'Avg nightly rate',
-      value: '₹9,200',
-      trend: '+₹450',
-      tone: 'neutral' as const,
-      description: 'Average realized rate across private rooms.',
-      icon: Coins,
-    },
-  ];
-
-  const pricingDays = [
-    { label: 'Mon', occupancy: 78, rate: '₹9,350', demand: 'High', highlight: true },
-    { label: 'Tue', occupancy: 74, rate: '₹9,200', demand: 'Medium', highlight: false },
-    { label: 'Wed', occupancy: 69, rate: '₹8,980', demand: 'Neutral', highlight: false },
-    { label: 'Thu', occupancy: 86, rate: '₹9,650', demand: 'Peak', highlight: true },
-    { label: 'Fri', occupancy: 91, rate: '₹9,780', demand: 'Peak', highlight: true },
-    { label: 'Sat', occupancy: 88, rate: '₹9,720', demand: 'High', highlight: false },
-    { label: 'Sun', occupancy: 72, rate: '₹9,180', demand: 'Medium', highlight: false },
-  ];
-
-  const crmLeads = [
-    { name: 'Ananya Rao', initials: 'AR', note: 'Tour requested for 24 Oct · 3 rooms', status: 'new' as const, time: '2m ago' },
-    { name: 'Rahul Singh', initials: 'RS', note: 'Follow-up on shared brochure', status: 'warm' as const, time: '1h ago' },
-    { name: 'Priya Menon', initials: 'PM', note: 'Asked for group pricing · 12 seats', status: 'followup' as const, time: 'Yesterday' },
-  ];
-
-  const quickReplies = ['Send brochure', 'Share occupancy stats', 'Schedule a call'];
-
-  const bookingCalendar = [
-    { day: 'Mon', occupancy: 85, rate: '₹9,450', status: 'High demand' },
-    { day: 'Tue', occupancy: 78, rate: '₹9,200', status: 'Healthy' },
-    { day: 'Wed', occupancy: 67, rate: '₹8,960', status: 'Room to fill' },
-    { day: 'Thu', occupancy: 92, rate: '₹9,780', status: 'Sold out' },
-    { day: 'Fri', occupancy: 94, rate: '₹9,820', status: 'Peak' },
-    { day: 'Sat', occupancy: 88, rate: '₹9,740', status: 'Peak' },
-    { day: 'Sun', occupancy: 74, rate: '₹9,120', status: 'Moderate' },
-  ];
-
-  const payouts = [
-    { id: 'INV-7842', listing: 'Skyline Premium Dorms', amount: '₹82,400', status: 'Scheduled for 20 Oct' },
-    { id: 'INV-7838', listing: 'UrbanStay Standard Rooms', amount: '₹64,900', status: 'Paid on 14 Oct' },
-    { id: 'INV-7833', listing: 'MetroView Suites', amount: '₹1,12,000', status: 'Processing' },
-  ];
-
-  const marketingBoosters = [
-    { title: 'Diwali week visibility boost', detail: 'Push to top search slots · +28% clicks last year' },
-    { title: 'Lounge event promotion', detail: 'Invite student clubs · includes poster template' },
-    { title: 'Weekend staycation offer', detail: 'Pre-fill 2 nights bundle to drive occupancy' },
-  ];
-
-  const optimizerHighlights = [
-    { title: 'Upload 2 bright lobby photos', detail: 'Listings with refreshed visuals convert 34% faster.' },
-    { title: 'Rewrite title with neighborhood cues', detail: 'Mention "5 mins from Tech Park" to rank higher.' },
-  ];
-
-  const tierMetrics = [
-    { label: 'Response time', value: '1h 12m', progress: 82 },
-    { label: 'Review score', value: '4.7 / 5', progress: 94 },
-    { label: 'Stay extensions', value: '18%', progress: 68 },
-  ];
-
-  const nudges = [
-    { title: 'Your occupancy is 75%', detail: 'Add 2 new photos to improve visibility.', accent: 'bg-blue-50 text-blue-700' },
-    { title: 'Set your pricing to ₹9,500', detail: 'Matches local demand for next weekend.', accent: 'bg-emerald-50 text-emerald-700' },
-  ];
 
   return (
     <TooltipProvider>
       <div className="mx-auto max-w-7xl space-y-10 px-4 py-8 lg:px-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="text-xs font-medium uppercase tracking-[0.3em] text-slate-500">Vendor HQ</p>
-            <h1 className="mt-2 text-3xl font-semibold text-slate-900 lg:text-4xl">Welcome back, {userName}</h1>
-            <p className="mt-3 max-w-xl text-sm text-slate-600">
+            <p className="text-xs font-medium uppercase tracking-[0.3em] text-muted-foreground">Vendor HQ</p>
+            <h1 className="mt-2 text-3xl font-semibold text-foreground lg:text-4xl">Welcome back, {userName}</h1>
+            <p className="mt-3 max-w-xl text-sm text-muted-foreground">
               Keep occupancy, pricing, conversations, and payouts aligned from a single clean workspace.
             </p>
             {normalizedVendorCategories.length > 0 && (
               <div className="mt-4 flex flex-wrap gap-2">
                 {normalizedVendorCategories.map((category) => (
-                  <Badge key={category} className="rounded-full bg-slate-100 px-3 py-1 text-slate-600">
+                  <Badge key={category} className="rounded-full bg-secondary/10 px-3 py-1 text-secondary-foreground hover:bg-secondary/20">
                     {category.replace(/-/g, ' ').toUpperCase()}
                   </Badge>
                 ))}
@@ -192,33 +106,38 @@ export default function VendorDashboardContent({ userName, vendorCategories }: V
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {summaryMetrics.map((metric) => (
-            <Card key={metric.label} className="rounded-2xl border border-slate-100 bg-white shadow-sm transition-shadow hover:shadow-md">
-              <CardHeader className="flex flex-row items-start justify-between space-y-0">
-                <div>
-                  <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-slate-500">
-                    <metric.icon className="size-4 text-blue-500" />
-                    {metric.label}
-                  </p>
-                  <div className="mt-4 flex items-baseline gap-3">
-                    <span className="text-2xl font-semibold text-slate-900">{metric.value}</span>
-                    <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${summaryTrendStyles[metric.tone]}`}>
-                      {metric.trend}
-                    </span>
-                  </div>
-                  <p className="mt-3 text-xs text-slate-500">{metric.description}</p>
-                </div>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="inline-flex size-8 items-center justify-center rounded-full bg-slate-100 text-slate-500">
-                      <Info className="size-4" />
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>{metric.description}</TooltipContent>
-                </Tooltip>
-              </CardHeader>
-            </Card>
-          ))}
+          <StatsCard
+            title="Total Listings"
+            value={stats.products.toString()}
+            icon={Package}
+            change="+2 new this month"
+            trend="up"
+            description="Active products/services listed"
+          />
+          <StatsCard
+            title="Total Orders"
+            value={stats.orders.toString()}
+            icon={ShoppingCart}
+            change="+12% from last month"
+            trend="up"
+            description="Completed transactions"
+          />
+          <StatsCard
+            title="Total Revenue"
+            value={`₹${stats.revenue.toLocaleString()}`}
+            icon={Wallet}
+            change="+₹4.2k this week"
+            trend="up"
+            description="Net earnings processed"
+          />
+          <StatsCard
+            title="Average Rating"
+            value={stats.rating.toString()}
+            icon={Star}
+            change="4.8/5.0"
+            trend="neutral"
+            description="Based on customer reviews"
+          />
         </div>
 
         <div className="grid gap-6 xl:grid-cols-12">
@@ -265,9 +184,8 @@ export default function VendorDashboardContent({ userName, vendorCategories }: V
                   <Tooltip key={day.label}>
                     <TooltipTrigger asChild>
                       <div
-                        className={`rounded-2xl border px-4 py-4 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${
-                          day.highlight ? 'border-blue-200 bg-white' : 'border-slate-100 bg-slate-50'
-                        }`}
+                        className={`rounded-2xl border px-4 py-4 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${day.highlight ? 'border-blue-200 bg-white' : 'border-slate-100 bg-slate-50'
+                          }`}
                       >
                         <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{day.label}</p>
                         <p className="mt-2 text-xl font-semibold text-slate-900">{day.occupancy}%</p>

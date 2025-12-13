@@ -14,6 +14,7 @@ import type { PostWithAuthor, Product, Profile } from '@/lib/types';
 import ProductCard from '../marketplace/product-card';
 import PostCard from '../feed/post-card';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import UserListCard from './user-list-card';
 
 type ProfileWithCounts = Profile & {
