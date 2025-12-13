@@ -42,7 +42,7 @@ describe('OfflineQueueService', () => {
     });
 
     it('enqueues mutations', async () => {
-        await offlineQueue.enqueue('update_profile', { name: 'New Name' });
+        await offlineQueue.enqueue('update_profile', { name: 'New Name' }, 'user_123');
 
         expect(AsyncStorage.setItem).toHaveBeenCalled();
         const callArgs = (AsyncStorage.setItem as jest.Mock).mock.calls[0];
@@ -52,12 +52,12 @@ describe('OfflineQueueService', () => {
 
     it('processes queue when handlers registered', async () => {
         const handler = jest.fn().mockResolvedValue(true);
-        offlineQueue.registerHandler('test_mutation', handler);
+        offlineQueue.registerHandler('update_profile', handler);
 
         // Manually push item (mocking internal state is hard without exposing it, 
         // so we use public enqueue then trigger process)
 
-        await offlineQueue.enqueue('test_mutation', { foo: 'bar' });
+        await offlineQueue.enqueue('update_profile', { foo: 'bar' }, 'user_123');
 
         // Trigger processing manually if possible or wait for auto process
         // Since logic is internal and debounced, we might need to expose a process method for testing 

@@ -183,7 +183,7 @@ class OfflineAnalyticsProvider implements AnalyticsProvider {
 }
 
 // Singleton analytics instance
-class Analytics {
+export class AnalyticsService {
     private provider: AnalyticsProvider;
     private isInitialized = false;
     private userId: string | null = null;
@@ -258,7 +258,7 @@ class Analytics {
 }
 
 // Export singleton instance
-export const analytics = new Analytics();
+export const analytics = new AnalyticsService();
 
 // Convenience functions
 export const trackEvent = (event: AnalyticsEvent, properties?: AnalyticsProperties) =>

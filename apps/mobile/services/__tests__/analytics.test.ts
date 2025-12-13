@@ -30,7 +30,7 @@ describe('AnalyticsService', () => {
     it('tracks events', async () => {
         const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
 
-        await analytics.trackEvent('test_event', { foo: 'bar' });
+        await analytics.track('app_open', { foo: 'bar' });
 
         // In dev, it might log to console. 
         // In prod/offline, it might use offline queue or provider.
@@ -43,7 +43,7 @@ describe('AnalyticsService', () => {
 
     it('identifies user', async () => {
         const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-        await analytics.identifyUser('user_123', { email: 'test@example.com' });
+        await analytics.identify('user_123', { email: 'test@example.com' });
         expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Identify'), expect.anything());
         consoleSpy.mockRestore();
     });
