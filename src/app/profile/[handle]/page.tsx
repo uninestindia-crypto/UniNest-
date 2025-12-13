@@ -28,8 +28,8 @@ async function getProfileData(handle: string) {
   }
 
   const userId = profileData.id;
-  const isMyProfile = user ? user.id === profileData.id : false;
-  const isMyProfile = user ? user.id === profileData.id : false;
+
+
 
   // 2. Get related content
   const [
@@ -75,7 +75,7 @@ async function getProfileData(handle: string) {
     favorites: [], // Favorites are handled client-side via LocalStorage for now
   };
 
-  const isMyProfile = user ? user.id === profileData.id : false;
+
 
   // Get bio from auth.users table user_metadata
   const { data: { user: authUser } } = await supabase.auth.admin.getUserById(userId);

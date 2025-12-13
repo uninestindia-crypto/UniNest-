@@ -1,0 +1,37 @@
+{
+    "compilerOptions": {
+        "strict": true,
+        "target": "ESNext",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "jsx": "react-jsx",
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "resolveJsonModule": true,
+        "allowSyntheticDefaultImports": true,
+        "baseUrl": ".",
+        "paths": {
+            "@/*": [
+                "./*"
+            ],
+            "@uninest/shared-types": [
+                "../../packages/shared-types/src"
+            ],
+            "@uninest/api-client": [
+                "../../packages/api-client/src"
+            ],
+            "@uninest/api-client/*": [
+                "../../packages/api-client/src/*"
+            ]
+        }
+    },
+    "include": [
+        "**/*.ts",
+        "**/*.tsx",
+        ".expo/types/**/*.ts",
+        "expo-env.d.ts"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}
