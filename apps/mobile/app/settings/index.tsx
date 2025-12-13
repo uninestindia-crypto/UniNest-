@@ -20,7 +20,7 @@ type SettingItemProps = {
     icon: string;
     label: string;
     subLabel?: string;
-    onPress?: () => void;
+    onPress?: (value?: boolean) => void;
     value?: boolean; // For toggle
     type?: 'link' | 'toggle' | 'text';
     destructive?: boolean;
@@ -40,9 +40,9 @@ function SettingItem({
     return (
         <TouchableOpacity
             style={[styles.itemContainer, { backgroundColor: theme.colors.card }]}
-            onPress={type === 'toggle' ? onPress : onPress}
-            disabled={type === 'toggle' && !onPress}
-            activeOpacity={type === 'toggle' ? 1 : 0.7}
+            onPress={() => onPress && onPress()}
+            disabled={type === 'toggle'}
+            activeOpacity={0.7}
         >
             <View style={styles.itemLeft}>
                 <View
@@ -93,7 +93,7 @@ function SettingItem({
             {type === 'toggle' && (
                 <Switch
                     value={value}
-                    onValueChange={onPress as any}
+                    onValueChange={onPress}
                     trackColor={{
                         false: theme.colors.muted,
                         true: theme.colors.primary[500],
@@ -119,11 +119,12 @@ function SectionLabel({ title }: { title: string }) {
 export default function SettingsScreen() {
     const { theme, toggleTheme, theme: currentTheme } = useTheme();
     const router = useRouter();
-    const { signOut, user } = useAuth();
+    const { signOut, user, profile, refreshProfile } = useAuth();
+    const [isUpdating, setIsUpdating] = React.useState(false);
 
-    // Mock state for notifications (in real app, this would check permissions)
-    const [pushEnabled, setPushEnabled] = useState(true);
-    const [emailEnabled, setEmailEnabled] = useState(true);
+    // Get preferences from profile or default to enabled
+    const pushEnabled = profile?.preferences?.notifications?.push ?? true;
+    const emailEnabled = profile?.preferences?.notifications?.email ?? true;
 
     const handleSignOut = () => {
         Alert.alert(
@@ -152,6 +153,34 @@ export default function SettingsScreen() {
         Linking.openSettings();
     };
 
+    const updateNotificationPreference = async (type: 'push' | 'email', value: boolean) => {
+        if (!user || isUpdating) return;
+
+        try {
+            setIsUpdating(true);
+            const currentPreferences = profile?.preferences || {};
+            const currentNotifications = currentPreferences.notifications || {};
+
+            await import('@/services/supabase').then(({ authApi }) =>
+                authApi.updateProfile(user.id, {
+                    preferences: {
+                        ...currentPreferences,
+                        notifications: {
+                            ...currentNotifications,
+                            [type]: value,
+                        },
+                    },
+                })
+            );
+            await refreshProfile();
+        } catch (error) {
+            console.error(error);
+            Alert.alert('Error', 'Failed to update settings');
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
     return (
         <ScrollView
             style={[styles.container, { backgroundColor: theme.colors.background }]}
@@ -172,7 +201,7 @@ export default function SettingsScreen() {
                 label="Push Notifications"
                 type="toggle"
                 value={pushEnabled}
-                onPress={() => setPushEnabled(!pushEnabled)}
+                onPress={(val) => updateNotificationPreference('push', !!val)}
             />
 
             <SettingItem
@@ -180,7 +209,7 @@ export default function SettingsScreen() {
                 label="Email Updates"
                 type="toggle"
                 value={emailEnabled}
-                onPress={() => setEmailEnabled(!emailEnabled)}
+                onPress={(val) => updateNotificationPreference('email', !!val)}
             />
 
             <SectionLabel title="Account" />
@@ -188,13 +217,13 @@ export default function SettingsScreen() {
             <SettingItem
                 icon="person-outline"
                 label="Edit Profile"
-                onPress={() => router.push('/profile')}
+                onPress={() => router.push('/(tabs)/profile')}
             />
 
             <SettingItem
                 icon="lock-closed-outline"
                 label="Change Password"
-                onPress={() => router.push('/(auth)/password-reset')}
+                onPress={() => router.push('/settings/change-password' as any)}
             />
 
             <SettingItem
@@ -209,7 +238,7 @@ export default function SettingsScreen() {
             <SettingItem
                 icon="document-text-outline"
                 label="Terms of Service"
-                onPress={() => router.push('/terms')}
+                onPress={() => Linking.openURL('https://uninest.app/terms')}
             />
 
             <SettingItem

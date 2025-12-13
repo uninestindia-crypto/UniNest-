@@ -13,6 +13,10 @@ import { ThemeProvider } from '@/theme';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import { supabase } from '@/services/supabase';
+import { OfflineBanner } from '@/components/ui/OfflineBanner';
+import { GlobalError } from '@/components/ui/GlobalError';
+
+export { GlobalError as ErrorBoundary };
 
 // Prevent splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
@@ -118,6 +122,7 @@ export default function RootLayout() {
                     <ThemeProvider>
                         <AuthProvider>
                             <AuthGate>
+                                <OfflineBanner />
                                 <Stack
                                     screenOptions={{
                                         headerShown: false,
