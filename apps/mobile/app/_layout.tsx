@@ -90,6 +90,27 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 
         if (user) {
             registerForPushNotificationsAsync();
+
+            // Handle notification tap (when user taps on a notification)
+            const responseSubscription = Notifications.addNotificationResponseReceivedListener(response => {
+                const data = response.notification.request.content.data;
+
+                // Route based on notification type/data
+                if (data?.screen) {
+                    router.push(data.screen as any);
+                } else if (data?.orderId) {
+                    router.push(`/vendor/order/${data.orderId}`);
+                } else if (data?.type === 'order_update') {
+                    router.push('/orders');
+                } else {
+                    // Default: go to notifications screen
+                    router.push('/notifications');
+                }
+            });
+
+            return () => {
+                responseSubscription.remove();
+            };
         }
 
         // Hide splash screen once we know auth state
