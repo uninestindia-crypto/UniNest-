@@ -52,8 +52,8 @@ jest.mock('@supabase/supabase-js', () => ({
     })),
 }));
 
-// Silence the warning about useNativeDriver
-jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
+// Silence the warning about useNativeDriver - use virtual mock for RN 0.76+
+jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper', () => ({}), { virtual: true });
 
 // Global test utilities
 global.console = {

@@ -22,6 +22,18 @@ const remotePatterns = [
     port: '',
     pathname: '/**',
   },
+  {
+    protocol: 'https',
+    hostname: 'yourcdn.com',
+    port: '',
+    pathname: '/**',
+  },
+  {
+    protocol: 'https',
+    hostname: '**',
+    port: '',
+    pathname: '/**',
+  },
 ];
 
 if (supabaseHost) {
