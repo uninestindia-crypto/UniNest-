@@ -9,6 +9,13 @@ export type Profile = {
     bio?: string | null;
     followers?: { count: number }[];
     following?: { count: number }[];
+    preferences?: {
+        notifications?: {
+            push?: boolean;
+            email?: boolean;
+        };
+        theme?: 'light' | 'dark' | 'system';
+    };
 };
 
 /**

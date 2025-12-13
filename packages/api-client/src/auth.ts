@@ -83,6 +83,14 @@ export function createAuthApi(supabase: SupabaseClient) {
         },
 
         /**
+         * Update password for logged in user
+         */
+        async updatePassword(password: string) {
+            const { error } = await supabase.auth.updateUser({ password });
+            if (error) throw error;
+        },
+
+        /**
          * Get user profile from profiles table
          */
         async getProfile(userId: string): Promise<Profile | null> {
