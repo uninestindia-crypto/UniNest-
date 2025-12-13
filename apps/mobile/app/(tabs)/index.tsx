@@ -96,44 +96,46 @@ export default function HomeScreen() {
             </View>
 
             {/* Categories */}
-            <FlatList
+            {/* Categories */}
+            <ScrollView
                 horizontal
-                data={CATEGORIES}
-                keyExtractor={(item) => item.id}
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.categoriesContainer}
-                renderItem={({ item }) => (
+                style={{ flexGrow: 0 }}
+            >
+                {CATEGORIES.map((cat) => (
                     <TouchableOpacity
+                        key={cat.id}
                         style={[
                             styles.categoryChip,
                             {
-                                backgroundColor:
-                                    selectedCategory === item.id
-                                        ? theme.colors.primary[600]
-                                        : theme.colors.muted,
-                            },
+                                backgroundColor: selectedCategory === cat.id ? theme.colors.primary[600] : theme.colors.card,
+                                borderColor: theme.colors.border,
+                                borderWidth: 1
+                            }
                         ]}
-                        onPress={() => setSelectedCategory(item.id)}
+                        onPress={() => {
+                            if (cat.id === 'hostel') {
+                                router.push('/hostels');
+                            } else {
+                                setSelectedCategory(cat.id === selectedCategory ? 'all' : cat.id);
+                            }
+                        }}
                     >
                         <Ionicons
-                            name={item.icon as any}
+                            name={cat.icon as any}
                             size={16}
-                            color={selectedCategory === item.id ? '#ffffff' : theme.colors.foreground}
+                            color={selectedCategory === cat.id ? '#fff' : theme.colors.foreground}
                         />
-                        <Text
-                            style={[
-                                styles.categoryText,
-                                {
-                                    color:
-                                        selectedCategory === item.id ? '#ffffff' : theme.colors.foreground,
-                                },
-                            ]}
-                        >
-                            {item.label}
+                        <Text style={[
+                            styles.categoryText,
+                            { color: selectedCategory === cat.id ? '#fff' : theme.colors.foreground }
+                        ]}>
+                            {cat.label}
                         </Text>
                     </TouchableOpacity>
-                )}
-            />
+                ))}
+            </ScrollView>
 
             {/* Vendor Dashboard Link */}
             {role === 'vendor' && (
@@ -172,6 +174,22 @@ export default function HomeScreen() {
             <Text style={[styles.sectionTitle, { color: theme.colors.foreground }]}>
                 {selectedCategory === 'all' ? 'Popular Listings' : CATEGORIES.find(c => c.id === selectedCategory)?.label}
             </Text>
+
+            {(selectedCategory === 'all' || selectedCategory === 'hostel') && (
+                <View style={{ marginHorizontal: 16, marginBottom: 16 }}>
+                    <TouchableOpacity
+                        style={[styles.vendorBanner, { backgroundColor: theme.colors.primary[50], flexDirection: 'row', alignItems: 'center', padding: 12 }]}
+                        onPress={() => router.push('/hostels')}
+                    >
+                        <Ionicons name="bed-outline" size={24} color={theme.colors.primary[600]} />
+                        <View style={{ marginLeft: 12, flex: 1 }}>
+                            <Text style={{ fontWeight: '700', color: theme.colors.primary[700] }}>Looking for Hostels?</Text>
+                            <Text style={{ fontSize: 12, color: theme.colors.primary[600] }}>View dedicated hostel listings</Text>
+                        </View>
+                        <Ionicons name="arrow-forward" size={20} color={theme.colors.primary[600]} />
+                    </TouchableOpacity>
+                </View>
+            )}
         </View>
     ), [theme, profile, role, selectedCategory, router]);
 
