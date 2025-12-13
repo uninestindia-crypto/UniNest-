@@ -16,7 +16,17 @@ import { supabase } from '@/services/supabase';
 import { OfflineBanner } from '@/components/ui/OfflineBanner';
 import { GlobalError } from '@/components/ui/GlobalError';
 
+// Production services
+import { initSentry, setSentryUser, withSentry, addBreadcrumb } from '@/services/sentry';
+import { analytics, identifyUser, resetAnalytics, trackScreen } from '@/services/analytics';
+import { offlineQueue } from '@/services/offlineQueue';
+
 export { GlobalError as ErrorBoundary };
+
+// Initialize production services
+initSentry();
+analytics.initialize();
+offlineQueue.initialize();
 
 // Prevent splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
@@ -41,7 +51,7 @@ const asyncStoragePersister = createAsyncStoragePersister({
  * Protected route wrapper - handles auth redirects
  */
 function AuthGate({ children }: { children: React.ReactNode }) {
-    const { user, isLoading } = useAuth();
+    const { user, profile, role, isLoading } = useAuth();
     const segments = useSegments();
     const router = useRouter();
 
@@ -49,6 +59,24 @@ function AuthGate({ children }: { children: React.ReactNode }) {
         if (isLoading) return;
 
         const inAuthGroup = segments[0] === '(auth)';
+
+        // Update Sentry and Analytics user context
+        if (user) {
+            setSentryUser({
+                id: user.id,
+                email: user.email,
+                role
+            });
+            identifyUser(user.id, {
+                email: user.email,
+                role,
+                signUpDate: user.created_at,
+            });
+            addBreadcrumb('auth', 'User authenticated', { role });
+        } else {
+            setSentryUser(null);
+            resetAnalytics();
+        }
 
         if (!user && !inAuthGroup) {
             // User is not signed in and not on auth screen
