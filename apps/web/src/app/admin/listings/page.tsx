@@ -27,7 +27,6 @@ export default async function AdminListingsPage() {
             )
         `)
         .not('status', 'eq', 'removed_by_admin') // Exclude only admin-removed listings
-        .is('parent_product_id', null) // Exclude child products (like library seats)
         .order('created_at', { ascending: false });
 
     if (error) {

@@ -38,7 +38,6 @@ async function getProfileData(handle: string) {
     .from('products')
     .select('*, profiles:seller_id(full_name, avatar_url, handle, user_metadata)')
     .eq('seller_id', userId)
-    .is('parent_product_id', null) // Exclude child products like library seats
     .order('created_at', { ascending: false });
 
   // Only filter by active status when viewing someone else's profile
