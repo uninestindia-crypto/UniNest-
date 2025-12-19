@@ -20,6 +20,8 @@ import {
   Calendar,
   LinkIcon,
   Check,
+  Trash2,
+  RefreshCw,
 } from 'lucide-react';
 import Link from 'next/link';
 import { notFound, useRouter } from 'next/navigation';
@@ -31,6 +33,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import UserListCard from './user-list-card';
 import { cn } from '@/lib/utils';
+import { deleteOwnProduct, resubmitProduct } from '@/app/profile/user-actions';
 
 type ProfileWithCounts = Profile & {
   follower_count: { count: number }[];
@@ -66,6 +69,8 @@ export default function ProfileClient({
   const [favoriteProducts, setFavoriteProducts] = useState<Product[]>(
     initialContent.favorites || []
   );
+  const [listings, setListings] = useState<Product[]>(initialContent.listings || []);
+  const [processingProductId, setProcessingProductId] = useState<number | null>(null);
 
   const router = useRouter();
 
@@ -83,10 +88,46 @@ export default function ProfileClient({
     }
   }, [initialContent.favorites]);
 
+  useEffect(() => {
+    if (initialContent.listings) {
+      setListings(initialContent.listings);
+    }
+  }, [initialContent.listings]);
+
   const [isFollowing, setIsFollowing] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
 
   const isMyProfile = profile.isMyProfile;
+
+  // Handle delete product
+  const handleDeleteProduct = async (productId: number) => {
+    if (!confirm('Are you sure you want to delete this listing?')) return;
+
+    setProcessingProductId(productId);
+    const result = await deleteOwnProduct(productId);
+    setProcessingProductId(null);
+
+    if (result.error) {
+      toast({ variant: 'destructive', title: 'Error', description: result.error });
+    } else {
+      toast({ title: 'Deleted', description: 'Listing has been removed.' });
+      setListings(listings.filter(l => l.id !== productId));
+    }
+  };
+
+  // Handle resubmit product
+  const handleResubmitProduct = async (productId: number) => {
+    setProcessingProductId(productId);
+    const result = await resubmitProduct(productId);
+    setProcessingProductId(null);
+
+    if (result.error) {
+      toast({ variant: 'destructive', title: 'Error', description: result.error });
+    } else {
+      toast({ title: 'Resubmitted', description: 'Listing submitted for review.' });
+      setListings(listings.map(l => l.id === productId ? { ...l, status: 'pending' } : l));
+    }
+  };
 
   useEffect(() => {
     const checkFollowingStatus = async () => {
@@ -359,50 +400,84 @@ export default function ProfileClient({
               className="animate-fade-in-up m-0 focus-visible:outline-none focus-visible:ring-0"
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {initialContent.listings.length > 0 ? (
-                  initialContent.listings.map((listing) => (
-                    <div key={listing.id} className="h-full relative">
-                      {/* Status badge overlay for owner's listings */}
-                      {isMyProfile && listing.status && listing.status !== 'active' && (
-                        <div className="absolute top-2 left-2 z-10">
-                          {listing.status === 'pending' && (
-                            <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300 shadow-sm">
-                              ⏳ Pending Review
+                {listings.length > 0 ? (
+                  listings.map((listing) => {
+                    const isProcessing = processingProductId === listing.id;
+                    return (
+                      <div key={listing.id} className="h-full relative">
+                        {/* Status badge overlay for owner's listings */}
+                        {isMyProfile && listing.status && listing.status !== 'active' && (
+                          <div className="absolute top-2 left-2 z-10">
+                            {listing.status === 'pending' && (
+                              <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300 shadow-sm">
+                                ⏳ Pending Review
+                              </Badge>
+                            )}
+                            {listing.status === 'rejected' && (
+                              <Badge className="bg-red-100 text-red-800 border-red-300 shadow-sm">
+                                ❌ Rejected
+                              </Badge>
+                            )}
+                          </div>
+                        )}
+                        {isMyProfile && listing.status === 'active' && (
+                          <div className="absolute top-2 left-2 z-10">
+                            <Badge className="bg-green-100 text-green-800 border-green-300 shadow-sm">
+                              ✓ Live
                             </Badge>
-                          )}
-                          {listing.status === 'rejected' && (
-                            <Badge className="bg-red-100 text-red-800 border-red-300 shadow-sm">
-                              ❌ Rejected
-                            </Badge>
-                          )}
-                        </div>
-                      )}
-                      {isMyProfile && listing.status === 'active' && (
-                        <div className="absolute top-2 left-2 z-10">
-                          <Badge className="bg-green-100 text-green-800 border-green-300 shadow-sm">
-                            ✓ Live
-                          </Badge>
-                        </div>
-                      )}
-                      <ProductCard
-                        product={listing}
-                        user={user}
-                        onBuyNow={() => { }}
-                        isBuying={false}
-                        isRazorpayLoaded={false}
-                      />
-                      {/* Edit button for owner's pending/rejected listings */}
-                      {isMyProfile && (
-                        <div className="mt-2 flex gap-2">
-                          <Link href={`/vendor/products/${listing.id}/edit`} className="flex-1">
-                            <Button variant="outline" size="sm" className="w-full">
-                              <Edit className="size-3 mr-1" /> Edit
+                          </div>
+                        )}
+                        <ProductCard
+                          product={listing}
+                          user={user}
+                          onBuyNow={() => { }}
+                          isBuying={false}
+                          isRazorpayLoaded={false}
+                        />
+                        {/* Action buttons for owner */}
+                        {isMyProfile && (
+                          <div className="mt-2 flex gap-2">
+                            <Link href={`/vendor/products/${listing.id}/edit`} className="flex-1">
+                              <Button variant="outline" size="sm" className="w-full">
+                                <Edit className="size-3 mr-1" /> Edit
+                              </Button>
+                            </Link>
+                            {/* Resubmit button for rejected listings */}
+                            {listing.status === 'rejected' && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="flex-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                onClick={() => handleResubmitProduct(listing.id)}
+                                disabled={isProcessing}
+                              >
+                                {isProcessing ? (
+                                  <Loader2 className="size-3 mr-1 animate-spin" />
+                                ) : (
+                                  <RefreshCw className="size-3 mr-1" />
+                                )}
+                                Resubmit
+                              </Button>
+                            )}
+                            {/* Delete button */}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              onClick={() => handleDeleteProduct(listing.id)}
+                              disabled={isProcessing}
+                            >
+                              {isProcessing ? (
+                                <Loader2 className="size-3 animate-spin" />
+                              ) : (
+                                <Trash2 className="size-3" />
+                              )}
                             </Button>
-                          </Link>
-                        </div>
-                      )}
-                    </div>
-                  ))
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
                 ) : (
                   <div className="col-span-full">
                     <EmptyState

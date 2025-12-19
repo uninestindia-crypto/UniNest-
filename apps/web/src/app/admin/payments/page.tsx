@@ -38,9 +38,10 @@ export default async function AdminPaymentsPage() {
     try {
         const supabase = createAdminClient();
         const [donationsResult, competitionEntriesResult] = await Promise.all([
-            supabase.from('donations').select('*, profiles(full_name, email)'),
-            supabase.from('competition_entries').select('*, profiles(full_name, email), competitions(entry_fee)'),
+            supabase.from('donations').select('*, profiles(full_name)'),
+            supabase.from('competition_entries').select('*, profiles(full_name), competitions(entry_fee)'),
         ]);
+
 
         if (donationsResult.error) {
             throw new Error(`Failed to load donations: ${donationsResult.error.message}`);
