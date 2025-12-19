@@ -3,13 +3,37 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { Home, Newspaper, ShoppingBag, BookOpen, UserCog, LogOut, Settings, Heart, LayoutGrid, Info, MessageSquare, Users, Trophy, Briefcase, User as UserIcon, LifeBuoy, Sparkles, ArrowLeft, Network, Download } from 'lucide-react';
-import { SidebarMenu, SidebarMenuItem, SidebarMenuButton, useSidebar } from '@/components/ui/sidebar';
+import {
+  Home,
+  ShoppingBag,
+  LayoutGrid,
+  UserCog,
+  LogOut,
+  Settings,
+  Heart,
+  Info,
+  LifeBuoy,
+  Sparkles,
+  ArrowLeft,
+  Trophy,
+  Briefcase,
+  User as UserIcon
+} from 'lucide-react';
+import {
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarGroupContent,
+  useSidebar
+} from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { Separator } from '../ui/separator';
+
+// --- Configuration ---
 
 const mainNavItems = [
   { href: '/', label: 'Home', icon: Home, roles: ['student', 'vendor', 'guest', 'admin'] },
@@ -22,12 +46,16 @@ const secondaryNavItems = [
   { href: '/support', label: 'Support', icon: LifeBuoy, roles: ['student', 'vendor', 'admin'] },
 ];
 
+const donateItem = { href: '/donate', label: 'Donate', icon: Heart, roles: ['student', 'vendor', 'guest', 'admin'] };
+
 type UserRole = 'student' | 'vendor' | 'admin' | 'guest';
 
 function getRole(user: any): UserRole {
   if (!user) return 'guest';
   return user.user_metadata?.role || 'student';
 }
+
+// --- Sidebar Component ---
 
 export function SidebarNav() {
   const pathname = usePathname();
@@ -43,7 +71,6 @@ export function SidebarNav() {
     return items
       .filter(item => item.roles.includes(userRole))
       .map(item => {
-        // More specific matching for home to avoid it being active on all pages
         const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
         return (
           <SidebarMenuItem key={item.href}>
@@ -51,14 +78,16 @@ export function SidebarNav() {
               asChild
               isActive={isActive}
               className={cn(
-                "w-full justify-start gap-3 px-3 py-2 text-sm font-medium transition-all duration-200 ease-in-out",
-                "hover:translate-x-1 hover:bg-accent hover:text-accent-foreground",
-                isActive ? "bg-primary/10 text-primary font-semibold border-r-2 border-primary rounded-r-none" : "text-muted-foreground"
+                "w-full justify-start gap-3 px-3 py-2.5 text-sm font-medium transition-all duration-200",
+                "hover:bg-muted/60 hover:text-foreground",
+                isActive
+                  ? "bg-primary/10 text-primary font-semibold shadow-sm ring-1 ring-primary/20"
+                  : "text-muted-foreground"
               )}
               onClick={handleLinkClick}
             >
               <Link href={item.href}>
-                <item.icon className={cn("size-4 transition-transform duration-200", isActive && "scale-110")} />
+                <item.icon className={cn("size-4.5 transition-colors", isActive ? "text-primary" : "text-muted-foreground")} />
                 <span>{item.label}</span>
               </Link>
             </SidebarMenuButton>
@@ -68,87 +97,125 @@ export function SidebarNav() {
   };
 
   return (
-    <SidebarMenu className="gap-1 px-2">
-      {renderNavItems(mainNavItems)}
+    <div className="flex flex-col gap-6 px-2 py-4">
 
-      <SidebarMenuItem>
-        <Separator className="my-4 bg-border/50" />
-      </SidebarMenuItem>
+      {/* Main Platform Links */}
+      <SidebarGroup className="p-0">
+        <SidebarGroupLabel className="px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground/60">
+          Platform
+        </SidebarGroupLabel>
+        <SidebarGroupContent className="mt-2 space-y-1">
+          <SidebarMenu>
+            {renderNavItems(mainNavItems)}
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
 
-      {renderNavItems(secondaryNavItems)}
+      {/* Community / Support */}
+      <SidebarGroup className="p-0">
+        <SidebarGroupLabel className="px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground/60">
+          Community
+        </SidebarGroupLabel>
+        <SidebarGroupContent className="mt-2 space-y-1">
+          <SidebarMenu>
+            {/* Donate - Clean Branding */}
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                isActive={pathname.startsWith('/donate')}
+                className={cn(
+                  "w-full justify-start gap-3 px-3 py-2.5 text-sm font-medium transition-colors hover:bg-muted/60",
+                  pathname.startsWith('/donate') ? "bg-primary/10 text-primary" : "text-muted-foreground"
+                )}
+                onClick={handleLinkClick}
+              >
+                <Link href={donateItem.href}>
+                  <Heart className={cn("size-4.5", pathname.startsWith('/donate') ? "fill-primary text-primary" : "")} />
+                  <span>{donateItem.label}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
 
+            {renderNavItems(secondaryNavItems)}
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
 
       <div className='flex-grow' />
 
-      <SidebarMenuItem className="mt-auto pt-4">
-        <SidebarMenuButton
-          asChild
-          className="group relative overflow-hidden rounded-xl border border-amber-200/50 bg-gradient-to-br from-amber-50 to-amber-100/50 p-0 text-amber-700 transition-all hover:border-amber-300 hover:shadow-md dark:border-amber-900/30 dark:from-amber-950/30 dark:to-amber-900/10 dark:text-amber-400"
-          onClick={handleLinkClick}
-        >
-          <Link href="/donate" className="flex w-full items-center justify-center gap-2 py-2.5">
-            <Heart className="size-4 transition-transform duration-300 group-hover:scale-110 group-hover:fill-current" />
-            <span className="font-semibold tracking-wide">Donate</span>
-            <div className="absolute inset-0 -z-10 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:animate-shimmer" />
-          </Link>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
-
+      {/* Admin Section */}
       {role === 'admin' && (
-        <div className="mt-6 flex flex-col gap-1 rounded-xl bg-muted/30 p-2">
-          <p className="px-2 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Admin</p>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              isActive={pathname.startsWith('/admin') && !pathname.startsWith('/admin/marketing')}
-              className={cn("text-xs", pathname.startsWith('/admin') && !pathname.startsWith('/admin/marketing') && "bg-background shadow-sm")}
-              onClick={handleLinkClick}
-            >
-              <Link href="/admin/dashboard">
-                <UserCog className="size-4" />
-                <span>Panel</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              isActive={pathname.startsWith('/admin/marketing')}
-              className={cn("text-xs", pathname.startsWith('/admin/marketing') && "bg-background shadow-sm")}
-              onClick={handleLinkClick}
-            >
-              <Link href="/admin/marketing/donations">
-                <Sparkles className="size-4" />
-                <span>Donations</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
+        <SidebarGroup className="p-0 mt-auto">
+          <SidebarGroupLabel className="px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground/60">
+            Admin Controls
+          </SidebarGroupLabel>
+          <SidebarGroupContent className="mt-2 space-y-1">
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname.startsWith('/admin') && !pathname.startsWith('/admin/marketing')}
+                  className={cn("w-full justify-start gap-3 px-3 py-2 text-sm text-muted-foreground hover:bg-muted/60 hover:text-foreground")}
+                  onClick={handleLinkClick}
+                >
+                  <Link href="/admin/dashboard">
+                    <UserCog className="size-4.5" />
+                    <span>Control Panel</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname.startsWith('/admin/marketing')}
+                  className={cn("w-full justify-start gap-3 px-3 py-2 text-sm text-muted-foreground hover:bg-muted/60 hover:text-foreground")}
+                  onClick={handleLinkClick}
+                >
+                  <Link href="/admin/marketing/donations">
+                    <Sparkles className="size-4.5" />
+                    <span>Marketing</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      )}
+
+      {/* User Actions */}
+      {user && (
+        <div className="mt-2 border-t border-border/40 pt-4">
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                isActive={pathname === '/settings'}
+                className="w-full justify-start gap-3 px-3 py-2 text-sm text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                onClick={handleLinkClick}
+              >
+                <Link href="/settings">
+                  <Settings className="size-4.5" />
+                  <span>Settings</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={() => { handleLinkClick(); signOut(); }}
+                className="w-full justify-start gap-3 px-3 py-2 text-sm text-muted-foreground hover:bg-red-500/10 hover:text-red-600 transition-colors"
+              >
+                <LogOut className="size-4.5" />
+                <span>Logout</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
         </div>
       )}
-
-      {user && (
-        <>
-          <Separator className="my-2" />
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={pathname === '/settings'} className="text-muted-foreground hover:text-foreground" onClick={handleLinkClick}>
-              <Link href="/settings">
-                <Settings className="size-4" />
-                <span>Settings</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton onClick={() => { handleLinkClick(); signOut(); }} className="group text-muted-foreground hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30 dark:hover:text-red-400">
-              <LogOut className="size-4 transition-transform group-hover:-translate-x-1" />
-              <span>Logout</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </>
-      )}
-    </SidebarMenu>
+    </div>
   );
 }
 
+// --- Mobile Navigation Component ---
 
 export function MobileBottomNav() {
   const pathname = usePathname();
@@ -162,8 +229,7 @@ export function MobileBottomNav() {
     { href: '/', label: 'Home', icon: Home, roles: ['student', 'vendor', 'guest', 'admin'] },
     { href: '/marketplace', label: 'Market', icon: ShoppingBag, roles: ['student', 'vendor', 'guest', 'admin'] },
     { href: '/workspace', label: 'Work', icon: LayoutGrid, roles: ['student', 'vendor', 'guest', 'admin'] },
-    { href: profileLink, label: 'Profile', icon: 'avatar', roles: ['student', 'vendor', 'admin'] },
-    { href: '/login', label: 'Login', icon: UserIcon, roles: ['guest'] },
+    { href: profileLink, label: role === 'guest' ? 'Login' : 'Profile', icon: role === 'guest' ? UserIcon : 'avatar', roles: ['student', 'vendor', 'admin', 'guest'] },
   ];
 
   const workspaceNavItems = [
@@ -173,57 +239,55 @@ export function MobileBottomNav() {
   ];
 
   let navItems;
-  if (pathname.startsWith('/workspace/')) {
+  // Simple logic: if deeply inside workspace (but not the root workspace page), show sub-nav
+  if (pathname.startsWith('/workspace/') && pathname !== '/workspace') {
     navItems = workspaceNavItems.filter(item => item.roles.includes(role));
   } else {
+    // For guest, we map 'Profile' to 'Login' behavior visually if needed, but the link handles it.
+    // Ensure we filter correctly.
     navItems = defaultNavItems.filter(item => item.roles.includes(role));
   }
 
+  // Fallback if filter leaves empty (shouldn't happen with correct roles)
+  if (navItems.length === 0) return null;
+
   return (
     <div className="fixed bottom-6 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none">
-      <nav className="pointer-events-auto h-16 w-full max-w-md rounded-2xl border border-white/10 bg-background/80 shadow-2xl backdrop-blur-xl dark:border-white/5 dark:bg-black/80 supports-[backdrop-filter]:bg-background/60">
-        <div className="grid h-full w-full place-items-center px-2" style={{ gridTemplateColumns: `repeat(${navItems.length}, 1fr)` }}>
+      <nav className="pointer-events-auto h-16 px-6 rounded-2xl border border-white/20 bg-background/70 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-black/60 supports-[backdrop-filter]:bg-background/40">
+        <div className="flex bg-transparent h-full items-center gap-1">
           {navItems.map(item => {
-            let isActive = pathname === item.href;
-            if (item.label === 'Back') isActive = false;
+            const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
 
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className="group relative flex h-full w-full flex-col items-center justify-center gap-1"
-              >
-                {/* Active Indicator */}
-                {isActive && (
-                  <span className="absolute -top-[1px] h-[3px] w-8 rounded-b-full bg-primary shadow-[0_0_10px_rgba(var(--primary),0.5)] transition-all" />
+                className={cn(
+                  "group relative flex flex-col items-center justify-center gap-1 w-16 h-12 rounded-xl transition-all duration-300",
+                  isActive ? "bg-primary/10" : "hover:bg-muted/30"
                 )}
-
-                {/* Background Hover Pill */}
-                <span className={cn(
-                  "absolute inset-x-1 inset-y-2 rounded-xl transition-colors duration-200",
-                  isActive ? "bg-primary/10" : "group-hover:bg-muted/50"
-                )} />
-
-                <div className="relative z-10 flex flex-col items-center gap-0.5">
+              >
+                <div className="relative z-10 flex flex-col items-center">
                   {item.icon === 'avatar' ? (
                     <Avatar className={cn(
-                      "size-5 transition-all duration-300",
-                      isActive ? "scale-110 ring-2 ring-primary ring-offset-1 ring-offset-background" : "group-hover:scale-105"
+                      "size-6 transition-transform duration-300 border border-transparent",
+                      isActive ? "scale-105 ring-2 ring-primary ring-offset-1 ring-offset-background" : "opacity-80 group-hover:opacity-100"
                     )}>
                       {user && <AvatarImage src={user.user_metadata?.avatar_url} />}
-                      <AvatarFallback className="text-[9px] bg-muted text-muted-foreground">
-                        {user ? user.email?.[0].toUpperCase() : <UserIcon className="size-3" />}
+                      <AvatarFallback className="text-[9px] bg-muted text-muted-foreground font-bold">
+                        {user ? user.email?.[0].toUpperCase() : 'U'}
                       </AvatarFallback>
                     </Avatar>
                   ) : (
                     <item.icon className={cn(
                       "size-5 transition-all duration-300",
-                      isActive ? "text-primary -translate-y-0.5" : "text-muted-foreground group-hover:text-foreground"
+                      isActive ? "text-primary fill-primary/20 scale-105" : "text-muted-foreground group-hover:text-foreground"
                     )} />
                   )}
+                  {/* Optional Label (Hidden for minimal 'Dock' look, or visible for usability. Keeping hidden for cleaner 'professional' look on small screens, or very small text) */}
                   <span className={cn(
-                    "text-[10px] font-medium transition-colors",
-                    isActive ? "text-primary" : "text-muted-foreground/80 group-hover:text-foreground"
+                    "text-[9px] font-medium transition-colors mt-0.5",
+                    isActive ? "text-primary" : "text-muted-foreground/70"
                   )}>
                     {item.label}
                   </span>
