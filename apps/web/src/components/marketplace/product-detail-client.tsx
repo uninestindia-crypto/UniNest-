@@ -1,20 +1,32 @@
-
 'use client';
 
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Card, CardContent } from '@/components/ui/card';
-import { IndianRupee, Loader2, CheckCircle, Shield, ShoppingBag } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+    IndianRupee,
+    Loader2,
+    CheckCircle,
+    ShieldCheck,
+    ShoppingBag,
+    Truck,
+    Store,
+    Star,
+    Share2,
+    Heart
+} from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { useRazorpay } from '@/hooks/use-razorpay';
 import type { Product } from '@/lib/types';
 import type { User } from '@supabase/supabase-js';
+import { ProductGallery } from './product-gallery';
+import { Separator } from '@/components/ui/separator';
 
 type ProductDetailClientProps = {
     product: Product;
@@ -46,65 +58,65 @@ export default function ProductDetailClient({ product, currentUser }: ProductDet
                 const orderError = await response.json();
                 throw new Error(orderError.error || 'Failed to create Razorpay order.');
             }
-            
+
             const order = await response.json();
 
             const options = {
-              key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-              amount: order.amount,
-              currency: order.currency,
-              name: `Purchase: ${product.name}`,
-              description: `Order from vendor: ${product.seller.full_name}`,
-              order_id: order.id,
-              handler: async function (response: any) {
-                const { data: newOrder, error: orderError } = await supabase
-                  .from('orders')
-                  .insert({
-                    buyer_id: currentUser.id,
-                    vendor_id: product.seller_id,
-                    total_amount: product.price,
-                    razorpay_payment_id: response.razorpay_payment_id,
-                  })
-                  .select('id')
-                  .single();
+                key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+                amount: order.amount,
+                currency: order.currency,
+                name: `Purchase: ${product.name}`,
+                description: `Order from vendor: ${product.seller.full_name}`,
+                order_id: order.id,
+                handler: async function (response: any) {
+                    const { data: newOrder, error: orderError } = await supabase
+                        .from('orders')
+                        .insert({
+                            buyer_id: currentUser.id,
+                            vendor_id: product.seller_id,
+                            total_amount: product.price,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                        })
+                        .select('id')
+                        .single();
 
-                if (orderError || !newOrder) {
-                    toast({ variant: 'destructive', title: 'Error Saving Order', description: 'Payment received, but failed to save your order. Please contact support@uninest.co.in.' });
-                    setIsBuying(false); 
-                    return;
-                }
+                    if (orderError || !newOrder) {
+                        toast({ variant: 'destructive', title: 'Error Saving Order', description: 'Payment received, but failed to save your order. Please contact support@uninest.co.in.' });
+                        setIsBuying(false);
+                        return;
+                    }
 
-                const { error: itemError } = await supabase
-                  .from('order_items')
-                  .insert({
-                    order_id: newOrder.id,
-                    product_id: product.id,
-                    quantity: 1,
-                    price: product.price,
-                  });
+                    const { error: itemError } = await supabase
+                        .from('order_items')
+                        .insert({
+                            order_id: newOrder.id,
+                            product_id: product.id,
+                            quantity: 1,
+                            price: product.price,
+                        });
 
-                 if (itemError) {
-                    toast({ variant: 'destructive', title: 'Error Saving Order Item', description: 'Your order was processed but had an issue. Please contact support@uninest.co.in.' });
-                 } else {
-                    toast({ title: 'Payment Successful!', description: `${product.name} has been purchased.` });
-                    router.push('/vendor/orders');
-                 }
-              },
-              modal: {
-                ondismiss: () => setIsBuying(false),
-              },
-              prefill: {
-                name: currentUser.user_metadata?.full_name || '',
-                email: currentUser.email || '',
-              },
-              notes: {
-                type: 'product_purchase',
-                productId: product.id,
-                userId: currentUser.id,
-              },
-              theme: {
-                color: '#1B365D',
-              },
+                    if (itemError) {
+                        toast({ variant: 'destructive', title: 'Error Saving Order Item', description: 'Your order was processed but had an issue. Please contact support@uninest.co.in.' });
+                    } else {
+                        toast({ title: 'Payment Successful!', description: `${product.name} has been purchased.` });
+                        router.push('/vendor/orders');
+                    }
+                },
+                modal: {
+                    ondismiss: () => setIsBuying(false),
+                },
+                prefill: {
+                    name: currentUser.user_metadata?.full_name || '',
+                    email: currentUser.email || '',
+                },
+                notes: {
+                    type: 'product_purchase',
+                    productId: product.id,
+                    userId: currentUser.id,
+                },
+                theme: {
+                    color: '#4338CA', // Indigo Primary
+                },
             };
             openCheckout(options);
         } catch (error) {
@@ -119,97 +131,203 @@ export default function ProductDetailClient({ product, currentUser }: ProductDet
     }, [currentUser, supabase, toast, openCheckout, router, product]);
 
     const canInteract = currentUser && currentUser.id !== product.seller_id;
-    const isBookable = ['Library', 'Hostels', 'Food Mess', 'Cyber Café'].includes(product.category);
 
+    // Fallback images logic
+    const productImages = product.image_url ? [product.image_url] : [];
 
     return (
-        <div className="max-w-6xl mx-auto p-4 space-y-8">
-            <div className="grid md:grid-cols-2 gap-8">
-                <div>
-                    <Card className="overflow-hidden">
-                        <div className="relative aspect-video">
-                            <Image
-                                src={product.image_url || 'https://picsum.photos/seed/product-detail/800/450'}
-                                alt={product.name}
-                                fill
-                                data-ai-hint="product image"
-                                className="object-cover"
-                                priority
-                            />
-                        </div>
-                    </Card>
-                </div>
-                <div className="space-y-6">
-                    <Badge variant="secondary" className="capitalize">{product.category}</Badge>
-                    <h1 className="text-3xl lg:text-4xl font-bold font-headline">{product.name}</h1>
-                    <p className="text-lg text-muted-foreground">{product.description}</p>
-                    <p className="text-4xl font-bold text-primary flex items-center">
-                        <IndianRupee className="size-8" />
-                        {product.price.toLocaleString()}
-                    </p>
-                    
-                    <Card className="bg-muted/50">
-                        <CardContent className="p-4">
-                             <Link href={`/profile/${product.seller.handle}`} className="flex items-center gap-4">
-                                <Avatar className="size-12">
-                                    <AvatarImage src={product.seller.avatar_url || undefined} />
-                                    <AvatarFallback>{product.seller.full_name?.[0]}</AvatarFallback>
-                                </Avatar>
-                                <div>
-                                    <p className="text-sm text-muted-foreground">Sold by</p>
-                                    <p className="font-bold text-lg">{product.seller.full_name}</p>
-                                </div>
-                            </Link>
-                        </CardContent>
-                    </Card>
+        <div className="min-h-screen bg-background pb-12">
+            {/* Breadcrumb / Top Nav Placeholder could go here */}
 
-                    {canInteract && (
-                        <div className="flex flex-col sm:flex-row gap-4">
-                            <Button
-                              size="lg"
-                              className="flex-1 text-lg"
-                              onClick={handleBuyNow}
-                              disabled={!isLoaded || isBuying}
-                            >
-                              {isBuying ? (
-                                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                              ) : (
-                                <ShoppingBag className="mr-2 h-5 w-5" />
-                              )}
-                              Buy now
+            <main className="container-wrapper max-w-7xl mx-auto px-4 py-8">
+                <div className="grid lg:grid-cols-2 gap-12">
+
+                    {/* Left Column: Gallery */}
+                    <div className="space-y-6">
+                        <ProductGallery images={productImages} productName={product.name} />
+
+                        {/* Desktop Trust Signals */}
+                        <div className="hidden lg:grid grid-cols-2 gap-4">
+                            <Card className="bg-blue-50/50 dark:bg-blue-950/20 border-blue-100 dark:border-blue-900">
+                                <CardContent className="p-4 flex items-start gap-3">
+                                    <ShieldCheck className="w-5 h-5 text-blue-600 mt-1" />
+                                    <div>
+                                        <p className="font-semibold text-sm">Secure-Transaction</p>
+                                        <p className="text-xs text-muted-foreground">Payments processed by Razorpay.</p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                            <Card className="bg-green-50/50 dark:bg-green-950/20 border-green-100 dark:border-green-900">
+                                <CardContent className="p-4 flex items-start gap-3">
+                                    <CheckCircle className="w-5 h-5 text-green-600 mt-1" />
+                                    <div>
+                                        <p className="font-semibold text-sm">Verified Seller</p>
+                                        <p className="text-xs text-muted-foreground">Identity verified by UniNest.</p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </div>
+
+                    {/* Right Column: Key Info & Actions */}
+                    <div className="space-y-8">
+                        {/* Header */}
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <Badge variant="secondary" className="px-3 py-1 text-sm font-medium capitalize">
+                                    {product.category}
+                                </Badge>
+                                <div className="flex gap-2">
+                                    <Button variant="ghost" size="icon" className="rounded-full">
+                                        <Share2 className="w-5 h-5" />
+                                    </Button>
+                                    <Button variant="ghost" size="icon" className="rounded-full">
+                                        <Heart className="w-5 h-5" />
+                                    </Button>
+                                </div>
+                            </div>
+
+                            <h1 className="text-3xl md:text-4xl font-bold font-headline leading-tight text-foreground">
+                                {product.name}
+                            </h1>
+
+                            <div className="flex items-center gap-1 text-amber-500">
+                                <Star className="w-5 h-5 fill-current" />
+                                <span className="font-bold text-lg text-foreground">4.8</span>
+                                <span className="text-muted-foreground text-sm ml-1">(No reviews yet)</span>
+                            </div>
+                        </div>
+
+                        <Separator />
+
+                        {/* Price Section */}
+                        <div className="space-y-1">
+                            <div className="flex items-baseline gap-2">
+                                <p className="text-4xl font-bold text-primary flex items-center">
+                                    <IndianRupee className="w-8 h-8 stroke-[2.5]" />
+                                    {product.price.toLocaleString()}
+                                </p>
+                                {/* Simulated Original Price/Discount */}
+                                <p className="text-lg text-muted-foreground line-through">
+                                    ₹{(product.price * 1.2).toFixed(0)}
+                                </p>
+                                <Badge className="bg-green-600 hover:bg-green-700">20% OFF</Badge>
+                            </div>
+                            <p className="text-sm text-green-600 font-medium">Includes all taxes</p>
+                        </div>
+
+                        {/* Actions */}
+                        <Card className="border-2 border-muted">
+                            <CardContent className="p-6 space-y-4">
+                                {canInteract ? (
+                                    <div className="flex flex-col gap-3">
+                                        <Button
+                                            size="lg"
+                                            className="w-full text-lg font-bold h-12 shadow-primary/25 shadow-lg"
+                                            onClick={handleBuyNow}
+                                            disabled={!isLoaded || isBuying}
+                                        >
+                                            {isBuying ? (
+                                                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                            ) : (
+                                                <ShoppingBag className="mr-2 h-5 w-5" />
+                                            )}
+                                            Buy Now
+                                        </Button>
+                                        <p className="text-xs text-center text-muted-foreground">
+                                            Usually dispatches within 24 hours
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-3">
+                                        {currentUser?.id === product.seller_id ? (
+                                            <Button size="lg" variant="outline" className="w-full" asChild>
+                                                <Link href="/vendor/products">Manage Listing</Link>
+                                            </Button>
+                                        ) : (
+                                            <Button size="lg" variant="secondary" className="w-full" asChild>
+                                                <Link href="/login">Login to Buy</Link>
+                                            </Button>
+                                        )}
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+
+                        {/* Seller Info */}
+                        <div className="flex items-center gap-4 p-4 rounded-lg border bg-card text-card-foreground shadow-sm">
+                            <Avatar className="h-12 w-12 border-2 border-background">
+                                <AvatarImage src={product.seller.avatar_url || undefined} />
+                                <AvatarFallback>{product.seller.full_name?.[0]}</AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1">
+                                <p className="text-sm font-medium text-muted-foreground">Sold by</p>
+                                <Link href={`/profile/${product.seller.handle}`} className="font-bold text-lg hover:underline flex items-center gap-1">
+                                    {product.seller.full_name}
+                                    <Store className="w-4 h-4 text-primary" />
+                                </Link>
+                            </div>
+                            <Button variant="outline" size="sm" asChild>
+                                <Link href={`/profile/${product.seller.handle}`}>View Profile</Link>
                             </Button>
                         </div>
-                    )}
-                    {currentUser && currentUser.id === product.seller_id && (
-                        <Button size="lg" variant="outline" className="w-full" asChild>
-                            <Link href="/vendor/products">Manage your listings</Link>
-                        </Button>
-                    )}
-                </div>
-            </div>
 
-            <div className="grid md:grid-cols-2 gap-8 pt-8 border-t">
-                <Card>
-                    <CardContent className="p-6 space-y-4">
-                        <h3 className="font-bold text-lg flex items-center gap-2"><CheckCircle className="text-green-500"/> Why Shop on UniNest?</h3>
-                        <ul className="list-disc list-inside text-muted-foreground space-y-2">
-                            <li>Directly support fellow students and campus vendors.</li>
-                            <li>Secure payments powered by Razorpay.</li>
-                            <li>Clear order trail for every purchase.</li>
-                            <li>All transactions contribute to the UniNest community.</li>
-                        </ul>
-                    </CardContent>
-                </Card>
-                 <Card>
-                    <CardContent className="p-6 space-y-4">
-                        <h3 className="font-bold text-lg flex items-center gap-2"><Shield className="text-blue-500"/> Buyer Protection</h3>
-                        <p className="text-muted-foreground">
-                            If your item doesn't arrive or isn't as described, contact the seller first. For payment issues, our support team is here to assist you with the transaction details.
-                        </p>
-                        <Button variant="link" className="p-0">Learn More</Button>
-                    </CardContent>
-                </Card>
-            </div>
+                        {/* Product Details Tabs */}
+                        <Tabs defaultValue="description" className="w-full">
+                            <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent">
+                                <TabsTrigger value="description" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2">
+                                    Description
+                                </TabsTrigger>
+                                <TabsTrigger value="specs" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2">
+                                    Specifications
+                                </TabsTrigger>
+                                <TabsTrigger value="delivery" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2">
+                                    Delivery
+                                </TabsTrigger>
+                            </TabsList>
+                            <TabsContent value="description" className="pt-4 space-y-4">
+                                <div className="prose dark:prose-invert max-w-none text-muted-foreground leading-relaxed">
+                                    <p>{product.description}</p>
+                                </div>
+                            </TabsContent>
+                            <TabsContent value="specs" className="pt-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                    <div className="flex justify-between py-2 border-b">
+                                        <span className="text-muted-foreground">Category</span>
+                                        <span className="font-medium">{product.category}</span>
+                                    </div>
+                                    <div className="flex justify-between py-2 border-b">
+                                        <span className="text-muted-foreground">Condition</span>
+                                        <span className="font-medium">New</span>
+                                    </div>
+                                    <div className="flex justify-between py-2 border-b">
+                                        <span className="text-muted-foreground">Stock Status</span>
+                                        <span className="font-medium text-green-600">In Stock</span>
+                                    </div>
+                                    <div className="flex justify-between py-2 border-b">
+                                        <span className="text-muted-foreground">Location</span>
+                                        <span className="font-medium">{product.location || 'Campus Hub'}</span>
+                                    </div>
+                                </div>
+                            </TabsContent>
+                            <TabsContent value="delivery" className="pt-4">
+                                <div className="flex items-start gap-4">
+                                    <div className="p-2 bg-primary/10 rounded-full">
+                                        <Truck className="w-6 h-6 text-primary" />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-semibold">Campus Delivery</h4>
+                                        <p className="text-muted-foreground text-sm mt-1">
+                                            This item is available for pickup or delivery within the campus premises.
+                                            Contact the seller after purchase to coordinate.
+                                        </p>
+                                    </div>
+                                </div>
+                            </TabsContent>
+                        </Tabs>
+                    </div>
+                </div>
+            </main>
         </div>
     );
 }

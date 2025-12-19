@@ -22,11 +22,14 @@ import {
   Check,
   Trash2,
   RefreshCw,
+  Trophy,
+  Briefcase,
+  ExternalLink,
 } from 'lucide-react';
 import Link from 'next/link';
 import { notFound, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import type { PostWithAuthor, Product, Profile } from '@/lib/types';
+import type { PostWithAuthor, Product, Profile, CompetitionEntry, InternshipApplication } from '@/lib/types';
 import ProductCard from '../marketplace/product-card';
 import PostCard from '../feed/post-card';
 import { useToast } from '@/hooks/use-toast';
@@ -48,6 +51,8 @@ type ProfileContent = {
   following: Profile[];
   purchases?: Product[];
   favorites: Product[];
+  competitionEntries?: CompetitionEntry[];
+  internshipApplications?: InternshipApplication[];
 };
 
 type ProfileClientProps = {
@@ -352,6 +357,16 @@ export default function ProfileClient({
                   icon={Heart}
                   label="Favorites"
                 />
+                <TabTriggerStyled
+                  value="competitions"
+                  icon={Trophy}
+                  label="Competitions"
+                />
+                <TabTriggerStyled
+                  value="internships"
+                  icon={Briefcase}
+                  label="Internships"
+                />
               </>
             )}
             <TabTriggerStyled
@@ -574,6 +589,168 @@ export default function ProfileClient({
                 users={initialContent.following}
                 emptyMessage="Not following any users yet."
               />
+            </TabsContent>
+
+            {/* Competition Entries Tab */}
+            <TabsContent
+              value="competitions"
+              className="animate-fade-in-up m-0 focus-visible:outline-none focus-visible:ring-0"
+            >
+              <div className="space-y-4">
+                {initialContent.competitionEntries && initialContent.competitionEntries.length > 0 ? (
+                  initialContent.competitionEntries.map((entry) => {
+                    const competition = entry.competitions;
+                    const isWinner = competition.winner_id === entry.user_id;
+                    const isPastDeadline = new Date(competition.deadline) < new Date();
+
+                    return (
+                      <Card key={entry.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                        <CardContent className="p-4">
+                          <div className="flex items-start gap-4">
+                            {/* Competition Image */}
+                            {competition.image_url && (
+                              <div className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-muted">
+                                <img
+                                  src={competition.image_url}
+                                  alt={competition.title}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            )}
+
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-2">
+                                <div>
+                                  <h3 className="font-semibold text-lg truncate">{competition.title}</h3>
+                                  <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
+                                    <span className="flex items-center gap-1">
+                                      <Trophy className="size-3.5" />
+                                      Prize: ₹{competition.prize.toLocaleString()}
+                                    </span>
+                                    <span className="flex items-center gap-1">
+                                      <Calendar className="size-3.5" />
+                                      {new Date(competition.deadline).toLocaleDateString()}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                  {isWinner && (
+                                    <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">
+                                      🏆 Winner
+                                    </Badge>
+                                  )}
+                                  {!isWinner && isPastDeadline && (
+                                    <Badge variant="secondary">Completed</Badge>
+                                  )}
+                                  {!isPastDeadline && (
+                                    <Badge className="bg-green-100 text-green-800 border-green-300">Active</Badge>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="flex items-center justify-between mt-3">
+                                <p className="text-xs text-muted-foreground">
+                                  Entered on {new Date(entry.created_at).toLocaleDateString()}
+                                </p>
+                                <Link href={`/workspace/competitions/${competition.id}`}>
+                                  <Button variant="ghost" size="sm" className="text-primary">
+                                    View Details <ExternalLink className="size-3 ml-1" />
+                                  </Button>
+                                </Link>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })
+                ) : (
+                  <EmptyState
+                    icon={Trophy}
+                    title="No competition entries"
+                    description="Competitions you enter will appear here."
+                  />
+                )}
+              </div>
+            </TabsContent>
+
+            {/* Internship Applications Tab */}
+            <TabsContent
+              value="internships"
+              className="animate-fade-in-up m-0 focus-visible:outline-none focus-visible:ring-0"
+            >
+              <div className="space-y-4">
+                {initialContent.internshipApplications && initialContent.internshipApplications.length > 0 ? (
+                  initialContent.internshipApplications.map((application) => {
+                    const internship = application.internships;
+                    const isPastDeadline = new Date(internship.deadline) < new Date();
+
+                    const statusBadge = {
+                      pending: <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">⏳ Pending</Badge>,
+                      approved: <Badge className="bg-green-100 text-green-800 border-green-300">✓ Approved</Badge>,
+                      rejected: <Badge className="bg-red-100 text-red-800 border-red-300">❌ Rejected</Badge>,
+                    }[application.status] || <Badge variant="secondary">{application.status}</Badge>;
+
+                    return (
+                      <Card key={application.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                        <CardContent className="p-4">
+                          <div className="flex items-start gap-4">
+                            {/* Internship Image */}
+                            {internship.image_url && (
+                              <div className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-muted">
+                                <img
+                                  src={internship.image_url}
+                                  alt={internship.role}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            )}
+
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-2">
+                                <div>
+                                  <h3 className="font-semibold text-lg truncate">{internship.role}</h3>
+                                  <p className="text-sm text-muted-foreground">{internship.company}</p>
+                                  <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
+                                    <span className="flex items-center gap-1">
+                                      <Briefcase className="size-3.5" />
+                                      ₹{internship.stipend.toLocaleString()}/month
+                                    </span>
+                                    <span className="flex items-center gap-1">
+                                      <MapPin className="size-3.5" />
+                                      {internship.location}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {statusBadge}
+                              </div>
+
+                              <div className="flex items-center justify-between mt-3">
+                                <p className="text-xs text-muted-foreground">
+                                  Applied on {new Date(application.created_at).toLocaleDateString()}
+                                </p>
+                                <Link href={`/workspace/internships/${internship.id}`}>
+                                  <Button variant="ghost" size="sm" className="text-primary">
+                                    View Details <ExternalLink className="size-3 ml-1" />
+                                  </Button>
+                                </Link>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })
+                ) : (
+                  <EmptyState
+                    icon={Briefcase}
+                    title="No internship applications"
+                    description="Internships you apply for will appear here."
+                  />
+                )}
+              </div>
             </TabsContent>
           </div>
         </Tabs>
