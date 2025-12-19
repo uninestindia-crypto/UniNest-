@@ -220,7 +220,16 @@ export default function ProductDetailClient({ product, currentUser }: ProductDet
                         <Card className="border-2 border-muted">
                             <CardContent className="p-6 space-y-4">
                                 {canInteract ? (
-                                    <div className="flex flex-col gap-3">
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <Button
+                                            size="lg"
+                                            variant="outline"
+                                            className="w-full text-lg font-bold h-12"
+                                            onClick={() => toast({ title: "Added to Cart", description: "This item has been added to your cart." })}
+                                        >
+                                            <ShoppingBag className="mr-2 h-5 w-5" />
+                                            Add to Cart
+                                        </Button>
                                         <Button
                                             size="lg"
                                             className="w-full text-lg font-bold h-12 shadow-primary/25 shadow-lg"
@@ -234,9 +243,6 @@ export default function ProductDetailClient({ product, currentUser }: ProductDet
                                             )}
                                             Buy Now
                                         </Button>
-                                        <p className="text-xs text-center text-muted-foreground">
-                                            Usually dispatches within 24 hours
-                                        </p>
                                     </div>
                                 ) : (
                                     <div className="space-y-3">
