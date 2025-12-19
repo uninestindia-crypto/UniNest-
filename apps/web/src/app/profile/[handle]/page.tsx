@@ -5,7 +5,7 @@ import type { Metadata } from 'next';
 import ProfileClient from '@/components/profile/profile-client';
 import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
-import type { Product, PostWithAuthor, Profile } from '@/lib/types';
+import type { Product, PostWithAuthor, Profile, CompetitionEntry, InternshipApplication } from '@/lib/types';
 
 type ProfilePageProps = {
   params: { handle: string }
@@ -54,7 +54,9 @@ async function getProfileData(handle: string) {
     followingCountRes,
     likedPostsRes,
     ordersRes,
-    favoritesRes
+    favoritesRes,
+    competitionEntriesRes,
+    internshipApplicationsRes
   ] = await Promise.all([
     listingsQuery,
     supabase.from('posts').select('*, likes:post_likes(count), comments:comments(count), profiles:user_id(full_name, avatar_url, handle)').eq('user_id', userId).order('created_at', { ascending: false }),
@@ -72,6 +74,20 @@ async function getProfileData(handle: string) {
     isMyProfile
       ? supabase.from('favorites')
         .select('product_id, products(*, seller:seller_id(full_name, avatar_url, handle, user_metadata))')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+      : Promise.resolve({ data: [] }),
+    // Fetch competition entries for own profile
+    isMyProfile
+      ? supabase.from('competition_entries')
+        .select('*, competitions(id, title, prize, deadline, image_url, winner_id)')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+      : Promise.resolve({ data: [] }),
+    // Fetch internship applications for own profile
+    isMyProfile
+      ? supabase.from('internship_applications')
+        .select('*, internships(id, role, company, stipend, deadline, location, image_url)')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
       : Promise.resolve({ data: [] })
@@ -106,6 +122,8 @@ async function getProfileData(handle: string) {
     following: followingList,
     purchases: purchasedProducts as Product[],
     favorites: favoriteProducts as Product[],
+    competitionEntries: (competitionEntriesRes.data || []) as CompetitionEntry[],
+    internshipApplications: (internshipApplicationsRes.data || []) as InternshipApplication[],
   };
 
   // Get bio from auth.users table user_metadata

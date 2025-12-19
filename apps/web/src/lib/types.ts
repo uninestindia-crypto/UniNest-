@@ -113,31 +113,31 @@ export type Order = {
 }
 
 export type OrderItem = {
-    id: number;
-    order_id: number;
-    product_id: number;
-    quantity: number;
-    price: number;
-    products: {
-        name: string;
-        image_url: string | null;
-    },
-    seat_number?: number;
-    library_id?: number;
+  id: number;
+  order_id: number;
+  product_id: number;
+  quantity: number;
+  price: number;
+  products: {
+    name: string;
+    image_url: string | null;
+  },
+  seat_number?: number;
+  library_id?: number;
 }
 
 export type Notification = {
-    id: number;
-    created_at: string;
-    user_id: string;
-    sender_id: string;
-    type: 'new_follower' | 'new_post' | 'new_message' | 'new_competition' | 'new_internship';
-    post_id: number | null;
-    is_read: boolean;
-    sender: {
-        full_name: string;
-        avatar_url: string;
-    } | null;
+  id: number;
+  created_at: string;
+  user_id: string;
+  sender_id: string;
+  type: 'new_follower' | 'new_post' | 'new_message' | 'new_competition' | 'new_internship';
+  post_id: number | null;
+  is_read: boolean;
+  sender: {
+    full_name: string;
+    avatar_url: string;
+  } | null;
 }
 
 export type PostWithAuthor = {
@@ -146,7 +146,7 @@ export type PostWithAuthor = {
   created_at: string;
   user_id: string;
   likes: { count: number }[];
-  comments: any[]; 
+  comments: any[];
   profiles: {
     full_name: string;
     avatar_url: string;
@@ -157,28 +157,28 @@ export type PostWithAuthor = {
 };
 
 type StudentMonetizationSetting = {
-    charge_for_posts: boolean;
-    post_price: number;
+  charge_for_posts: boolean;
+  post_price: number;
 }
 
 type VendorMonetizationSetting = {
-    charge_for_platform_access: boolean;
-    price_per_service_per_month: number;
+  charge_for_platform_access: boolean;
+  price_per_service_per_month: number;
 }
 
 export type MonetizationSettings = {
-    student: StudentMonetizationSetting;
-    vendor: VendorMonetizationSetting;
-    start_date: string | null;
+  student: StudentMonetizationSetting;
+  vendor: VendorMonetizationSetting;
+  start_date: string | null;
 };
 
 export type ApplicationVisibilitySettings = {
-    showCompetitionApplicants: boolean;
-    showInternshipApplicants: boolean;
+  showCompetitionApplicants: boolean;
+  showInternshipApplicants: boolean;
 };
 
 export type PlatformSettings = MonetizationSettings & {
-    applicationVisibility: ApplicationVisibilitySettings;
+  applicationVisibility: ApplicationVisibilitySettings;
 };
 
 export type SupportTicket = {
@@ -192,9 +192,9 @@ export type SupportTicket = {
   priority: 'Low' | 'Medium' | 'High';
   screenshot_url?: string | null;
   profile?: {
-      id: string;
-      full_name: string;
-      avatar_url: string | null;
+    id: string;
+    full_name: string;
+    avatar_url: string | null;
   } | null;
 };
 
@@ -279,6 +279,44 @@ export type BrandingAssets = {
   pwaIcon1024Url: string | null;
   pwaScreenshotDesktopUrl: string | null;
   pwaScreenshotMobileUrl: string | null;
+};
+
+export type CompetitionEntry = {
+  id: number;
+  user_id: string;
+  competition_id: number;
+  created_at: string;
+  payment_id: string | null;
+  phone_number: string | null;
+  whatsapp_number: string | null;
+  pitch_deck_url: string | null;
+  competitions: {
+    id: number;
+    title: string;
+    prize: number;
+    deadline: string;
+    image_url: string | null;
+    winner_id: string | null;
+  };
+};
+
+export type InternshipApplication = {
+  id: number;
+  user_id: string;
+  internship_id: number;
+  created_at: string;
+  status: 'pending' | 'approved' | 'rejected' | string;
+  resume_url: string | null;
+  cover_letter: string | null;
+  internships: {
+    id: number;
+    role: string;
+    company: string;
+    stipend: number;
+    deadline: string;
+    location: string;
+    image_url: string | null;
+  };
 };
 
 export type HomePosterConfig = {
