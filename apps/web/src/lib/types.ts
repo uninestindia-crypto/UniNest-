@@ -81,6 +81,9 @@ export type Product = {
   profiles?: {
     full_name: string;
   };
+  images?: ProductImage[];
+  variants?: ProductVariant[];
+  reviews?: ProductReview[];
 };
 
 export type Note = {
@@ -331,4 +334,33 @@ export type HomePosterConfig = {
   stats?: HomeStat[];
   testimonials?: HomeTestimonial[];
   timeline?: HomeTimelineItem[];
+};
+
+export type ProductImage = {
+  id: number;
+  product_id: number;
+  image_url: string;
+  display_order: number;
+};
+
+export type ProductVariant = {
+  id: number;
+  product_id: number;
+  name: string;
+  value: string;
+  price_modifier: number;
+  stock_count: number;
+};
+
+export type ProductReview = {
+  id: number;
+  product_id: number;
+  user_id: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+  profile?: {
+    full_name: string;
+    avatar_url: string | null;
+  };
 };

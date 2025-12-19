@@ -506,18 +506,6 @@ export default function MarketplaceContent({ initialProducts }: MarketplaceConte
                 )}
               </div>
             </div>
-            {/* Decorative Card Elements */}
-            <div className="absolute -bottom-6 -right-6 hidden sm:flex items-center gap-3 rounded-2xl border border-white/20 bg-white/10 p-4 shadow-xl backdrop-blur-md animate-bounce-slow">
-              <div className="flex -space-x-3">
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="h-8 w-8 rounded-full border-2 border-white/10 bg-white/20" />
-                ))}
-              </div>
-              <div className="text-sm font-medium text-white">
-                <span className="block font-bold">500+ Items</span>
-                <span className="text-white/70 text-xs">Listed this week</span>
-              </div>
-            </div>
           </div>
         </div>
       </section>

@@ -165,7 +165,7 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
 
   return (
     <main className="bg-background text-foreground overflow-x-hidden min-h-screen pb-32 md:pb-24">
-      <DonationModal isOpen={donationModalOpen} onOpenChange={handleDonationModalOpenChange} />
+      {/* <DonationModal isOpen={donationModalOpen} onOpenChange={handleDonationModalOpenChange} /> */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaMarkup) }}

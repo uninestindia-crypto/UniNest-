@@ -11,7 +11,7 @@ import Link from 'next/link';
 import { useBrandingAssets } from '@/components/branding/branding-provider';
 import { useMemo, useState } from 'react';
 import { format } from 'date-fns';
-import { Briefcase, Calendar, IndianRupee, FileText, MapPin, Users, ChevronLeft, Building2, Clock, Share2, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Briefcase, Calendar, IndianRupee, FileText, MapPin, Users, ChevronLeft, Building2, Clock, Share2, ArrowRight } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
 type Internship = {
@@ -126,32 +126,6 @@ export default function InternshipDetailClient({ internship, initialApplicants, 
                             <div className="prose dark:prose-invert prose-slate max-w-none text-muted-foreground leading-relaxed">
                                 <p className="whitespace-pre-wrap">{internship.description || 'No detailed description provided. Please refer to the official job description if available.'}</p>
                             </div>
-
-                            <Card className="bg-muted/30 border-dashed">
-                                <CardHeader className="pb-3">
-                                    <CardTitle className="text-base">Key Responsibilities (Expected)</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <ul className="grid sm:grid-cols-2 gap-2 text-sm text-muted-foreground">
-                                        <li className="flex items-start gap-2">
-                                            <CheckCircle2 className="size-4 text-primary shrink-0 mt-0.5" />
-                                            <span>Collaborate with cross-functional teams</span>
-                                        </li>
-                                        <li className="flex items-start gap-2">
-                                            <CheckCircle2 className="size-4 text-primary shrink-0 mt-0.5" />
-                                            <span>Assist in project development cycles</span>
-                                        </li>
-                                        <li className="flex items-start gap-2">
-                                            <CheckCircle2 className="size-4 text-primary shrink-0 mt-0.5" />
-                                            <span>Conduct research and analysis</span>
-                                        </li>
-                                        <li className="flex items-start gap-2">
-                                            <CheckCircle2 className="size-4 text-primary shrink-0 mt-0.5" />
-                                            <span>Participate in code/design reviews</span>
-                                        </li>
-                                    </ul>
-                                </CardContent>
-                            </Card>
                         </section>
 
                         {/* Applicants Section */}

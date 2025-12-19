@@ -109,70 +109,9 @@ export const defaultHomePosterConfig: HomePosterConfig = {
       icon: 'gift',
     },
   ],
-  stats: [
-    {
-      value: 12000,
-      label: 'Students onboarded',
-      icon: 'users',
-      isPlus: true,
-    },
-    {
-      value: 480,
-      label: 'Vendors listed',
-      icon: 'store',
-      isPlus: true,
-    },
-    {
-      value: 3200,
-      label: 'Daily student actions',
-      icon: 'message-square',
-      isPlus: true,
-    },
-  ],
-  testimonials: [
-    {
-      name: 'Ayesha Khan',
-      quote: 'UniNest keeps me updated on everything—from hostel events to study groups—without the noise.',
-      school: 'SRM Institute of Science and Technology',
-      avatar: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=256&q=80',
-    },
-    {
-      name: 'Rohan Sharma',
-      quote: 'I discovered my internship and locked in a verified PG through UniNest in less than a week.',
-      school: 'IIT Bombay',
-      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=256&q=80',
-    },
-    {
-      name: 'Nandini Rao',
-      quote: 'It feels like my entire campus life lives in one app—marketplace, workspace, and more.',
-      school: 'Christ University',
-      avatar: 'https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=256&q=80',
-    },
-  ],
-  timeline: [
-    {
-      year: '2022',
-      title: 'UniNest was born',
-      description: 'Built to empower students with a digital-first campus experience.',
-      icon: 'sparkles',
-    },
-    {
-      year: '2023',
-      title: 'Marketplace launched',
-      description: 'Local vendors and student entrepreneurs found their new home.',
-      icon: 'store',
-    },
-    {
-      year: '2024',
-      title: 'Campus tools expansion',
-      description: 'Introduced smarter booking, verification, and shared student resources.',
-      icon: 'users',
-    },
-    {
-      year: '2025',
-      title: 'Workspace 2.0',
-      description: 'AI-powered discovery for internships, competitions, and mentors.',
-      icon: 'rocket',
-    },
-  ],
+  // Stats, testimonials, and timeline are empty by default
+  // Admins can configure real data via the admin panel
+  stats: [],
+  testimonials: [],
+  timeline: [],
 };
