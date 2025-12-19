@@ -279,6 +279,10 @@ export type BrandingAssets = {
   pwaIcon1024Url: string | null;
   pwaScreenshotDesktopUrl: string | null;
   pwaScreenshotMobileUrl: string | null;
+  primaryColor?: string | null;
+  secondaryColor?: string | null;
+  brandName?: string | null;
+  brandDescription?: string | null;
 };
 
 export type CompetitionEntry = {
