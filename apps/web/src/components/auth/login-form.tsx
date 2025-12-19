@@ -29,7 +29,9 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Logo } from '../icons';
+import { useBrandingAssets } from '@/components/branding/branding-provider';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Invalid email address.' }),
@@ -41,6 +43,7 @@ export default function LoginForm() {
   const router = useRouter();
   const { toast } = useToast();
   const { supabase } = useAuth();
+  const { assets } = useBrandingAssets();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -53,9 +56,9 @@ export default function LoginForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     if (!supabase) {
-        toast({ variant: 'destructive', title: 'Authentication is not configured.'});
-        setIsLoading(false);
-        return;
+      toast({ variant: 'destructive', title: 'Authentication is not configured.' });
+      setIsLoading(false);
+      return;
     }
     const { data, error } = await supabase.auth.signInWithPassword(values);
 
@@ -83,66 +86,76 @@ export default function LoginForm() {
   }
 
   return (
-    <div className="w-full max-w-sm mx-auto">
-        <Link href="/" className="flex items-center gap-2 justify-center mb-6">
-            <div className="p-2 bg-gradient-to-br from-blue-400 to-purple-500 rounded-lg">
-                <Logo className="size-6 text-white" />
+    <div className="w-full max-w-[400px] mx-auto animate-fade-in-up">
+      <Link href="/" className="flex flex-col items-center gap-4 mb-8 group">
+        <div className="relative size-14 transition-transform group-hover:scale-105 duration-300">
+          {assets.logoUrl ? (
+            <Image src={assets.logoUrl || ''} alt={assets.brandName || 'Logo'} fill className="object-contain" />
+          ) : (
+            <div className="p-3 bg-gradient-to-br from-primary to-accent rounded-2xl shadow-xl shadow-primary/20">
+              <Logo className="size-8 text-white" />
             </div>
-            <h1 className="text-2xl font-headline font-bold">UniNest</h1>
-        </Link>
-        <Card>
-          <CardHeader className="text-center">
-            <CardTitle className="text-3xl">Welcome Back!</CardTitle>
-            <CardDescription>Log in to continue to your digital campus.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input placeholder="name@example.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="••••••••" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
-                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Log In
-                </Button>
-              </form>
-            </Form>
-          </CardContent>
-          <CardFooter className="flex flex-col items-center space-y-3">
-            <p className="text-sm text-muted-foreground">
-              Don&apos;t have an account?{' '}
-              <Link href="/signup" className="font-bold primary-gradient bg-clip-text text-transparent hover:brightness-125">
-                Sign up
-              </Link>
-            </p>
-             <Link href="/password-reset" className="text-sm primary-gradient bg-clip-text text-transparent hover:brightness-125">
-                Forgot password?
-              </Link>
-          </CardFooter>
-        </Card>
+          )}
+        </div>
+        <h1 className="text-3xl font-headline font-bold tracking-tight text-foreground">
+          {assets.brandName || 'UniNest'}
+        </h1>
+      </Link>
+      <Card className="border-border/50 shadow-2xl shadow-primary/5">
+        <CardHeader className="text-center space-y-2 pb-6">
+          <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
+          <CardDescription className="text-base text-muted-foreground">
+            Sign in to your account
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input placeholder="name@example.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="••••••••" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Log In
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+        <CardFooter className="flex flex-col items-center space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Don&apos;t have an account?{' '}
+            <Link href="/signup" className="font-bold primary-gradient bg-clip-text text-transparent hover:brightness-125">
+              Sign up
+            </Link>
+          </p>
+          <Link href="/password-reset" className="text-sm primary-gradient bg-clip-text text-transparent hover:brightness-125">
+            Forgot password?
+          </Link>
+        </CardFooter>
+      </Card>
     </div>
   );
 }

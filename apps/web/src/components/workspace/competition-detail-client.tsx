@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
+import { useBrandingAssets } from '@/components/branding/branding-provider';
 import { format } from 'date-fns';
 import { Calendar, FileText, IndianRupee, Trophy, Users, Clock, Share2, ChevronLeft, ArrowRight, ShieldCheck } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
@@ -49,6 +50,7 @@ type CompetitionDetailClientProps = {
 
 export default function CompetitionDetailClient({ competition: initialCompetition, initialApplicants, showApplicants = true }: CompetitionDetailClientProps) {
     const { user, supabase } = useAuth();
+    const { assets } = useBrandingAssets();
     const [applicants, setApplicants] = useState(initialApplicants);
     const [competition, setCompetition] = useState(initialCompetition);
 
@@ -135,8 +137,8 @@ export default function CompetitionDetailClient({ competition: initialCompetitio
                                     sizes="(max-w-768px) 100vw, 800px"
                                 />
                             ) : (
-                                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950/50 dark:to-indigo-900/20">
-                                    <Trophy className="size-20 text-indigo-300/50" />
+                                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary/10 to-accent/10">
+                                    <Trophy className="size-20 text-primary/20" />
                                 </div>
                             )}
                             <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent" />
@@ -298,8 +300,8 @@ export default function CompetitionDetailClient({ competition: initialCompetitio
                     <div className="lg:col-span-4 space-y-6">
                         <div className="sticky top-24 space-y-6">
                             {/* Primary Action Card */}
-                            <Card className="border-primary/20 shadow-lg overflow-hidden relative">
-                                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-purple-600" />
+                            <Card className="border-primary/20 shadow-xl shadow-primary/5 overflow-hidden relative">
+                                <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-primary to-accent" />
                                 <CardHeader className="pb-4">
                                     <CardTitle className="flex justify-between items-center text-lg">
                                         Registration

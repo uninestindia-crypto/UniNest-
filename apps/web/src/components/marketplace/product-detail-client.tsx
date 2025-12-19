@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
+import { useBrandingAssets } from '@/components/branding/branding-provider';
 import { useRazorpay } from '@/hooks/use-razorpay';
 import type { Product } from '@/lib/types';
 import type { User } from '@supabase/supabase-js';
@@ -37,6 +38,7 @@ export default function ProductDetailClient({ product, currentUser }: ProductDet
     const { supabase } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
+    const { assets } = useBrandingAssets();
     const { openCheckout, isLoaded } = useRazorpay();
     const [isBuying, setIsBuying] = useState(false);
 
@@ -115,7 +117,7 @@ export default function ProductDetailClient({ product, currentUser }: ProductDet
                     userId: currentUser.id,
                 },
                 theme: {
-                    color: '#4338CA', // Indigo Primary
+                    color: assets.primaryColor || '#4338CA',
                 },
             };
             openCheckout(options);
@@ -148,9 +150,9 @@ export default function ProductDetailClient({ product, currentUser }: ProductDet
 
                         {/* Desktop Trust Signals */}
                         <div className="hidden lg:grid grid-cols-2 gap-4">
-                            <Card className="bg-blue-50/50 dark:bg-blue-950/20 border-blue-100 dark:border-blue-900">
+                            <Card className="bg-primary/5 border-primary/20">
                                 <CardContent className="p-4 flex items-start gap-3">
-                                    <ShieldCheck className="w-5 h-5 text-blue-600 mt-1" />
+                                    <ShieldCheck className="w-5 h-5 text-primary mt-1" />
                                     <div>
                                         <p className="font-semibold text-sm">Secure-Transaction</p>
                                         <p className="text-xs text-muted-foreground">Payments processed by Razorpay.</p>

@@ -8,6 +8,7 @@ import { OpportunityShareButton } from '@/components/workspace/opportunity-share
 import { useAuth } from '@/hooks/use-auth';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useBrandingAssets } from '@/components/branding/branding-provider';
 import { useMemo, useState } from 'react';
 import { format } from 'date-fns';
 import { Briefcase, Calendar, IndianRupee, FileText, MapPin, Users, ChevronLeft, Building2, Clock, Share2, ArrowRight, CheckCircle2 } from 'lucide-react';
@@ -42,6 +43,7 @@ type InternshipDetailClientProps = {
 
 export default function InternshipDetailClient({ internship, initialApplicants, showApplicants = true }: InternshipDetailClientProps) {
     const { user } = useAuth();
+    const { assets } = useBrandingAssets();
     const applyHref = useMemo(() => {
         const basePath = `/workspace/internships/${internship.id}/apply`;
         if (user) {
@@ -88,7 +90,7 @@ export default function InternshipDetailClient({ internship, initialApplicants, 
                                     <div className="absolute inset-0 bg-black/40" />
                                 </div>
                             ) : (
-                                <div className="h-32 bg-gradient-to-r from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900" />
+                                <div className="h-32 bg-gradient-to-r from-primary/10 to-accent/10" />
                             )}
 
                             <div className="px-6 pb-6 pt-0 relative flex flex-col sm:flex-row items-end sm:items-center gap-4 -mt-10 sm:-mt-12">
@@ -180,8 +182,8 @@ export default function InternshipDetailClient({ internship, initialApplicants, 
                     <div className="lg:col-span-4 space-y-6">
                         <div className="sticky top-24 space-y-6">
                             {/* Primary Action Card */}
-                            <Card className="shadow-lg border-primary/20 overflow-hidden relative">
-                                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-400 to-amber-500" />
+                            <Card className="shadow-xl shadow-primary/5 border-primary/20 overflow-hidden relative">
+                                <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-primary to-accent" />
                                 <CardHeader className="pb-4">
                                     <CardTitle className="text-lg">Internship Details</CardTitle>
                                 </CardHeader>

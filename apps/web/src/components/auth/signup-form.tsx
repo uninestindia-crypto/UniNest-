@@ -31,12 +31,16 @@ import { Separator } from '../ui/separator';
 import { useAuth } from '@/hooks/use-auth';
 import { cn } from '@/lib/utils';
 import { Bed, Book, Utensils, Laptop } from 'lucide-react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { Logo } from '../icons';
+import { useBrandingAssets } from '@/components/branding/branding-provider';
 
 const vendorCategories = [
-    { id: "library", label: "Library", icon: Book },
-    { id: "food-mess", label: "Food Mess", icon: Utensils },
-    { id: "cybercafe", label: "Cyber Café", icon: Laptop },
-    { id: "hostels", label: "Hostels", icon: Bed },
+  { id: "library", label: "Library", icon: Book },
+  { id: "food-mess", label: "Food Mess", icon: Utensils },
+  { id: "cybercafe", label: "Cyber Café", icon: Laptop },
+  { id: "hostels", label: "Hostels", icon: Bed },
 ] as const;
 
 const formSchema = z.object({
@@ -52,13 +56,13 @@ const formSchema = z.object({
   message: "Passwords don't match",
   path: ["confirmPassword"],
 }).refine(data => {
-    if (data.userType === 'vendor') {
-      return data.vendorCategories && data.vendorCategories.length > 0;
-    }
-    return true;
+  if (data.userType === 'vendor') {
+    return data.vendorCategories && data.vendorCategories.length > 0;
+  }
+  return true;
 }, {
-    message: "Please select at least one vendor category.",
-    path: ["vendorCategories"],
+  message: "Please select at least one vendor category.",
+  path: ["vendorCategories"],
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -68,6 +72,7 @@ export default function SignupForm() {
   const router = useRouter();
   const { toast } = useToast();
   const { supabase } = useAuth();
+  const { assets } = useBrandingAssets();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -127,9 +132,9 @@ export default function SignupForm() {
   async function onSubmit(values: FormValues) {
     setIsLoading(true);
     if (!supabase) {
-        toast({ variant: 'destructive', title: 'Auth not configured.'});
-        setIsLoading(false);
-        return;
+      toast({ variant: 'destructive', title: 'Auth not configured.' });
+      setIsLoading(false);
+      return;
     }
 
     const role = values.userType;
@@ -148,42 +153,57 @@ export default function SignupForm() {
     });
 
     if (error) {
-       toast({
+      toast({
         variant: 'destructive',
         title: 'Sign Up Failed',
         description: error.message,
       });
     } else {
-        const requiresEmailConfirmation = !data?.session;
-        toast({
-            title: 'Success!',
-            description: requiresEmailConfirmation
-              ? 'Check your email for a verification link.'
-              : 'Account created successfully. You can log in now.',
-        });
-        router.push('/login');
+      const requiresEmailConfirmation = !data?.session;
+      toast({
+        title: 'Success!',
+        description: requiresEmailConfirmation
+          ? 'Check your email for a verification link.'
+          : 'Account created successfully. You can log in now.',
+      });
+      router.push('/login');
     }
-    
+
     setIsLoading(false);
   }
 
   return (
-    <Card className="w-full max-w-sm">
-      <CardHeader>
-        <CardTitle>Create an Account</CardTitle>
-        <CardDescription>Join the community and get started.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="userType"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <FormLabel>I am a...</FormLabel>
-                   <FormControl>
-                     <div className="grid grid-cols-2 gap-2">
+    <div className="w-full max-w-[500px] mx-auto animate-fade-in-up">
+      <Link href="/" className="flex flex-col items-center gap-4 mb-8 group">
+        <div className="relative size-14 transition-transform group-hover:scale-105 duration-300">
+          {assets.logoUrl ? (
+            <Image src={assets.logoUrl || ''} alt={assets.brandName || 'Logo'} fill className="object-contain" />
+          ) : (
+            <div className="p-3 bg-gradient-to-br from-primary to-accent rounded-2xl shadow-xl shadow-primary/20">
+              <Logo className="size-8 text-white" />
+            </div>
+          )}
+        </div>
+        <h1 className="text-3xl font-headline font-bold tracking-tight text-foreground">
+          {assets.brandName || 'UniNest'}
+        </h1>
+      </Link>
+      <Card className="border-border/50 shadow-2xl shadow-primary/5">
+        <CardHeader className="text-center pb-6">
+          <CardTitle className="text-2xl font-bold">Create an Account</CardTitle>
+          <CardDescription className="text-base text-muted-foreground">Join the community and get started</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="userType"
+                render={({ field }) => (
+                  <FormItem className="space-y-3">
+                    <FormLabel>I am a...</FormLabel>
+                    <FormControl>
+                      <div className="grid grid-cols-2 gap-2">
                         <Button
                           type="button"
                           variant={field.value === 'student' ? 'default' : 'outline'}
@@ -198,121 +218,123 @@ export default function SignupForm() {
                         >
                           Vendor
                         </Button>
-                    </div>
-                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {userType === 'vendor' && (
-              <FormField
-                control={form.control}
-                name="vendorCategories"
-                render={({ field }) => (
-                  <FormItem>
-                     <Separator className="my-4" />
-                    <div className="mb-4">
-                      <FormLabel className="text-base">Vendor Categories</FormLabel>
-                      <p className="text-sm text-muted-foreground">Select all that apply to your business.</p>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                    {vendorCategories.map((item) => {
-                        const isSelected = field.value?.includes(item.id);
-                        return (
-                             <Button
-                                key={item.id}
-                                type="button"
-                                variant={isSelected ? 'default' : 'outline'}
-                                className="h-auto justify-start p-4 text-left"
-                                onClick={() => {
-                                    const currentCategories = field.value || [];
-                                    const newCategories = isSelected
-                                        ? currentCategories.filter(c => c !== item.id)
-                                        : [...currentCategories, item.id];
-                                    field.onChange(newCategories);
-                                }}
-                              >
-                                <div className="flex flex-col items-start gap-2">
-                                  <item.icon className="size-5"/>
-                                  <span className="font-semibold capitalize">{item.label}</span>
-                                </div>
-                            </Button>
-                        )
-                    })}
-                    </div>
+                      </div>
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            )}
-             <FormField
-              control={form.control}
-              name="fullName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Full Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Your full name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+
+              {userType === 'vendor' && (
+                <FormField
+                  control={form.control}
+                  name="vendorCategories"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Separator className="my-4" />
+                      <div className="mb-4">
+                        <FormLabel className="text-base">Vendor Categories</FormLabel>
+                        <p className="text-sm text-muted-foreground">Select all that apply to your business.</p>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        {vendorCategories.map((item) => {
+                          const isSelected = field.value?.includes(item.id);
+                          return (
+                            <Button
+                              key={item.id}
+                              type="button"
+                              variant={isSelected ? 'default' : 'outline'}
+                              className="h-auto justify-start p-4 text-left"
+                              onClick={() => {
+                                const currentCategories = field.value || [];
+                                const newCategories = isSelected
+                                  ? currentCategories.filter(c => c !== item.id)
+                                  : [...currentCategories, item.id];
+                                field.onChange(newCategories);
+                              }}
+                            >
+                              <div className="flex flex-col items-start gap-2">
+                                <item.icon className="size-5" />
+                                <span className="font-semibold capitalize">{item.label}</span>
+                              </div>
+                            </Button>
+                          )
+                        })}
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               )}
-            />
-             <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input placeholder="name@example.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder="••••••••" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="confirmPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Confirm Password</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder="••••••••" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="submit" className="w-full" disabled={isLoading || !userType}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Sign Up
-            </Button>
-          </form>
-        </Form>
-      </CardContent>
-      <CardFooter className="flex justify-center">
-        <p className="text-sm text-muted-foreground">
-          Already have an account?{' '}
-          <a href="/login" className="text-primary hover:underline">
-            Log in
-          </a>
-        </p>
-      </CardFooter>
-    </Card>
+              <FormField
+                control={form.control}
+                name="fullName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Full Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Your full name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input placeholder="name@example.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="••••••••" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="••••••••" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit" className="w-full" disabled={isLoading || !userType}>
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Sign Up
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+
+        <CardFooter className="flex justify-center pb-8">
+          <p className="text-sm text-muted-foreground">
+            Already have an account?{' '}
+            <Link href="/login" className="font-bold primary-gradient bg-clip-text text-transparent hover:brightness-125">
+              Log in
+            </Link>
+          </p>
+        </CardFooter>
+      </Card>
+    </div >
   );
 }
