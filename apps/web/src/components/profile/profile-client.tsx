@@ -361,7 +361,29 @@ export default function ProfileClient({
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {initialContent.listings.length > 0 ? (
                   initialContent.listings.map((listing) => (
-                    <div key={listing.id} className="h-full">
+                    <div key={listing.id} className="h-full relative">
+                      {/* Status badge overlay for owner's listings */}
+                      {isMyProfile && listing.status && listing.status !== 'active' && (
+                        <div className="absolute top-2 left-2 z-10">
+                          {listing.status === 'pending' && (
+                            <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300 shadow-sm">
+                              ⏳ Pending Review
+                            </Badge>
+                          )}
+                          {listing.status === 'rejected' && (
+                            <Badge className="bg-red-100 text-red-800 border-red-300 shadow-sm">
+                              ❌ Rejected
+                            </Badge>
+                          )}
+                        </div>
+                      )}
+                      {isMyProfile && listing.status === 'active' && (
+                        <div className="absolute top-2 left-2 z-10">
+                          <Badge className="bg-green-100 text-green-800 border-green-300 shadow-sm">
+                            ✓ Live
+                          </Badge>
+                        </div>
+                      )}
                       <ProductCard
                         product={listing}
                         user={user}
@@ -369,15 +391,32 @@ export default function ProfileClient({
                         isBuying={false}
                         isRazorpayLoaded={false}
                       />
+                      {/* Edit button for owner's pending/rejected listings */}
+                      {isMyProfile && (
+                        <div className="mt-2 flex gap-2">
+                          <Link href={`/vendor/products/${listing.id}/edit`} className="flex-1">
+                            <Button variant="outline" size="sm" className="w-full">
+                              <Edit className="size-3 mr-1" /> Edit
+                            </Button>
+                          </Link>
+                        </div>
+                      )}
                     </div>
                   ))
                 ) : (
                   <div className="col-span-full">
                     <EmptyState
                       icon={Package}
-                      title="No active listings"
-                      description="Items listed for sale will appear here."
+                      title={isMyProfile ? "You haven't listed anything yet" : "No active listings"}
+                      description={isMyProfile ? "Create your first listing to sell on the marketplace." : "Items listed for sale will appear here."}
                     />
+                    {isMyProfile && (
+                      <div className="text-center mt-4">
+                        <Link href="/marketplace/new">
+                          <Button>Create Listing</Button>
+                        </Link>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

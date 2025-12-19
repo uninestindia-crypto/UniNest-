@@ -32,6 +32,20 @@ async function getProfileData(handle: string) {
   const isMyProfile = user ? user.id === profileData.id : false;
 
   // 2. Get related content and counts
+  // For own profile: fetch ALL listings (including pending/rejected) so user can manage them
+  // For other profiles: only fetch active listings
+  const listingsQuery = supabase
+    .from('products')
+    .select('*, profiles:seller_id(full_name, avatar_url, handle, user_metadata)')
+    .eq('seller_id', userId)
+    .is('parent_product_id', null) // Exclude child products like library seats
+    .order('created_at', { ascending: false });
+
+  // Only filter by active status when viewing someone else's profile
+  if (!isMyProfile) {
+    listingsQuery.eq('status', 'active');
+  }
+
   const [
     listingsRes,
     postsRes,
@@ -43,7 +57,7 @@ async function getProfileData(handle: string) {
     ordersRes,
     favoritesRes
   ] = await Promise.all([
-    supabase.from('products').select('*, profiles:seller_id(full_name, avatar_url, handle, user_metadata)').eq('seller_id', userId).eq('status', 'active').order('created_at', { ascending: false }),
+    listingsQuery,
     supabase.from('posts').select('*, likes:post_likes(count), comments:comments(count), profiles:user_id(full_name, avatar_url, handle)').eq('user_id', userId).order('created_at', { ascending: false }),
     supabase.from('followers').select('profiles!follower_id(*)').eq('following_id', userId),
     supabase.from('followers').select('profiles!following_id(*)').eq('follower_id', userId),
