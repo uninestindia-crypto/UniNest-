@@ -22,7 +22,7 @@ import { cn } from '@/lib/utils';
 import { MobileBottomNav, SidebarNav } from '@/components/layout/sidebar-nav';
 import Link from 'next/link';
 import { Button } from '../ui/button';
-import { Instagram, Loader2 } from 'lucide-react';
+import { Instagram, Loader2, User as UserIcon } from 'lucide-react';
 import NotificationsDropdown from './notifications-dropdown';
 import UserDropdown from './user-dropdown';
 import { AppVersionWatcher } from '@/components/app-version-watcher';

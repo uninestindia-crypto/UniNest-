@@ -39,10 +39,7 @@ const baseMetadata: Metadata = {
   alternates: {
     canonical: 'https://uninest.co.in/',
   },
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#38BDF8' },
-    { media: '(prefers-color-scheme: dark)', color: '#0F172A' },
-  ],
+
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
@@ -122,6 +119,10 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   viewportFit: 'cover',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#38BDF8' },
+    { media: '(prefers-color-scheme: dark)', color: '#0F172A' },
+  ],
 };
 
 export default async function RootLayout({
