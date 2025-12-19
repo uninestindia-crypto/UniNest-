@@ -452,7 +452,7 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
               </ul>
               <div className="pt-6 flex gap-4">
                 <Button size="lg" className="rounded-xl" asChild>
-                  <Link href="/housing">Find a PG</Link>
+                  <Link href="/marketplace?category=Hostel">Find a PG</Link>
                 </Button>
                 <Button size="lg" variant="outline" className="rounded-xl" asChild>
                   <Link href="/hostels">Explore Hostels</Link>
@@ -485,7 +485,7 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
                       Find verified roles with mentorship. Filter by stipend, remote options, and skill requirements.
                     </p>
                     <Button variant="link" className="w-fit p-0 h-auto font-semibold text-purple-600" asChild>
-                      <Link href="/internships">Browse Internships <ArrowRight className="ml-1 h-4 w-4" /></Link>
+                      <Link href="/workspace/internships">Browse Internships <ArrowRight className="ml-1 h-4 w-4" /></Link>
                     </Button>
                   </div>
                   <div className="relative h-64 lg:h-auto bg-purple-50 dark:bg-purple-900/5">
@@ -511,7 +511,7 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
                       Join hackathons and leagues. Form teams, track prizes, and earn certificates for your profile.
                     </p>
                     <Button variant="link" className="w-fit p-0 h-auto font-semibold text-orange-600" asChild>
-                      <Link href="/competitions">View Challenges <ArrowRight className="ml-1 h-4 w-4" /></Link>
+                      <Link href="/workspace/competitions">View Challenges <ArrowRight className="ml-1 h-4 w-4" /></Link>
                     </Button>
                   </div>
                   <div className="relative h-64 lg:h-auto bg-orange-50 dark:bg-orange-900/5">

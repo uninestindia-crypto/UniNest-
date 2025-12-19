@@ -28,6 +28,54 @@ export async function deleteProductByAdmin(productId: number) {
         }
 
         revalidatePath('/admin/listings');
+        revalidatePath('/marketplace');
+        return { error: null };
+    } catch (e: any) {
+        return { error: e.message };
+    }
+}
+
+export async function approveProduct(productId: number) {
+    try {
+        const supabaseAdmin = getSupabaseAdmin();
+        const { error } = await supabaseAdmin
+            .from('products')
+            .update({ status: 'active' })
+            .eq('id', productId);
+
+        if (error) {
+            return { error: error.message };
+        }
+
+        revalidatePath('/admin/listings');
+        revalidatePath('/marketplace');
+        return { error: null };
+    } catch (e: any) {
+        return { error: e.message };
+    }
+}
+
+export async function rejectProduct(productId: number, reason?: string) {
+    try {
+        const supabaseAdmin = getSupabaseAdmin();
+        const updateData: { status: string; rejection_reason?: string } = {
+            status: 'rejected'
+        };
+        if (reason) {
+            updateData.rejection_reason = reason;
+        }
+
+        const { error } = await supabaseAdmin
+            .from('products')
+            .update(updateData)
+            .eq('id', productId);
+
+        if (error) {
+            return { error: error.message };
+        }
+
+        revalidatePath('/admin/listings');
+        revalidatePath('/marketplace');
         return { error: null };
     } catch (e: any) {
         return { error: e.message };

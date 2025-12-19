@@ -14,8 +14,9 @@ type ProductWithProfile = Product & {
 
 export default async function AdminListingsPage() {
     const supabase = createClient();
-    
-    // Use a direct join in the query for efficiency
+
+    // Fetch ALL products for admin review (not just active ones)
+    // This allows admins to see pending, active, and rejected listings
     const { data, error } = await supabase
         .from('products')
         .select(`
@@ -25,7 +26,8 @@ export default async function AdminListingsPage() {
                 handle
             )
         `)
-        .eq('status', 'active')
+        .not('status', 'eq', 'removed_by_admin') // Exclude only admin-removed listings
+        .is('parent_product_id', null) // Exclude child products (like library seats)
         .order('created_at', { ascending: false });
 
     if (error) {
@@ -41,8 +43,8 @@ export default async function AdminListingsPage() {
 
     return (
         <div className="space-y-8">
-            <PageHeader title="Listing Management" description="Manage all active marketplace listings." />
-             <ListingsTable initialListings={listings} />
+            <PageHeader title="Listing Management" description="Review and manage all marketplace listings. Approve pending listings to make them visible." />
+            <ListingsTable initialListings={listings} />
         </div>
     )
 }

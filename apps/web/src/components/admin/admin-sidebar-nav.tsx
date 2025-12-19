@@ -1,6 +1,6 @@
 
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, ShoppingCart, CreditCard, ScrollText, Settings, Briefcase, Trophy, LifeBuoy, Lightbulb, Megaphone } from 'lucide-react';
+import { LayoutDashboard, Users, ShoppingCart, CreditCard, ScrollText, Settings, Briefcase, Trophy, LifeBuoy, Lightbulb, Megaphone, Heart, Activity } from 'lucide-react';
 import { SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel, SidebarGroupContent } from '@/components/ui/sidebar';
 import Link from 'next/link';
 
@@ -9,6 +9,7 @@ const navGroups = [
     label: "Overview",
     items: [
       { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { href: '/admin/live-users', label: 'Live Users', icon: Activity },
     ]
   },
   {
@@ -25,6 +26,7 @@ const navGroups = [
     items: [
       { href: '/admin/payments', label: 'Payments', icon: CreditCard },
       { href: '/admin/marketing', label: 'Marketing', icon: Megaphone },
+      { href: '/admin/marketing/donations', label: 'Donation Settings', icon: Heart },
     ]
   },
   {
@@ -42,6 +44,7 @@ const navGroups = [
     ]
   }
 ];
+
 
 export function AdminSidebarNav() {
   const pathname = usePathname();
