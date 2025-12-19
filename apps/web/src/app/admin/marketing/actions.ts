@@ -137,8 +137,16 @@ export async function updateBrandingAssets(formData: FormData) {
       screenshotMobile: removeFlags.screenshotMobile ? null : currentAssets.pwaScreenshotMobileUrl ?? null,
     };
 
+
+
     const newObjectPaths: Partial<Record<AssetKey, string>> = {};
     const deleteQueue: Array<{ key: AssetKey; path: string } | null> = [];
+
+    // Text & Color Fields
+    const brandName = formData.get('brandName')?.toString() || null;
+    const brandDescription = formData.get('brandDescription')?.toString() || null;
+    const primaryColor = formData.get('primaryColor')?.toString() || null;
+    const secondaryColor = formData.get('secondaryColor')?.toString() || null;
 
     const logoFile = formData.get('logo');
     if (logoFile instanceof File && logoFile.size > 0) {
@@ -291,7 +299,7 @@ export async function updateBrandingAssets(formData: FormData) {
           if (error) {
             const newPath = newObjectPaths[key];
             if (newPath && newPath !== path) {
-              await supabaseAdmin.storage.from(BRANDING_BUCKET).remove([newPath]).catch(() => {});
+              await supabaseAdmin.storage.from(BRANDING_BUCKET).remove([newPath]).catch(() => { });
             }
             throw new Error(`Failed to delete previous ${key}: ${error.message}`);
           }
@@ -306,6 +314,10 @@ export async function updateBrandingAssets(formData: FormData) {
       pwaIcon1024Url: nextUrls.pwaIcon1024,
       pwaScreenshotDesktopUrl: nextUrls.screenshotDesktop,
       pwaScreenshotMobileUrl: nextUrls.screenshotMobile,
+      brandName,
+      brandDescription,
+      primaryColor,
+      secondaryColor,
     };
 
     const { error: upsertError } = await supabaseAdmin

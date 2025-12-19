@@ -19,6 +19,7 @@ import { DashboardShell } from '@/components/ui/dashboard-shell';
 import { AdminSidebarNav } from '@/components/admin/admin-sidebar-nav';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { useBrandingAssets } from '@/components/branding/branding-provider';
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const { user, signOut, role, loading } = useAuth();
@@ -64,6 +65,7 @@ type AdminLayoutShellProps = {
 };
 
 function AdminLayoutShell({ children, user, signOut }: AdminLayoutShellProps) {
+  const { assets } = useBrandingAssets();
   const sidebarFooter = (
     <div className="flex items-center gap-3 w-full">
       <Avatar className="size-8 border border-border">
@@ -120,7 +122,7 @@ function AdminLayoutShell({ children, user, signOut }: AdminLayoutShellProps) {
 
   return (
     <DashboardShell
-      title="UniNest Admin"
+      title={`${assets.brandName || "UniNest"} Admin`}
       sidebarContent={<AdminSidebarNav />}
       sidebarFooter={sidebarFooter}
       headerContent={headerContent}

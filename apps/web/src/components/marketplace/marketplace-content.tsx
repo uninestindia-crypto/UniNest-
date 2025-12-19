@@ -80,15 +80,18 @@ function FilterControls({
 
   return (
     <div className="space-y-8">
-      <div className="space-y-1">
-        <h2 className="text-xl font-bold tracking-tight">Refine Results</h2>
-        <p className="text-sm text-muted-foreground">Find exactly what you need.</p>
+      <div className="space-y-1.5">
+        <h2 className="text-lg font-bold tracking-tight flex items-center gap-2">
+          <ListFilter className="w-5 h-5 text-primary" />
+          Refine Results
+        </h2>
+        <p className="text-xs text-muted-foreground">Customize your search to find the perfect match.</p>
       </div>
 
       <div className="space-y-4">
-        <Label className="text-sm font-semibold">Location</Label>
+        <Label className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground">Location</Label>
         <Select value={selectedLocation} onValueChange={onLocationChange}>
-          <SelectTrigger className="w-full h-10 rounded-xl bg-background">
+          <SelectTrigger className="w-full h-11 rounded-xl bg-background border-input/50 focus:ring-primary/20 hover:border-primary/50 transition-colors">
             <SelectValue placeholder="All locations" />
           </SelectTrigger>
           <SelectContent>
@@ -103,13 +106,13 @@ function FilterControls({
       </div>
 
       <div className="space-y-4">
-        <Label className="text-sm font-semibold">Type</Label>
+        <Label className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground">Category</Label>
         <Select value={selectedType} onValueChange={onTypeChange}>
-          <SelectTrigger className="w-full h-10 rounded-xl bg-background">
-            <SelectValue placeholder="All types" />
+          <SelectTrigger className="w-full h-11 rounded-xl bg-background border-input/50 focus:ring-primary/20 hover:border-primary/50 transition-colors">
+            <SelectValue placeholder="All categories" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All types</SelectItem>
+            <SelectItem value="all">All categories</SelectItem>
             {availableTypes.map(type => (
               <SelectItem key={type} value={type}>
                 {type}
@@ -119,12 +122,12 @@ function FilterControls({
         </Select>
       </div>
 
-      <div className="space-y-5">
+      <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <Label className="text-sm font-semibold">Price Range</Label>
-          <span className="text-xs font-medium text-muted-foreground">
+          <Label className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground">Price Range</Label>
+          <Badge variant="outline" className="text-[10px] font-mono font-medium px-2 py-0.5 h-auto">
             ₹{Math.round(priceRange[0]).toLocaleString()} – ₹{Math.round(priceRange[1]).toLocaleString()}
-          </span>
+          </Badge>
         </div>
         <Slider
           value={priceRange}
@@ -133,13 +136,13 @@ function FilterControls({
           max={priceBounds.max}
           step={sliderStep}
           disabled={!hasProducts}
-          className="py-4"
+          className="py-4 cursor-pointer"
         />
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="marketplace-price-min" className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Min Price</Label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">₹</span>
+            <Label htmlFor="marketplace-price-min" className="text-[10px] font-medium text-muted-foreground">MIN PRICE</Label>
+            <div className="relative group">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs font-medium group-focus-within:text-primary transition-colors">₹</span>
               <Input
                 id="marketplace-price-min"
                 type="number"
@@ -148,14 +151,14 @@ function FilterControls({
                 value={priceRange[0]}
                 disabled={!hasProducts}
                 onChange={handleMinInputChange}
-                className="pl-6 h-9 rounded-lg text-xs"
+                className="pl-7 h-10 rounded-xl text-sm bg-background border-input/50 focus-visible:ring-primary/20"
               />
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="marketplace-price-max" className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Max Price</Label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">₹</span>
+            <Label htmlFor="marketplace-price-max" className="text-[10px] font-medium text-muted-foreground">MAX PRICE</Label>
+            <div className="relative group">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs font-medium group-focus-within:text-primary transition-colors">₹</span>
               <Input
                 id="marketplace-price-max"
                 type="number"
@@ -164,22 +167,21 @@ function FilterControls({
                 value={priceRange[1]}
                 disabled={!hasProducts}
                 onChange={handleMaxInputChange}
-                className="pl-6 h-9 rounded-lg text-xs"
+                className="pl-7 h-10 rounded-xl text-sm bg-background border-input/50 focus-visible:ring-primary/20"
               />
             </div>
           </div>
         </div>
       </div>
 
-      <div className="pt-2">
+      <div className="pt-4 border-t border-border/50">
         <Button
           variant="secondary"
-          size="sm"
           onClick={resetFilters}
-          className="w-full rounded-xl"
+          className="w-full h-11 rounded-xl font-semibold shadow-sm hover:translate-y-0.5 active:translate-y-0 transition-all"
           disabled={!hasProducts || (!activeFilterCount && !hasPriceFilter)}
         >
-          Reset Filters
+          Reset All Filters
         </Button>
       </div>
     </div>
@@ -444,69 +446,88 @@ export default function MarketplaceContent({ initialProducts }: MarketplaceConte
   }, [filteredProducts, sortOption]);
 
   return (
-    <div className="space-y-10 pb-20">
-      {/* Modern Hero Section */}
-      <section className="relative overflow-hidden rounded-3xl bg-primary text-primary-foreground p-8 md:p-12 shadow-2xl">
-        <div className="absolute inset-0 bg-[url('/patterns/grid.svg')] opacity-10"></div>
-        <div className="absolute -right-20 -top-20 w-80 h-80 bg-accent/20 blur-3xl rounded-full"></div>
-        <div className="absolute -left-20 -bottom-20 w-80 h-80 bg-secondary/20 blur-3xl rounded-full"></div>
+    <div className="space-y-12 pb-24">
+      {/* Premium Hero Section */}
+      <section className="relative overflow-hidden rounded-[2.5rem] bg-primary px-6 py-16 md:px-16 md:py-20 shadow-2xl">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] opacity-20"></div>
+        <div className="absolute -right-32 -top-32 h-[500px] w-[500px] rounded-full bg-accent/20 blur-[100px] animate-pulse-slow"></div>
+        <div className="absolute -left-32 -bottom-32 h-[500px] w-[500px] rounded-full bg-secondary/20 blur-[100px] animate-pulse-slow delay-1000"></div>
 
-        <div className="relative z-10 flex flex-col md:flex-row gap-8 items-start justify-between">
-          <div className="max-w-2xl space-y-4">
-            <Badge variant="secondary" className="bg-white/10 text-white hover:bg-white/20 border-0 backdrop-blur-md">
-              <Sparkles className="w-3 h-3 mr-2 text-yellow-300" />
-              UniNest Marketplace
-            </Badge>
-            <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-loose">
-              Buy, Sell & Explore <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-cyan-200">Campus Needs</span>
-            </h1>
-            <p className="text-lg text-primary-foreground/80 max-w-xl">
-              The trusted platform for verified stays, textbooks, and essentials. By students, for students.
-            </p>
+        <div className="relative z-10 grid gap-12 lg:grid-cols-2 lg:items-center">
+          <div className="space-y-8">
+            <div className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-md shadow-sm">
+              <Sparkles className="mr-2 h-4 w-4 text-yellow-300" />
+              <span className="tracking-wide">UniNest Marketplace</span>
+            </div>
 
-            <div className="flex flex-wrap gap-4 pt-4">
+            <div className="space-y-4">
+              <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-6xl lg:text-7xl leading-[1.1]">
+                Your Campus <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-200 via-cyan-200 to-white animate-gradient-x">Essentials Hub</span>
+              </h1>
+              <p className="max-w-xl text-lg text-blue-100/90 md:text-xl leading-relaxed">
+                Buy, sell, and discover everything you need for student life.
+                Verified listings from your campus community.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-4 pt-2">
               {user && (
-                <Button asChild size="lg" className="rounded-full bg-white text-primary hover:bg-white/90 font-bold shadow-lg shadow-black/10 transition-all hover:scale-105 active:scale-95">
+                <Button asChild size="lg" className="h-14 rounded-full bg-white px-8 text-base font-bold text-primary shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all hover:-translate-y-1 hover:shadow-[0_20px_40px_rgb(0,0,0,0.12)] active:translate-y-0 text-lg">
                   <Link href="/marketplace/new">
-                    <Plus className="mr-2 h-5 w-5" /> Start Selling
+                    <Plus className="mr-2 h-5 w-5 stroke-[3]" /> Start Selling
                   </Link>
                 </Button>
               )}
-              <Button variant="outline" size="lg" className="rounded-full bg-transparent border-white/30 text-white hover:bg-white/10 hover:text-white backdrop-blur-sm">
+              <Button variant="outline" size="lg" className="h-14 rounded-full border-white/20 bg-white/5 px-8 text-base text-white backdrop-blur-sm transition-all hover:bg-white/10 hover:border-white/40">
                 <ShieldCheck className="mr-2 h-5 w-5" /> Verified Vendors
               </Button>
             </div>
           </div>
 
-          <div className="w-full max-w-md bg-white/10 backdrop-blur-xl p-2 rounded-2xl border border-white/20 shadow-xl">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/60" />
-              <Input
-                placeholder="Search for books, hostels, etc..."
-                className="bg-transparent border-0 text-white placeholder:text-white/50 pl-11 h-12 text-lg focus-visible:ring-0 focus-visible:bg-white/10 rounded-xl transition-all"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60 hover:text-white"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
+          <div className="relative w-full max-w-lg lg:ml-auto">
+            <div className="relative overflow-hidden rounded-3xl border border-white/20 bg-white/10 p-2 shadow-2xl backdrop-blur-xl transition-transform hover:scale-[1.02] duration-500">
+              <div className="relative">
+                <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-6 w-6 text-white/70" />
+                <Input
+                  placeholder="What are you looking for?"
+                  className="h-16 w-full rounded-2xl border-0 bg-transparent pl-14 text-lg text-white placeholder:text-white/50 focus-visible:ring-0 focus-visible:bg-white/5 transition-all"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-5 top-1/2 -translate-y-1/2 rounded-full p-1 text-white/70 hover:bg-white/20 hover:text-white transition-colors"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                )}
+              </div>
+            </div>
+            {/* Decorative Card Elements */}
+            <div className="absolute -bottom-6 -right-6 hidden sm:flex items-center gap-3 rounded-2xl border border-white/20 bg-white/10 p-4 shadow-xl backdrop-blur-md animate-bounce-slow">
+              <div className="flex -space-x-3">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="h-8 w-8 rounded-full border-2 border-white/10 bg-white/20" />
+                ))}
+              </div>
+              <div className="text-sm font-medium text-white">
+                <span className="block font-bold">500+ Items</span>
+                <span className="text-white/70 text-xs">Listed this week</span>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Categories Scroller */}
-      <section>
-        <div className="flex items-center justify-between mb-4 md:mb-6 px-1">
-          <h3 className="text-lg font-bold text-foreground">Browse Categories</h3>
+      <section className="space-y-6">
+        <div className="flex items-center justify-between px-2">
+          <h3 className="text-xl font-bold tracking-tight">Browse Categories</h3>
         </div>
-        <div className="-mx-4 md:mx-0 px-4 md:px-0 flex gap-4 overflow-x-auto pb-4 snap-x hide-scrollbar scroll-pl-4">
+        <div className="-mx-4 flex gap-4 overflow-x-auto px-4 pb-6 pt-2 scrollbar-hide snap-x md:mx-0 md:px-0">
           {categories.map(category => {
             const Icon = category.icon;
             const isSelected = selectedCategory === category.name;
@@ -514,19 +535,27 @@ export default function MarketplaceContent({ initialProducts }: MarketplaceConte
               <Link
                 key={category.name}
                 href={createCategoryLink(category.name)}
-                className="snap-start"
+                className="snap-start focus:outline-none"
               >
                 <div className={`
-                                flex flex-col items-center justify-center gap-3 p-4 md:p-6 min-w-[120px] md:min-w-[140px] rounded-2xl border transition-all duration-300 cursor-pointer
-                                ${isSelected
-                    ? 'bg-primary text-primary-foreground border-primary shadow-lg scale-105'
-                    : 'bg-card hover:border-primary/50 hover:shadow-md hover:-translate-y-1'
+                  group flex flex-col items-center justify-center gap-4 rounded-[1.25rem] border p-6 min-w-[140px] transition-all duration-300
+                  ${isSelected
+                    ? 'bg-primary border-primary ring-4 ring-primary/20 shadow-xl scale-105'
+                    : 'bg-card hover:border-primary/30 hover:shadow-lg hover:-translate-y-1'
                   }
-                            `}>
-                  <div className={`p-3 rounded-full ${isSelected ? 'bg-white/20' : category.bg}`}>
-                    <Icon className={`w-5 h-5 md:w-6 md:h-6 ${isSelected ? 'text-white' : category.color}`} />
+                `}>
+                  <div className={`
+                    flex h-12 w-12 items-center justify-center rounded-2xl transition-colors duration-300
+                    ${isSelected ? 'bg-white/20 text-white' : `${category.bg} ${category.color} group-hover:scale-110`}
+                  `}>
+                    <Icon className="h-6 w-6" />
                   </div>
-                  <span className="font-semibold text-xs md:text-sm text-center line-clamp-1">{category.name}</span>
+                  <span className={`
+                    text-sm font-semibold text-center line-clamp-1
+                    ${isSelected ? 'text-white' : 'text-foreground group-hover:text-primary'}
+                  `}>
+                    {category.name}
+                  </span>
                 </div>
               </Link>
             );
@@ -535,9 +564,9 @@ export default function MarketplaceContent({ initialProducts }: MarketplaceConte
       </section>
 
       {/* Main Content Grid */}
-      <section className="grid gap-6 lg:gap-8 lg:grid-cols-[280px_1fr] xl:grid-cols-[300px_1fr]">
-        <aside className="hidden lg:block relative">
-          <div className="sticky top-24 space-y-6 rounded-3xl border bg-card/50 backdrop-blur-sm p-6 shadow-sm">
+      <section className="grid gap-8 lg:grid-cols-[280px_1fr] xl:grid-cols-[320px_1fr]">
+        <aside className="hidden lg:block">
+          <div className="sticky top-24 rounded-3xl border bg-card/50 p-6 shadow-sm backdrop-blur-md transition-all hover:shadow-md">
             <FilterControls
               selectedLocation={selectedLocation}
               onLocationChange={setSelectedLocation}
@@ -557,46 +586,49 @@ export default function MarketplaceContent({ initialProducts }: MarketplaceConte
           </div>
         </aside>
 
-        <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-card/30 p-4 rounded-2xl border border-transparent sm:border-border/50">
-            <div className="flex-1 w-full sm:w-auto">
+        <div className="space-y-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-2xl bg-muted/30 p-4 border border-border/50 backdrop-blur-sm">
+            <div className="flex-1">
               {appliedFilters.length > 0 ? (
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-sm text-muted-foreground mr-2 hidden sm:inline">Active filters:</span>
+                  <span className="text-sm font-medium text-muted-foreground mr-2">Active filters:</span>
                   {appliedFilters.map(filter => (
-                    <Badge key={filter.id} variant="secondary" className="rounded-full px-3 py-1 text-xs font-medium bg-primary/10 text-primary border-primary/20">
+                    <Badge key={filter.id} variant="secondary" className="gap-1 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary hover:bg-primary/20 border border-primary/10 transition-colors">
                       {filter.label}
-                      <button onClick={() => {
-                        if (filter.id === 'location') setSelectedLocation('all');
-                        if (filter.id === 'type') setSelectedType('all');
-                        if (filter.id === 'price') setPriceRange([priceBounds.min, priceBounds.max]);
-                      }} className="ml-2 hover:text-destructive">
-                        <X className="w-3 h-3" />
+                      <button
+                        onClick={() => {
+                          if (filter.id === 'location') setSelectedLocation('all');
+                          if (filter.id === 'type') setSelectedType('all');
+                          if (filter.id === 'price') setPriceRange([priceBounds.min, priceBounds.max]);
+                        }}
+                        className="ml-1 rounded-full p-0.5 hover:bg-primary/20 hover:text-red-500 transition-colors"
+                      >
+                        <X className="h-3 w-3" />
                       </button>
                     </Badge>
                   ))}
-                  <Button variant="ghost" size="sm" onClick={resetFilters} className="text-xs h-7 ml-2 text-muted-foreground hover:text-foreground">
-                    Clear
+                  <Button variant="ghost" size="sm" onClick={resetFilters} className="ml-2 h-7 rounded-full text-xs font-medium hover:bg-muted text-muted-foreground">
+                    Clear all
                   </Button>
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground font-medium">
-                  Showing <span className="text-foreground font-bold">{sortedProducts.length}</span> results
+                <p className="text-sm text-muted-foreground">
+                  Showing <strong className="text-foreground">{sortedProducts.length}</strong> items
                 </p>
               )}
             </div>
 
-            <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="flex items-center gap-3">
               <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="outline" className="lg:hidden flex-1 sm:flex-initial rounded-xl bg-card">
-                    <ListFilter className="w-4 h-4 mr-2" />
-                    Filters {activeFilterCount > 0 && `(${activeFilterCount})`}
+                  <Button variant="outline" className="flex-1 sm:flex-initial lg:hidden rounded-xl border-border/60 bg-background/50 backdrop-blur-sm hover:bg-accent hover:text-accent-foreground">
+                    <ListFilter className="mr-2 h-4 w-4" />
+                    Filters {activeFilterCount > 0 && <span className="ml-1 rounded-full bg-primary px-1.5 py-0.5 text-[10px] text-primary-foreground">{activeFilterCount}</span>}
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-[300px] sm:w-[400px] overflow-y-auto z-[60]">
-                  <SheetHeader className="mb-6">
-                    <SheetTitle className="text-left text-2xl font-bold">Filters</SheetTitle>
+                <SheetContent side="left" className="w-full max-w-[340px] p-6">
+                  <SheetHeader className="pb-6">
+                    <SheetTitle className="text-2xl font-bold">Filters</SheetTitle>
                   </SheetHeader>
                   <FilterControls
                     selectedLocation={selectedLocation}
@@ -615,7 +647,7 @@ export default function MarketplaceContent({ initialProducts }: MarketplaceConte
                     activeFilterCount={activeFilterCount}
                   />
                   <SheetClose asChild>
-                    <Button className="w-full mt-6" onClick={() => setIsFilterSheetOpen(false)}>
+                    <Button className="mt-8 w-full rounded-xl py-6 font-bold text-lg" onClick={() => setIsFilterSheetOpen(false)}>
                       Show {filteredProducts.length} Results
                     </Button>
                   </SheetClose>
@@ -623,10 +655,10 @@ export default function MarketplaceContent({ initialProducts }: MarketplaceConte
               </Sheet>
 
               <Select value={sortOption} onValueChange={(value) => setSortOption(value as SortOption)}>
-                <SelectTrigger className="w-full sm:w-[180px] rounded-xl bg-card">
+                <SelectTrigger className="w-full sm:w-[200px] h-11 rounded-xl bg-background border-border/60 hover:border-primary/40 focus:ring-primary/20 transition-all">
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
-                <SelectContent align="end">
+                <SelectContent align="end" className="rounded-xl border-border/60 shadow-lg">
                   <SelectItem value="featured">Featured</SelectItem>
                   <SelectItem value="newest">Newest Arrivals</SelectItem>
                   <SelectItem value="price-low">Price: Low to High</SelectItem>
@@ -637,14 +669,23 @@ export default function MarketplaceContent({ initialProducts }: MarketplaceConte
           </div>
 
           {loading ? (
-            <div className="flex flex-col justify-center items-center h-96 gap-4">
-              <Loader2 className="w-12 h-12 animate-spin text-primary" />
-              <p className="text-muted-foreground animate-pulse">Loading marketplace...</p>
+            <div className="flex h-96 flex-col items-center justify-center gap-4 rounded-3xl border border-dashed bg-card/30">
+              <div className="relative h-16 w-16">
+                <div className="absolute inset-0 animate-ping rounded-full bg-primary/20"></div>
+                <div className="relative flex h-full w-full items-center justify-center rounded-full bg-primary/10">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              </div>
+              <p className="animate-pulse text-lg font-medium text-muted-foreground">Loading marketplace...</p>
             </div>
           ) : sortedProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
               {sortedProducts.map((product, index) => (
-                <div key={product.id} className="animate-in fade-in slide-in-from-bottom-4 duration-500 w-full" style={{ animationDelay: `${index * 50}ms` }}>
+                <div
+                  key={product.id}
+                  className="animate-fade-in-up"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
                   <ProductCard
                     product={product}
                     user={user}
@@ -656,16 +697,17 @@ export default function MarketplaceContent({ initialProducts }: MarketplaceConte
               ))}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center py-24 text-center bg-card/50 border border-dashed rounded-3xl">
-              <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-6">
-                <ShoppingBag className="w-10 h-10 text-muted-foreground" />
+            <div className="flex min-h-[400px] flex-col items-center justify-center rounded-[2.5rem] border border-dashed border-muted-foreground/20 bg-muted/10 p-12 text-center animate-fade-in">
+              <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-3xl bg-muted shadow-inner">
+                <ShoppingBag className="h-10 w-10 text-muted-foreground/50" />
               </div>
               <h2 className="text-2xl font-bold tracking-tight">No listings found</h2>
-              <p className="text-muted-foreground max-w-sm mt-2">
-                {selectedCategory ? `We couldn't find any products in "${selectedCategory}".` : 'No products have been listed yet.'}
-                <br /> Try adjusting your filters or check back later.
+              <p className="mt-2 max-w-sm text-balance text-muted-foreground">
+                {selectedCategory
+                  ? `We couldn't find any products in "${selectedCategory}".`
+                  : 'No products match your current filters.'}
               </p>
-              <Button variant="outline" onClick={resetFilters} className="mt-8 rounded-full">
+              <Button variant="outline" onClick={resetFilters} className="mt-8 h-11 rounded-full border-primary/20 px-8 hover:bg-primary/5 hover:text-primary">
                 Clear all filters
               </Button>
             </div>

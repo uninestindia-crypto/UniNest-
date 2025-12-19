@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import DonationSettingsForm from '@/components/admin/marketing/donation-settings-form';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
@@ -42,21 +42,19 @@ const parseMilestones = (raw: unknown) => {
 };
 
 export default async function DonationSettingsPage() {
-  const supabase = createClient();
+  // Use admin client - the admin layout already handles authorization
+  const supabase = createAdminClient();
 
-  const [configResult, authResult] = await Promise.all([
-    supabase
-      .from('app_config')
-      .select('key, value')
-      .in('key', [
-        'donation_goal',
-        'impact_students_helped',
-        'impact_notes_shared',
-        'impact_libraries_digitized',
-        'donation_milestones',
-      ]),
-    supabase.auth.getUser(),
-  ]);
+  const configResult = await supabase
+    .from('app_config')
+    .select('key, value')
+    .in('key', [
+      'donation_goal',
+      'impact_students_helped',
+      'impact_notes_shared',
+      'impact_libraries_digitized',
+      'donation_milestones',
+    ]);
 
   const configEntries = (() => {
     if (!configResult.error) {
@@ -83,15 +81,6 @@ export default async function DonationSettingsPage() {
 
   const milestones = parseMilestones(configMap['donation_milestones']);
 
-  const userRole = authResult.data.user?.user_metadata?.role;
-  if (userRole !== 'admin') {
-    return (
-      <div className="p-6 text-destructive">
-        <h1 className="text-2xl font-bold">Access restricted</h1>
-        <p className="mt-2">You need administrator permissions to manage donation settings.</p>
-      </div>
-    );
-  }
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">

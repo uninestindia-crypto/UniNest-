@@ -1,26 +1,20 @@
 
 import PageHeader from "@/components/admin/page-header";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { declareWinner } from "./actions";
 import ResultsForm from "./form";
 
 export const revalidate = 0;
 
 export default async function CompetitionResultsPage({ params }: { params: { id: string } }) {
-    const supabase = createClient();
+    const supabase = createAdminClient();
 
     const { data: competition, error: competitionError } = await supabase
         .from('competitions')
         .select('id, title, winner_id, result_description')
         .eq('id', params.id)
         .single();
-    
+
     if (competitionError || !competition) {
         notFound();
     }
@@ -40,17 +34,22 @@ export default async function CompetitionResultsPage({ params }: { params: { id:
         return <p>Error loading entrants: {entriesError.message}</p>
     }
 
-    const applicants = entries.map(e => ({
-        id: e.profiles?.id || e.user_id,
-        name: e.profiles?.full_name || 'Unknown',
-    }));
+    // Handle the case where profiles might be an array or null
+    const applicants = (entries || []).map(e => {
+        const profile = Array.isArray(e.profiles) ? e.profiles[0] : e.profiles;
+        return {
+            id: profile?.id || e.user_id,
+            name: profile?.full_name || 'Unknown',
+        };
+    });
+
 
     return (
         <div className="space-y-8 max-w-2xl mx-auto">
             <PageHeader title={`Declare Winner for ${competition.title}`} description="Select a winner and write an announcement." />
-            <ResultsForm 
+            <ResultsForm
                 competitionId={competition.id}
-                applicants={applicants} 
+                applicants={applicants}
                 currentWinnerId={competition.winner_id}
                 currentDescription={competition.result_description}
             />

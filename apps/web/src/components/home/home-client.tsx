@@ -164,7 +164,7 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
   };
 
   return (
-    <main className="bg-background text-foreground overflow-x-hidden">
+    <main className="bg-background text-foreground overflow-x-hidden min-h-screen pb-32 md:pb-24">
       <DonationModal isOpen={donationModalOpen} onOpenChange={handleDonationModalOpenChange} />
       <script
         type="application/ld+json"
@@ -172,70 +172,73 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
       />
 
       {/* Hero Section */}
-      <section className="relative px-4 pt-10 pb-20 sm:px-6 lg:px-8 lg:pt-16 xl:px-16 overflow-hidden">
-        {/* Background Elements */}
-        <div className="absolute top-0 right-0 -z-10 h-[600px] w-[600px] rounded-full bg-primary/5 blur-3xl" />
-        <div className="absolute bottom-0 left-0 -z-10 h-[500px] w-[500px] rounded-full bg-accent/5 blur-3xl" />
+      <section className="relative px-4 pt-6 pb-16 sm:px-6 lg:px-8 lg:pt-12 xl:px-16 overflow-hidden">
+        {/* Enhanced Background Elements */}
+        <div className="absolute top-0 right-0 -z-10 h-[600px] w-[600px] rounded-full bg-gradient-to-b from-primary/10 to-transparent blur-3xl opacity-60" />
+        <div className="absolute bottom-0 left-0 -z-10 h-[500px] w-[500px] rounded-full bg-accent/10 blur-3xl opacity-50" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 h-[800px] w-[800px] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white/40 via-transparent to-transparent dark:from-white/5 blur-3xl" />
 
         <div className="mx-auto max-w-7xl">
           <Carousel opts={{ align: 'center', loop: true }} plugins={[heroAutoplay]} className="w-full">
             <CarouselContent>
               {heroSlides.map((slide, index) => (
                 <CarouselItem key={slide.id ?? `${slide.title}-${index}`} className="w-full">
-                  <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
-                    <div className="space-y-8 animate-fade-in-up">
-                      <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary shadow-sm backdrop-blur-sm">
+                  <div className="grid gap-8 lg:gap-16 lg:grid-cols-2 lg:items-center">
+                    <div className="space-y-6 lg:space-y-8 animate-in slide-in-from-left duration-700 fade-in">
+                      <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs sm:text-sm font-medium text-primary shadow-sm backdrop-blur-sm">
                         <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse"></span>
                         {slide.tag || "What's New"}
                       </div>
 
                       <div className="space-y-4">
-                        <h1 className="text-4xl font-headline font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl text-gradient">
+                        <h1 className="text-4xl sm:text-5xl lg:text-7xl font-headline font-extrabold leading-[1.1] tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-foreground to-foreground/70 dark:from-white dark:to-white/70">
                           {slide.title}
                         </h1>
-                        <p className="text-lg text-muted-foreground sm:text-xl max-w-lg leading-relaxed">
+                        <p className="text-lg sm:text-xl text-muted-foreground max-w-xl leading-relaxed">
                           {slide.subtitle || "Experience the future of student living with UniNest. Connect, grow, and thrive."}
                         </p>
                       </div>
 
-                      <div className="flex flex-wrap gap-4">
+                      <div className="flex flex-col sm:flex-row gap-4">
                         {slide.ctaHref && slide.ctaLabel && (
-                          <Button size="lg" className="h-12 px-8 text-base shadow-lg shadow-primary/20 transition-all hover:scale-105 hover:shadow-primary/30" asChild>
+                          <Button size="lg" className="h-14 px-8 text-base font-semibold shadow-xl shadow-primary/20 hover:shadow-primary/40 transition-all hover:-translate-y-0.5" asChild>
                             <Link href={slide.ctaHref}>
                               {slide.ctaLabel} <ArrowRight className="ml-2 h-4 w-4" />
                             </Link>
                           </Button>
                         )}
                         {slide.secondaryCtaHref && slide.secondaryCtaLabel && (
-                          <Button size="lg" variant="outline" className="h-12 px-8 text-base border-primary/20 hover:bg-primary/5 transition-all hover:scale-105" asChild>
+                          <Button size="lg" variant="outline" className="h-14 px-8 text-base font-semibold border-primary/20 hover:bg-primary/5 hover:text-primary transition-all" asChild>
                             <Link href={slide.secondaryCtaHref}>{slide.secondaryCtaLabel}</Link>
                           </Button>
                         )}
                       </div>
 
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground pt-4">
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground pt-2">
                         <div className="flex -space-x-3">
                           {[1, 2, 3, 4].map(i => (
-                            <div key={i} className="h-8 w-8 rounded-full border-2 border-background bg-muted flex items-center justify-center text-[10px] overflow-hidden">
+                            <div key={i} className="h-9 w-9 rounded-full border-2 border-background bg-muted flex items-center justify-center text-[10px] overflow-hidden shadow-sm">
                               <Avatar className="h-full w-full">
-                                <AvatarFallback className="bg-primary/10 text-primary">U{i}</AvatarFallback>
+                                <AvatarFallback className="bg-primary/10 text-primary font-bold">U{i}</AvatarFallback>
                               </Avatar>
                             </div>
                           ))}
                         </div>
-                        <div className="flex gap-1">
-                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                          <span className="ml-1 font-medium text-foreground">5.0 from students</span>
+                        <div>
+                          <div className="flex gap-0.5">
+                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                          </div>
+                          <span className="font-semibold text-foreground text-xs">Trusted by 10k+ students</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="relative mx-auto w-full max-w-[500px] lg:max-w-none perspective-1000">
-                      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-3xl border border-white/20 bg-muted/20 shadow-2xl transition-transform duration-500 hover:rotate-1">
+                    <div className="relative mx-auto w-full max-w-[500px] lg:max-w-none perspective-1000 mt-8 lg:mt-0">
+                      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[2rem] border border-white/20 bg-muted/20 shadow-2xl transition-transform duration-500 hover:rotate-1 dark:border-white/5 dark:bg-slate-900/50">
                         {slide.imageUrl ? (
                           <Image
                             src={slide.imageUrl}
@@ -246,23 +249,22 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
                             sizes="(min-width: 1024px) 600px, 100vw"
                           />
                         ) : (
-                          <div className="h-full w-full bg-gradient-to-br from-primary/5 to-accent/5 flex items-center justify-center">
-                            <Users className="h-24 w-24 text-muted-foreground/20" />
+                          <div className="h-full w-full bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
+                            <Users className="h-24 w-24 text-primary/20" />
                           </div>
                         )}
                         {/* Glass Overlays for Decorative Effect */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
-                        <div className="absolute -bottom-6 -right-6 h-24 w-24 rounded-full bg-secondary/20 blur-2xl" />
-                        <div className="absolute -top-6 -left-6 h-24 w-24 rounded-full bg-primary/20 blur-2xl" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
                       </div>
+
                       {/* Floating card example */}
-                      <div className="absolute -bottom-6 -left-6 hidden sm:flex items-center gap-3 rounded-2xl border border-white/20 bg-white/80 p-4 shadow-xl backdrop-blur-md dark:bg-slate-900/80 dark:border-white/10 animate-bounce-slow">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-900/30">
-                          <ShieldCheck className="h-5 w-5" />
+                      <div className="absolute -bottom-6 -right-6 hidden sm:flex items-center gap-4 rounded-2xl border border-white/40 bg-white/90 p-4 shadow-xl backdrop-blur-xl dark:bg-slate-900/90 dark:border-white/10 animate-bounce-slow max-w-xs">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100/80 text-green-600 dark:bg-green-900/30">
+                          <ShieldCheck className="h-6 w-6" />
                         </div>
                         <div>
-                          <p className="text-sm font-bold">Verified</p>
-                          <p className="text-xs text-muted-foreground">Listings Checked</p>
+                          <p className="text-sm font-bold text-foreground">100% Verified</p>
+                          <p className="text-xs text-muted-foreground leading-tight">Every listing checked physically by our team.</p>
                         </div>
                       </div>
                     </div>
@@ -270,32 +272,29 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <div className="mt-8 flex justify-center gap-2 lg:hidden">
-              <CarouselPrevious className="static translate-y-0" />
-              <CarouselNext className="static translate-y-0" />
-            </div>
+            {/* Mobile Navigation Dots or Arrows could go here if needed */}
           </Carousel>
         </div>
       </section>
 
-      {/* Trusted By / Stats Strip (Replaces old stats section) */}
+      {/* Trusted By / Stats Strip */}
       {stats.length > 0 && (
-        <section className="border-y border-border bg-muted/30 py-12">
+        <section className="border-y bg-muted/30 py-12">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-2 gap-8 md:grid-cols-4 lg:gap-12">
               {stats.map((stat, index) => (
-                <div key={index} className="flex flex-col items-center justify-center text-center sm:items-start sm:text-left">
-                  <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <div key={index} className="flex flex-col items-center justify-center text-center sm:items-start sm:text-left transition-transform hover:scale-105 duration-300">
+                  <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-sm">
                     {(() => {
                       const Icon = resolveIcon(stat.icon);
-                      return <Icon className="h-5 w-5" />;
+                      return <Icon className="h-6 w-6" />;
                     })()}
                   </div>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-bold tracking-tight text-foreground">{stat.value}</span>
+                    <span className="text-3xl font-extrabold tracking-tight text-foreground">{stat.value}</span>
                     {stat.isPlus && <span className="text-2xl font-bold text-primary">+</span>}
                   </div>
-                  <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">{stat.label}</p>
+                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{stat.label}</p>
                 </div>
               ))}
             </div>
@@ -305,23 +304,23 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
 
       {/* Quick Access Grid */}
       {quickAccessCards.length > 0 && (
-        <section className="py-24 bg-background">
+        <section className="py-20 lg:py-24 bg-background">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-12 text-center max-w-2xl mx-auto">
-              <h2 className="text-3xl font-headline font-bold sm:text-4xl">Explore UniNest</h2>
-              <p className="mt-4 text-lg text-muted-foreground">
-                Your gateway to verified student housing, internships, and exclusive campus deals.
+            <div className="mb-12 text-center max-w-2xl mx-auto space-y-4">
+              <Badge variant="outline" className="rounded-full px-4 py-1 text-sm border-primary/20 text-primary bg-primary/5">Explore Platform</Badge>
+              <h2 className="text-3xl font-headline font-bold sm:text-4xl lg:text-5xl">Everything you need</h2>
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                Your one-stop destination for housing, career growth, and student marketplace.
               </p>
             </div>
 
-            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-3">
               {quickAccessCards.map((card, index) => (
                 <Link
                   key={card.id ?? `${card.title}-${index}`}
                   href={card.href || '#'}
-                  className="group relative flex flex-col justify-end overflow-hidden rounded-3xl border border-border bg-background shadow-sm transition-all hover:shadow-2xl hover:-translate-y-1 h-[400px]"
+                  className="group relative flex flex-col justify-end overflow-hidden rounded-[2rem] border border-border bg-background shadow-md transition-all hover:shadow-2xl hover:-translate-y-2 h-[420px]"
                 >
-                  {/* Background Image */}
                   <div className="absolute inset-0 z-0 h-full w-full">
                     {card.imageUrl ? (
                       <Image
@@ -334,17 +333,20 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
                     ) : (
                       <div className="h-full w-full bg-muted/50" />
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
                   </div>
 
-                  {/* Content */}
-                  <div className="relative z-10 p-8">
-                    <div className="mb-4 h-1 w-12 rounded-full bg-primary transition-all group-hover:w-20" />
-                    <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-primary-foreground/90 transition-colors">{card.title}</h3>
-                    <p className="text-white/80 line-clamp-2 mb-4">{card.description}</p>
-                    <span className="inline-flex items-center text-sm font-semibold text-white/90 group-hover:text-primary-foreground group-hover:translate-x-1 transition-all">
-                      Discover <ArrowRight className="ml-2 h-4 w-4" />
-                    </span>
+                  <div className="relative z-10 p-8 space-y-4">
+                    <div className="h-1.5 w-12 rounded-full bg-primary/80 transition-all group-hover:w-20 group-hover:bg-primary" />
+                    <div>
+                      <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-primary-foreground transition-colors">{card.title}</h3>
+                      <p className="text-white/80 line-clamp-2 leading-relaxed">{card.description}</p>
+                    </div>
+                    <div className="pt-2">
+                      <span className="inline-flex items-center text-sm font-bold text-white group-hover:underline decoration-2 underline-offset-4 transition-all">
+                        Explore Now <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                      </span>
+                    </div>
                   </div>
                 </Link>
               ))}
@@ -353,19 +355,16 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
         </section>
       )}
 
-      {/* Curated Collections (Glassmorphism Cards) */}
+      {/* Curated Collections */}
       {curatedCollections.length > 0 && (
-        <section className="py-24 relative overflow-hidden">
-          {/* Subtle bg blob */}
-          <div className="absolute top-1/2 left-1/2 -z-10 h-[800px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/5 blur-[100px]" />
-
+        <section className="py-24 relative overflow-hidden bg-muted/20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
-              <div className="max-w-2xl">
-                <h2 className="text-3xl font-headline font-bold sm:text-4xl">Featured Collections</h2>
-                <p className="mt-4 text-lg text-muted-foreground">Curated experiences handpicked for your student life.</p>
+              <div className="max-w-2xl space-y-2">
+                <h2 className="text-3xl font-headline font-bold sm:text-4xl text-foreground">Curated Collections</h2>
+                <p className="text-lg text-muted-foreground">Handpicked experiences tailored for your student lifestyle.</p>
               </div>
-              <Button variant="ghost" className="hidden md:flex gap-2">View All Collection <ArrowRight className="h-4 w-4" /></Button>
+              <Button variant="ghost" className="hidden md:flex gap-2 text-primary hover:text-primary hover:bg-primary/10">View All <ArrowRight className="h-4 w-4" /></Button>
             </div>
 
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -373,28 +372,31 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
                 <Link
                   href={collection.href || '#'}
                   key={index}
-                  className="group flex flex-col overflow-hidden rounded-2xl glass transition-all hover:shadow-xl hover:border-primary/30"
+                  className="group flex flex-col overflow-hidden rounded-3xl bg-card border shadow-sm transition-all hover:shadow-xl hover:border-primary/30"
                 >
-                  <div className="relative h-56 w-full overflow-hidden">
+                  <div className="relative h-60 w-full overflow-hidden">
                     {collection.imageUrl ? (
                       <Image
                         src={collection.imageUrl}
                         alt={collection.title}
                         fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        className="object-cover transition-transform duration-700 group-hover:scale-110"
                       />
                     ) : (
                       <div className="h-full w-full bg-muted flex items-center justify-center">
                         <Store className="h-12 w-12 text-muted-foreground/30" />
                       </div>
                     )}
+                    <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                      Featured
+                    </div>
                   </div>
                   <div className="p-6 flex-1 flex flex-col">
                     <h3 className="text-xl font-bold group-hover:text-primary transition-colors">{collection.title}</h3>
-                    <p className="mt-2 text-muted-foreground text-sm flex-1">{collection.description}</p>
-                    <div className="mt-4 pt-4 border-t border-border/50 flex items-center justify-between text-sm font-medium">
-                      <span className="text-secondary">Premium Collection</span>
-                      <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary -translate-x-2 group-hover:translate-x-0 opacity-0 group-hover:opacity-100 transition-all" />
+                    <p className="mt-2 text-muted-foreground text-sm flex-1 leading-relaxed">{collection.description}</p>
+                    <div className="mt-4 pt-4 border-t flex items-center justify-between text-sm font-semibold">
+                      <span className="text-secondary group-hover:underline">Explore Collection</span>
+                      <ArrowRight className="h-4 w-4 text-primary -translate-x-2 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
                     </div>
                   </div>
                 </Link>
@@ -404,45 +406,51 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
         </section>
       )}
 
-      {/* Primary Value Prop: Verified Housing */}
-      <section className="py-24 bg-muted/20">
+      {/* Verified Housing Section */}
+      <section className="py-24 bg-background">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div className="order-2 lg:order-1 relative">
-              {/* Abstract graphic or Placeholder for robust image */}
-              <div className="relative aspect-square rounded-3xl overflow-hidden glass-card p-2 shadow-2xl">
-                <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-accent/10 -z-10" />
-                {/* Replace with actual high quality housing image if available */}
-                <div className="h-full w-full rounded-2xl bg-muted/50 border border-border/50 overflow-hidden relative">
-                  <div className="absolute inset-0 bg-grid-slate-200 [mask-image:linear-gradient(0deg,white,transparent)] dark:bg-grid-slate-800" />
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
-                    <MapPin className="h-16 w-16 text-primary mx-auto mb-4" />
-                    <p className="font-bold text-lg">Verified Locations</p>
+            <div className="order-2 lg:order-1 relative px-4 sm:px-0">
+              <div className="relative aspect-square rounded-[2.5rem] overflow-hidden bg-gradient-to-tr from-primary/20 to-accent/20 p-2 sm:p-4 shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-500">
+                <div className="h-full w-full rounded-[2rem] bg-card border border-border overflow-hidden relative group">
+                  <div className="absolute inset-0 bg-[url('/patterns/map-grid.svg')] opacity-20" />
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center z-10">
+                    <div className="h-24 w-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                      <MapPin className="h-12 w-12 text-primary" />
+                    </div>
+                    <p className="font-bold text-2xl">Verified Locations</p>
+                    <p className="text-sm text-muted-foreground mt-2">Across 5+ Cities</p>
                   </div>
                 </div>
                 {/* Stats overlay */}
-                <div className="absolute bottom-8 right-8 bg-background/90 backdrop-blur p-4 rounded-xl shadow-lg border border-border">
-                  <p className="text-2xl font-bold text-foreground">100%</p>
-                  <p className="text-xs text-muted-foreground">Verified Listings</p>
+                <div className="absolute bottom-8 right-8 bg-foreground text-background p-5 rounded-2xl shadow-xl z-20">
+                  <p className="text-3xl font-extrabold text-primary-foreground">100%</p>
+                  <p className="text-xs font-semibold opacity-80">Physically Verified</p>
                 </div>
               </div>
             </div>
-            <div className="order-1 lg:order-2 space-y-6">
-              <div className="inline-flex items-center gap-2 rounded-full bg-secondary/10 px-3 py-1 text-xs font-semibold uppercase text-secondary">
-                <ShieldCheck className="h-3.5 w-3.5" /> Trusted Housing
+
+            <div className="order-1 lg:order-2 space-y-8">
+              <div className="space-y-4">
+                <Badge className="bg-green-100 text-green-700 hover:bg-green-200 border-green-200 px-3 py-1">
+                  <ShieldCheck className="h-3.5 w-3.5 mr-1" /> Trusted Housing
+                </Badge>
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-headline font-bold leading-tight">
+                  Book your perfect stay <br className="hidden lg:block" /> with confidence.
+                </h2>
+                <p className="text-lg text-muted-foreground leading-relaxed">
+                  Say goodbye to uncertain PG hunts. UniNest verifies every listing, owner, and amenity. Compare commute times, check curfew policies, and read genuine reviews from students just like you.
+                </p>
               </div>
-              <h2 className="text-3xl font-headline font-bold sm:text-4xl lg:text-5xl">Book your perfect stay with confidence.</h2>
-              <p className="text-lg text-muted-foreground leading-relaxed">
-                Say goodbye to uncertain PG hunts. UniNest verifies every listing, owner, and amenity. Compare commute times, check curfew policies, and read genuine reviews from students just like you.
-              </p>
-              <ul className="space-y-4 pt-4">
+
+              <ul className="space-y-4">
                 {[
                   "100% Verified Owners & Listings",
                   "Transparent Pricing & No Hidden Fees",
                   "Student Reviews & Safety Badges",
                   "Direct Chat with Landlords"
                 ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3">
+                  <li key={i} className="flex items-center gap-3 p-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors">
                     <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-900/30">
                       <ArrowRight className="h-3 w-3" />
                     </div>
@@ -450,11 +458,12 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
                   </li>
                 ))}
               </ul>
-              <div className="pt-6 flex gap-4">
-                <Button size="lg" className="rounded-xl" asChild>
-                  <Link href="/marketplace?category=Hostel">Find a PG</Link>
+
+              <div className="pt-4 flex flex-col sm:flex-row gap-4">
+                <Button size="lg" className="h-12 rounded-xl text-base shadow-lg shadow-primary/20" asChild>
+                  <Link href="/marketplace?category=Hostel">Find a PG Now</Link>
                 </Button>
-                <Button size="lg" variant="outline" className="rounded-xl" asChild>
+                <Button size="lg" variant="outline" className="h-12 rounded-xl text-base" asChild>
                   <Link href="/hostels">Explore Hostels</Link>
                 </Button>
               </div>
@@ -463,35 +472,36 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
         </div>
       </section>
 
-      {/* Secondary Value Prop: Internships & Competitions */}
-      <section className="py-24">
+      {/* Internships & Competitions Section */}
+      <section className="py-24 bg-muted/30 border-t">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl text-center mb-16">
+          <div className="mx-auto max-w-3xl text-center mb-16 space-y-4">
             <h2 className="text-3xl font-headline font-bold text-foreground sm:text-4xl">Accelerate your career</h2>
-            <p className="mt-4 text-lg text-muted-foreground">From internships at top startups to national-level hackathons, find opportunities that match your ambition.</p>
+            <p className="text-lg text-muted-foreground">From internships at top startups to national-level hackathons, find opportunities that match your ambition.</p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
             {/* Internship Card */}
-            <Card className="overflow-hidden border-none bg-muted/30 dark:bg-muted/10">
+            <Card className="group overflow-hidden border-none bg-background shadow-lg hover:shadow-2xl transition-all hover:-translate-y-1 rounded-3xl">
               <CardContent className="p-0">
                 <div className="grid lg:grid-cols-2 h-full">
-                  <div className="p-8 lg:p-12 flex flex-col justify-center space-y-6">
-                    <div className="size-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center dark:bg-purple-900/20">
-                      <Users className="size-6" />
+                  <div className="p-8 lg:p-12 flex flex-col justify-center space-y-6 order-2 lg:order-1">
+                    <div className="size-14 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center dark:bg-purple-900/20 shadow-inner">
+                      <Users className="size-7" />
                     </div>
-                    <h3 className="text-2xl font-bold">Internship Hub</h3>
-                    <p className="text-muted-foreground">
-                      Find verified roles with mentorship. Filter by stipend, remote options, and skill requirements.
-                    </p>
-                    <Button variant="link" className="w-fit p-0 h-auto font-semibold text-purple-600" asChild>
+                    <div>
+                      <h3 className="text-2xl font-bold mb-2">Internship Hub</h3>
+                      <p className="text-muted-foreground leading-relaxed">
+                        Find verified roles with mentorship. Filter by stipend, remote options, and skill requirements.
+                      </p>
+                    </div>
+                    <Button variant="ghost" className="w-fit p-0 h-auto font-bold text-purple-600 hover:text-purple-700 hover:bg-transparent group-hover:translate-x-2 transition-transform" asChild>
                       <Link href="/workspace/internships">Browse Internships <ArrowRight className="ml-1 h-4 w-4" /></Link>
                     </Button>
                   </div>
-                  <div className="relative h-64 lg:h-auto bg-purple-50 dark:bg-purple-900/5">
-                    {/* Decorative element or image */}
-                    <div className="absolute inset-4 rounded-xl border-dashed border-2 border-purple-200 dark:border-purple-800 flex items-center justify-center">
-                      <span className="text-purple-300 font-bold text-6xl opacity-20">JOB</span>
+                  <div className="relative h-48 lg:h-auto bg-purple-50 dark:bg-purple-900/5 order-1 lg:order-2">
+                    <div className="absolute inset-4 rounded-xl border-2 border-dashed border-purple-200 dark:border-purple-800 flex items-center justify-center">
+                      <Store className="size-16 text-purple-200" />
                     </div>
                   </div>
                 </div>
@@ -499,25 +509,26 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
             </Card>
 
             {/* Competition Card */}
-            <Card className="overflow-hidden border-none bg-muted/30 dark:bg-muted/10">
+            <Card className="group overflow-hidden border-none bg-background shadow-lg hover:shadow-2xl transition-all hover:-translate-y-1 rounded-3xl">
               <CardContent className="p-0">
                 <div className="grid lg:grid-cols-2 h-full">
-                  <div className="p-8 lg:p-12 flex flex-col justify-center space-y-6">
-                    <div className="size-12 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center dark:bg-orange-900/20">
-                      <Star className="size-6" />
+                  <div className="p-8 lg:p-12 flex flex-col justify-center space-y-6 order-2 lg:order-1">
+                    <div className="size-14 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center dark:bg-orange-900/20 shadow-inner">
+                      <Star className="size-7" />
                     </div>
-                    <h3 className="text-2xl font-bold">Competition Arena</h3>
-                    <p className="text-muted-foreground">
-                      Join hackathons and leagues. Form teams, track prizes, and earn certificates for your profile.
-                    </p>
-                    <Button variant="link" className="w-fit p-0 h-auto font-semibold text-orange-600" asChild>
+                    <div>
+                      <h3 className="text-2xl font-bold mb-2">Competition Arena</h3>
+                      <p className="text-muted-foreground leading-relaxed">
+                        Join hackathons and leagues. Form teams, track prizes, and earn certificates for your profile.
+                      </p>
+                    </div>
+                    <Button variant="ghost" className="w-fit p-0 h-auto font-bold text-orange-600 hover:text-orange-700 hover:bg-transparent group-hover:translate-x-2 transition-transform" asChild>
                       <Link href="/workspace/competitions">View Challenges <ArrowRight className="ml-1 h-4 w-4" /></Link>
                     </Button>
                   </div>
-                  <div className="relative h-64 lg:h-auto bg-orange-50 dark:bg-orange-900/5">
-                    {/* Decorative element or image */}
-                    <div className="absolute inset-4 rounded-xl border-dashed border-2 border-orange-200 dark:border-orange-800 flex items-center justify-center">
-                      <span className="text-orange-300 font-bold text-6xl opacity-20">WIN</span>
+                  <div className="relative h-48 lg:h-auto bg-orange-50 dark:bg-orange-900/5 order-1 lg:order-2">
+                    <div className="absolute inset-4 rounded-xl border-2 border-dashed border-orange-200 dark:border-orange-800 flex items-center justify-center">
+                      <Star className="size-16 text-orange-200" />
                     </div>
                   </div>
                 </div>
@@ -527,58 +538,26 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
         </div>
       </section>
 
-      {/* Testimonials */}
-      {testimonials.length > 0 && (
-        <section className="py-24 bg-background border-t border-border/50">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl font-headline font-bold">Student Stories</h2>
-              <p className="mt-4 text-muted-foreground">Join 10,000+ students already using UniNest.</p>
-            </div>
-
-            <Carousel opts={{ align: 'start', loop: true }} plugins={[testimonialAutoplay]} className="w-full">
-              <CarouselContent className="-ml-4">
-                {testimonials.map((t, i) => (
-                  <CarouselItem key={i} className="pl-4 md:basis-1/2 lg:basis-1/3">
-                    <div className="h-full rounded-2xl border border-border bg-card p-8 shadow-sm transition-shadow hover:shadow-md">
-                      <Quote className="h-8 w-8 text-primary/20 mb-6" />
-                      <p className="text-lg font-medium leading-relaxed mb-6">"{t.quote}"</p>
-                      <div className="flex items-center gap-4">
-                        <Avatar>
-                          {t.avatar ? <AvatarImage src={t.avatar} /> : <AvatarFallback>{getInitials(t.name)}</AvatarFallback>}
-                        </Avatar>
-                        <div>
-                          <div className="font-bold text-sm text-foreground">{t.name}</div>
-                          <div className="text-xs text-muted-foreground">{t.school}</div>
-                        </div>
-                      </div>
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <div className="mt-8 flex justify-center gap-2">
-                <CarouselPrevious className="static translate-y-0" />
-                <CarouselNext className="static translate-y-0" />
-              </div>
-            </Carousel>
-          </div>
-        </section>
-      )}
-
       {/* CTA Section */}
-      <section className="relative overflow-hidden py-24">
+      <section className="relative overflow-hidden py-24 sm:py-32">
         <div className="absolute inset-0 bg-primary -z-20" />
         <div className="absolute inset-0 bg-[url('/patterns/grid.svg')] opacity-10 -z-10" />
+        <div className="absolute -top-40 -right-40 h-[500px] w-[500px] bg-white/10 blur-[100px] rounded-full" />
+        <div className="absolute -bottom-40 -left-40 h-[500px] w-[500px] bg-secondary/20 blur-[100px] rounded-full" />
+
         <div className="mx-auto max-w-4xl px-4 text-center">
-          <h2 className="text-3xl font-headline font-bold text-white sm:text-5xl">Ready to upgrade your campus life?</h2>
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-primary-foreground/80">
+          <Badge className="bg-white/20 text-white hover:bg-white/30 border-none backdrop-blur-md mb-6 px-4 py-1.5 text-sm font-medium">✨ Join the Revolution</Badge>
+          <h2 className="text-4xl font-headline font-extrabold text-white sm:text-5xl lg:text-6xl tracking-tight">
+            Ready to upgrade your <br /> campus life?
+          </h2>
+          <p className="mx-auto mt-8 max-w-2xl text-xl text-primary-foreground/90 leading-relaxed font-light">
             Join the community today. Access exclusive internships, find verified housing, and connect with peers across India.
           </p>
-          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Button size="lg" variant="secondary" className="h-14 px-8 text-lg font-semibold shadow-xl" asChild>
+          <div className="mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <Button size="lg" variant="secondary" className="h-16 px-10 text-lg font-bold rounded-2xl shadow-2xl hover:scale-105 transition-transform" asChild>
               <Link href="/signup">Get Started for Free</Link>
             </Button>
-            <Button size="lg" variant="outline" className="h-14 px-8 text-lg font-semibold bg-transparent text-white border-white/30 hover:bg-white/10 hover:text-white" asChild>
+            <Button size="lg" variant="outline" className="h-16 px-10 text-lg font-bold rounded-2xl bg-transparent text-white border-white/40 hover:bg-white/10 hover:text-white hover:border-white transition-all" asChild>
               <Link href="/about">Learn More</Link>
             </Button>
           </div>

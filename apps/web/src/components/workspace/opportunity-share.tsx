@@ -16,6 +16,7 @@ type OpportunityShareButtonProps = {
   buttonVariant?: React.ComponentProps<typeof Button>['variant'];
   buttonSize?: React.ComponentProps<typeof Button>['size'];
   className?: string;
+  customContent?: React.ReactNode;
 };
 
 export function OpportunityShareButton({
@@ -26,6 +27,7 @@ export function OpportunityShareButton({
   buttonVariant = 'outline',
   buttonSize = 'sm',
   className,
+  customContent,
 }: OpportunityShareButtonProps) {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
@@ -97,14 +99,18 @@ export function OpportunityShareButton({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          size={buttonSize}
-          variant={buttonVariant}
-          className={cn('justify-center gap-2 rounded-full', className)}
-        >
-          <Share2 className="size-4" />
-          {buttonLabel}
-        </Button>
+        {customContent ? (
+          customContent
+        ) : (
+          <Button
+            size={buttonSize}
+            variant={buttonVariant}
+            className={cn('justify-center gap-2 rounded-full', className)}
+          >
+            <Share2 className="size-4" />
+            {buttonLabel}
+          </Button>
+        )}
       </PopoverTrigger>
       <PopoverContent align="end" className="w-[320px] space-y-4 rounded-2xl border bg-card p-5 shadow-xl">
         <div className="flex items-start justify-between gap-4">

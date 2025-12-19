@@ -14,6 +14,8 @@ import {
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Logo } from '@/components/icons';
+import { useBrandingAssets } from '@/components/branding/branding-provider';
+import Image from 'next/image';
 import { useAuth } from '@/hooks/use-auth';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
@@ -31,6 +33,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
   const isMobile = useIsMobile();
   const pathname = usePathname();
   const router = useRouter();
+  const { assets } = useBrandingAssets();
 
   // Redirect admin users away from the main site.
   useEffect(() => {
@@ -137,10 +140,16 @@ export default function MainLayout({ children }: { children: ReactNode }) {
         <Sidebar className="hidden lg:flex flex-col">
           <SidebarHeader>
             <Link href="/" className="flex items-center gap-2">
-              <div className="p-2 bg-gradient-to-br from-primary to-accent rounded-xl shadow-lg shadow-primary/20">
-                <Logo className="size-6 text-white" />
-              </div>
-              <h1 className="text-xl font-headline font-bold">UniNest</h1>
+              {assets.logoUrl ? (
+                <div className="relative size-10 overflow-hidden">
+                  <Image src={assets.logoUrl} alt={assets.brandName || 'Logo'} fill className="object-contain" />
+                </div>
+              ) : (
+                <div className="p-2 bg-gradient-to-br from-primary to-accent rounded-xl shadow-lg shadow-primary/20">
+                  <Logo className="size-6 text-white" />
+                </div>
+              )}
+              <h1 className="text-xl font-headline font-bold">{assets.brandName || 'UniNest'}</h1>
             </Link>
           </SidebarHeader>
           <SidebarContent>
@@ -182,8 +191,14 @@ export default function MainLayout({ children }: { children: ReactNode }) {
             <div className="flex items-center gap-1 lg:hidden">
               <SidebarTrigger className="-ml-1" />
               <Link href="/" className="flex items-center gap-2">
-                <Logo className="size-7 text-primary" />
-                <h1 className="text-lg font-semibold">UniNest</h1>
+                {assets.logoUrl ? (
+                  <div className="relative size-8 overflow-hidden">
+                    <Image src={assets.logoUrl} alt={assets.brandName || 'Logo'} fill className="object-contain" />
+                  </div>
+                ) : (
+                  <Logo className="size-7 text-primary" />
+                )}
+                <h1 className="text-lg font-semibold">{assets.brandName || 'UniNest'}</h1>
               </Link>
             </div>
             <div className="flex-1" />

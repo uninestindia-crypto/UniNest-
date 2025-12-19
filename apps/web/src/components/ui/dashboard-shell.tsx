@@ -11,6 +11,8 @@ import {
     SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { Logo } from "@/components/icons"
+import { useBrandingAssets } from "@/components/branding/branding-provider"
+import Image from "next/image"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 
@@ -33,12 +35,20 @@ export function DashboardShell({
     logoHref = "/",
     className,
 }: DashboardShellProps) {
+    const { assets } = useBrandingAssets();
+
     return (
         <SidebarProvider>
             <Sidebar className="border-r border-border/50 bg-card">
                 <SidebarHeader className="h-16 flex items-center justify-center border-b border-border/50 px-6">
                     <div className="flex items-center gap-3 w-full">
-                        <Logo className="size-8 text-primary" />
+                        {assets.logoUrl ? (
+                            <div className="relative size-8 overflow-hidden">
+                                <Image src={assets.logoUrl} alt={assets.brandName || 'Logo'} fill className="object-contain" />
+                            </div>
+                        ) : (
+                            <Logo className="size-8 text-primary" />
+                        )}
                         <span className="font-headline font-bold text-lg tracking-tight text-foreground/90">
                             {title}
                         </span>
