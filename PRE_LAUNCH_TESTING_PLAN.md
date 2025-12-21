@@ -6,6 +6,19 @@
 
 ---
 
+## ✅ Testing Infrastructure Setup Complete
+
+| Component | Status | Location |
+|-----------|--------|----------|
+| RLS Security Tests | ✅ Created | `scripts/rls_security_test.sql` |
+| Sentry Error Tracking | ✅ Config created | `sentry.*.config.ts` + `docs/SENTRY_SETUP.md` |
+| FTUE Test Script | ✅ Created | `docs/FTUE_TEST_SCRIPT.md` |
+| Error Boundaries | ✅ Integrated | `src/app/error.tsx`, `src/app/global-error.tsx` |
+
+**Next Step:** Run `pnpm add @sentry/nextjs` in `apps/web` and follow `docs/SENTRY_SETUP.md`
+
+---
+
 ## Executive Summary
 
 This is a battle-tested testing checklist for launching your app without embarrassing failures. Every item below has caused a real startup to lose users, money, or credibility. Don't skip the hard parts.

@@ -1,10 +1,11 @@
 
-'use client' 
+'use client'
 
 import { useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Frown } from 'lucide-react'
 import Link from 'next/link'
+import * as Sentry from "@sentry/nextjs"
 
 export default function Error({
   error,
@@ -14,7 +15,18 @@ export default function Error({
   reset: () => void
 }) {
   useEffect(() => {
-    // Log the error to an error reporting service
+    // Report error to Sentry with context
+    Sentry.captureException(error, {
+      tags: {
+        errorType: "route-error",
+        digest: error.digest,
+      },
+      extra: {
+        message: error.message,
+        stack: error.stack,
+      },
+    });
+    // Also log to console for local debugging
     console.error(error)
   }, [error])
 
