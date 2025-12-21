@@ -137,17 +137,21 @@ export default function SignupForm() {
       return;
     }
 
-    const role = values.userType;
+    // SECURITY: Only allow 'student' or 'vendor' roles during signup
+    // Admin role can ONLY be assigned through protected admin endpoints
+    const allowedRoles = ['student', 'vendor'] as const;
+    const role = allowedRoles.includes(values.userType) ? values.userType : 'student';
+
     const generatedHandle = await generateUniqueHandle(values);
     const { data, error } = await supabase.auth.signUp({
       email: values.email,
       password: values.password,
       options: {
         data: {
-          role: role,
+          role: role, // Validated to only be 'student' or 'vendor'
           full_name: values.fullName,
           handle: generatedHandle,
-          vendor_categories: role === 'vendor' ? values.vendorCategories.map(c => c.replace('-', ' ')) : undefined
+          vendor_categories: role === 'vendor' ? values.vendorCategories?.map(c => c.replace('-', ' ')) : undefined
         }
       }
     });
