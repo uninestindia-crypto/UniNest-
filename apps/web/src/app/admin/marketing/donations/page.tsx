@@ -8,9 +8,9 @@ export const metadata: Metadata = {
 };
 
 const fallbackImpact = {
-  studentsHelped: 4521,
-  notesShared: 12300,
-  librariesDigitized: 2,
+  studentsHelped: 0,
+  notesShared: 0,
+  librariesDigitized: 0,
 };
 
 const isMissingTableError = (error: unknown) =>

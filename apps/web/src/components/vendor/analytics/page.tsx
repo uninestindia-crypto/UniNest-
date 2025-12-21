@@ -38,21 +38,25 @@ export default function VendorAnalyticsContent({ userName, stats }: VendorAnalyt
             title="Total Listings"
             value={stats.products.toString()}
             icon={Package}
+            change=""
           />
           <StatsCard
             title="Total Orders"
             value={stats.orders.toString()}
             icon={ShoppingCart}
+            change=""
           />
           <StatsCard
             title="Total Revenue"
             value={`₹${stats.revenue.toLocaleString()}`}
             icon={Wallet}
+            change=""
           />
           <StatsCard
             title="Average Rating"
             value={stats.rating > 0 ? stats.rating.toFixed(1) : 'N/A'}
             icon={Star}
+            change=""
           />
         </section>
       )}
