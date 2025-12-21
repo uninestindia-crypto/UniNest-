@@ -16,6 +16,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { defaultHomePosterConfig } from '@/lib/home-poster';
 import type { HomePosterConfig, HomeStat, HomeTestimonial } from '@/lib/types';
