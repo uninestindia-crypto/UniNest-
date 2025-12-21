@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 
 /**
  * SECURITY: This endpoint is protected by ADMIN_SETUP_SECRET environment variable.
@@ -8,6 +9,17 @@ import { NextRequest, NextResponse } from 'next/server';
  * unless called by an existing admin.
  */
 export async function POST(request: NextRequest) {
+    // SECURITY: Rate limit this sensitive endpoint
+    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+    const rateLimitResult = checkRateLimit(`admin-promote:${ip}`, RATE_LIMITS.ADMIN_SETUP);
+
+    if (!rateLimitResult.success) {
+        return NextResponse.json(
+            { error: 'Too many attempts. Please try again later.' },
+            { status: 429, headers: { 'Retry-After': String(Math.ceil(rateLimitResult.resetIn / 1000)) } }
+        );
+    }
+
     const body = await request.json();
     const { email, setupSecret } = body;
 
