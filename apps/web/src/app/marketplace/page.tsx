@@ -31,7 +31,9 @@ async function getProducts(category?: string) {
     query = query.not('category', 'in', '("Hostel Room", "Library Seat")');
   }
 
-  const { data, error } = await query.order('created_at', { ascending: false });
+  const { data, error } = await query
+    .eq('status', 'active')
+    .order('created_at', { ascending: false });
 
   if (error) {
     console.error('Error fetching products:', error);

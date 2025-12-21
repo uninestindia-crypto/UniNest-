@@ -19,7 +19,10 @@
 .DS_Store
 *.pem
 
-# Local Environment Variables
+# Local Environment Variables - CRITICAL: Never commit secrets
+.env
+.env.*
+!.env.example
 .env.local
 .env.development.local
 .env.test.local

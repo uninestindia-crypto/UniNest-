@@ -1,14 +1,23 @@
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import Razorpay from 'razorpay';
+import { createClient } from '@/lib/supabase/server';
 
 const orderSchema = z.object({
   amount: z.number().positive(),
   currency: z.string().length(3),
 });
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  // SECURITY: Verify user is authenticated
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+  }
+
   const keyId = process.env.RAZORPAY_KEY_ID;
   const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
@@ -26,26 +35,29 @@ export async function POST(request: Request) {
     }
 
     const { amount, currency } = parsedBody.data;
-    
+
     const instance = new Razorpay({
-        key_id: keyId,
-        key_secret: keySecret,
+      key_id: keyId,
+      key_secret: keySecret,
     });
 
     const options = {
       amount, // amount in the smallest currency unit
       currency,
       receipt: `receipt_order_${new Date().getTime()}`,
+      notes: {
+        user_id: user.id, // Track which user created the order
+      },
     };
 
     const order = await instance.orders.create(options);
-    
+
     if (!order) {
-        return NextResponse.json({ error: 'Failed to create Razorpay order.' }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to create Razorpay order.' }, { status: 500 });
     }
 
     return NextResponse.json(order, { status: 200 });
-    
+
   } catch (error: any) {
     console.error('An unexpected error occurred in create-order route:', error);
     // Send back the specific error from Razorpay or a generic one
@@ -53,3 +65,4 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
+
