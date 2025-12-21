@@ -1,6 +1,6 @@
 
 import PageHeader from "@/components/admin/page-header";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@supabase/supabase-js";
 import type { Product, Profile } from "@/lib/types";
 import ListingsTable from "@/components/admin/listings/table";
 
@@ -11,9 +11,19 @@ type ProductWithProfile = Product & {
     profiles: Pick<Profile, 'full_name' | 'handle'> | null;
 };
 
+// Use service role key to bypass RLS and fetch ALL products for admin review
+const getSupabaseAdmin = () => {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+        throw new Error('Supabase service role key is not configured.');
+    }
+    return createClient(supabaseUrl, supabaseServiceKey);
+}
 
 export default async function AdminListingsPage() {
-    const supabase = createClient();
+    const supabase = getSupabaseAdmin();
 
     // Fetch ALL products for admin review (not just active ones)
     // This allows admins to see pending, active, and rejected listings
