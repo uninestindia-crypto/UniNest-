@@ -1,7 +1,30 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/openai@v4.24.1/helper.ts"
 
-const GROQ_API_KEY = Deno.env.get('GROQ_API_KEY')
+/**
+ * Get the Groq API Key. 
+ * Supports rotation by checking GROQ_API_KEYS (comma-separated list) 
+ * and falling back to GROQ_API_KEY if not found.
+ */
+function getApiKey(): string | undefined {
+    // 1. Try to get keys from indexed variables (rotation support)
+    const keys: string[] = [];
+    for (let i = 1; i <= 10; i++) {
+        const key = Deno.env.get(`GROQ_API_KEY_${i}`);
+        if (key && key.trim().length > 0) {
+            keys.push(key.trim());
+        }
+    }
+
+    if (keys.length > 0) {
+        // Random selection for rotation
+        const randomIndex = Math.floor(Math.random() * keys.length);
+        return keys[randomIndex];
+    }
+
+    // 2. Fallback to the legacy single key variable
+    return Deno.env.get('GROQ_API_KEY');
+}
 
 serve(async (req) => {
     // Handle CORS
@@ -16,6 +39,12 @@ serve(async (req) => {
 
     try {
         const { messages } = await req.json()
+
+        const GROQ_API_KEY = getApiKey();
+
+        if (!GROQ_API_KEY) {
+            throw new Error('GROQ_API_KEY or GROQ_API_KEYS is not set');
+        }
 
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',

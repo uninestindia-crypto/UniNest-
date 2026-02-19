@@ -4,44 +4,29 @@ import { useTheme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/services/supabase';
+import { ordersApi, productsApi } from '@/services/supabase';
 
 // Helper to fetch stats
 const fetchVendorStats = async (userId: string) => {
-    // 1. Total Sales
-    const { data: orders, error: ordersError } = await supabase
-        .from('orders')
-        .select('total_amount')
-        .eq('vendor_id', userId)
-        .eq('status', 'completed');
+    // 1. Total Sales & Pending Orders
+    const orders = await ordersApi.getVendorOrders(userId);
+    const totalSales = orders
+        .filter(o => o.status === 'completed')
+        .reduce((sum, order) => sum + (order.total_amount || 0), 0);
 
-    const totalSales = orders?.reduce((sum, order) => sum + (order.total_amount || 0), 0) || 0;
+    const pendingCount = orders.filter(o => o.status === 'pending_approval').length;
 
     // 2. Active Listings
-    const { count: listingsCount, error: listingsError } = await supabase
-        .from('products')
-        .select('*', { count: 'exact', head: true })
-        .eq('seller_id', userId)
-        .eq('status', 'active');
+    const products = await productsApi.getSellerProducts(userId);
+    const listingsCount = products.filter(p => p.status === 'active').length;
 
-    // 3. Pending Orders
-    const { count: pendingCount, error: pendingError } = await supabase
-        .from('orders')
-        .select('*', { count: 'exact', head: true })
-        .eq('vendor_id', userId)
-        .eq('status', 'pending_approval'); // If you use that status
-
-    if (ordersError || listingsError || pendingError) {
-        throw new Error('Failed to fetch stats');
-    }
-
-    return { totalSales, listingsCount: listingsCount || 0, pendingCount: pendingCount || 0 };
+    return { totalSales, listingsCount, pendingCount };
 };
 
 export default function VendorDashboard() {
     const { theme } = useTheme();
     const router = useRouter();
-    const { user } = useAuth();
+    const { user, profile } = useAuth();
 
     const { data: stats, isLoading, refetch } = useQuery({
         queryKey: ['vendor-stats', user?.id],
@@ -69,7 +54,7 @@ export default function VendorDashboard() {
             icon: 'open-outline',
             label: 'Live Preview',
             description: 'See how your store looks to others',
-            route: `/profile/${user?.user_metadata?.handle || ''}`, // Assuming profile route works
+            route: `/profile/${profile?.handle || ''}`, // Fixed: use profile.handle
             color: '#f59e0b',
         },
     ];

@@ -142,7 +142,9 @@ function AuthGate({ children }: { children: React.ReactNode }) {
         }
 
         // Hide splash screen once we know auth state
-        SplashScreen.hideAsync();
+        if (!isLoading) {
+            SplashScreen.hideAsync();
+        }
     }, [user, isLoading, segments, router]);
 
     if (isLoading) {
