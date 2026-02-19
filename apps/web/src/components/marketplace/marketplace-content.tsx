@@ -462,11 +462,11 @@ export default function MarketplaceContent({ initialProducts }: MarketplaceConte
             </div>
 
             <div className="space-y-4">
-              <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-6xl lg:text-7xl leading-[1.1]">
-                Your Campus <br />
+              <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-6xl lg:text-7xl leading-[1.1] text-balance">
+                Your Campus <br className="hidden sm:block" />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-200 via-cyan-200 to-white animate-gradient-x">Essentials Hub</span>
               </h1>
-              <p className="max-w-xl text-lg text-blue-100/90 md:text-xl leading-relaxed">
+              <p className="max-w-xl text-lg text-blue-100/90 md:text-xl leading-relaxed text-balance">
                 Buy, sell, and discover everything you need for student life.
                 Verified listings from your campus community.
               </p>
@@ -491,8 +491,8 @@ export default function MarketplaceContent({ initialProducts }: MarketplaceConte
               <div className="relative">
                 <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-6 w-6 text-white/70" />
                 <Input
-                  placeholder="What are you looking for?"
-                  className="h-16 w-full rounded-2xl border-0 bg-transparent pl-14 text-lg text-white placeholder:text-white/50 focus-visible:ring-0 focus-visible:bg-white/5 transition-all"
+                  placeholder="Search products..."
+                  className="h-16 w-full rounded-2xl border-0 bg-transparent pl-14 text-base sm:text-lg text-white placeholder:text-white/50 focus-visible:ring-0 focus-visible:bg-white/5 transition-all"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />

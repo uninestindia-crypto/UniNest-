@@ -215,9 +215,9 @@ export default function MainLayout({ children }: { children: ReactNode }) {
             </div>
           </header>
           <main className={cn(
-            "flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 lg:p-8",
+            "flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 lg:p-8 w-full max-w-full",
             // Remove padding on mobile home for full-bleed feel if desired, but general padding needed for other pages
-            isMobile && isHomePage && "p-0 py-4",
+            isMobile && isHomePage && "px-0 py-4",
             // Ensure bottom padding for nav bar on mobile/tablet (anything < lg)
             "pb-28 lg:pb-8"
           )}>

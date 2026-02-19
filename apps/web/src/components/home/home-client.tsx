@@ -192,7 +192,7 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
                       </div>
 
                       <div className="space-y-4">
-                        <h1 className="text-4xl sm:text-5xl lg:text-7xl font-headline font-extrabold leading-[1.1] tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-foreground to-foreground/70 dark:from-white dark:to-white/70">
+                        <h1 className="text-3xl sm:text-5xl lg:text-7xl font-headline font-extrabold leading-[1.1] tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-foreground to-foreground/70 dark:from-white dark:to-white/70 text-balance break-words">
                           {slide.title}
                         </h1>
                         <p className="text-lg sm:text-xl text-muted-foreground max-w-xl leading-relaxed">
@@ -282,7 +282,7 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
       {stats.length > 0 && (
         <section className="border-y bg-muted/30 py-12">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-2 gap-8 md:grid-cols-4 lg:gap-12">
+            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-4 lg:gap-12">
               {stats.map((stat, index) => (
                 <div key={index} className="flex flex-col items-center justify-center text-center sm:items-start sm:text-left transition-transform hover:scale-105 duration-300">
                   <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-sm">
@@ -548,8 +548,8 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
 
         <div className="mx-auto max-w-4xl px-4 text-center">
           <Badge className="bg-white/20 text-white hover:bg-white/30 border-none backdrop-blur-md mb-6 px-4 py-1.5 text-sm font-medium">✨ Join the Revolution</Badge>
-          <h2 className="text-4xl font-headline font-extrabold text-white sm:text-5xl lg:text-6xl tracking-tight">
-            Ready to upgrade your <br /> campus life?
+          <h2 className="text-3xl font-headline font-extrabold text-white sm:text-5xl lg:text-6xl tracking-tight text-balance">
+            Ready to upgrade your <br className="hidden sm:block" /> campus life?
           </h2>
           <p className="mx-auto mt-8 max-w-2xl text-xl text-primary-foreground/90 leading-relaxed font-light">
             Join the community today. Access exclusive internships, find verified housing, and connect with peers across India.
