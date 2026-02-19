@@ -192,7 +192,7 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
                       </div>
 
                       <div className="space-y-4">
-                        <h1 className="text-3xl sm:text-5xl lg:text-7xl font-headline font-extrabold leading-[1.1] tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-foreground to-foreground/70 dark:from-white dark:to-white/70 text-balance break-words max-w-full overflow-hidden">
+                        <h1 className="text-2xl sm:text-5xl lg:text-7xl font-headline font-extrabold leading-[1.1] tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-foreground to-foreground/70 dark:from-white dark:to-white/70 text-balance break-words max-w-full overflow-hidden">
                           {slide.title}
                         </h1>
                         <p className="text-lg sm:text-xl text-muted-foreground max-w-xl leading-relaxed">
@@ -200,15 +200,19 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
                         </p>
                       </div>
 
-                      <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                        <Button asChild size="lg" className="h-14 rounded-full bg-primary px-8 text-base font-bold text-white shadow-xl transition-all hover:-translate-y-1 hover:shadow-2xl active:translate-y-0 text-lg w-full sm:w-auto">
-                          <Link href={slide.buttonLink || '#'}>
-                            <slide.buttonIcon className="mr-2 h-5 w-5 stroke-[3]" /> {slide.buttonText}
-                          </Link>
-                        </Button>
-                        <Button variant="outline" size="lg" className="h-14 rounded-full border-primary/20 bg-background/50 px-8 text-base font-semibold backdrop-blur-sm transition-all hover:bg-primary/5 w-full sm:w-auto">
-                          Know More
-                        </Button>
+                      <div className="flex flex-col sm:flex-row gap-4 pt-4 w-full">
+                        {slide.ctaHref && slide.ctaLabel && (
+                          <Button asChild size="lg" className="h-14 rounded-full bg-primary px-8 text-base font-bold text-white shadow-xl transition-all hover:-translate-y-1 hover:shadow-2xl active:translate-y-0 text-lg w-full sm:w-auto">
+                            <Link href={slide.ctaHref}>
+                              {slide.ctaLabel} <ArrowRight className="ml-2 h-5 w-5" />
+                            </Link>
+                          </Button>
+                        )}
+                        {slide.secondaryCtaHref && slide.secondaryCtaLabel && (
+                          <Button variant="outline" size="lg" className="h-14 rounded-full border-primary/20 bg-background/50 px-8 text-base font-semibold backdrop-blur-sm transition-all hover:bg-primary/5 w-full sm:w-auto" asChild>
+                            <Link href={slide.secondaryCtaHref}>{slide.secondaryCtaLabel}</Link>
+                          </Button>
+                        )}
                       </div>
 
                       <div className="flex items-center gap-4 text-sm text-muted-foreground pt-2">

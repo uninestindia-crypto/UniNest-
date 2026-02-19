@@ -6,20 +6,24 @@
   :root {
     /* Brand Colors - Deep Indigo & Vibrant Coral */
     /* Primary: Deep Indigo #4338CA (Indigo 700) */
-    --primary: 247 74% 50%; /* Adjusted for HSL compatibility */
+    --primary: 247 74% 50%;
+    /* Adjusted for HSL compatibility */
     --primary-foreground: 210 40% 98%;
 
     /* Secondary: Vibrant Coral #F97316 (Orange 500) */
-    --secondary: 24 95% 53%; 
+    --secondary: 24 95% 53%;
     --secondary-foreground: 210 40% 98%;
 
     /* Accent: Sky/Cyan for subtle highlights */
-    --accent: 199 89% 48%; /* #0EA5E9 Sky 500 */
+    --accent: 199 89% 48%;
+    /* #0EA5E9 Sky 500 */
     --accent-foreground: 210 40% 98%;
 
     /* Base Colors - Premium Slate/Gray */
-    --background: 210 40% 98%; /* #F8FAFC - Slate 50 */
-    --foreground: 222 47% 11%; /* #0F172A - Slate 900 */
+    --background: 210 40% 98%;
+    /* #F8FAFC - Slate 50 */
+    --foreground: 222 47% 11%;
+    /* #0F172A - Slate 900 */
 
     /* Surface Colors */
     --card: 0 0% 100%;
@@ -29,28 +33,38 @@
     --popover-foreground: 222 47% 11%;
 
     /* UI Colors */
-    --muted: 210 40% 96.1%; /* Slate 100 */
-    --muted-foreground: 215.4 16.3% 46.9%; /* Slate 500 */
+    --muted: 210 40% 96.1%;
+    /* Slate 100 */
+    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Slate 500 */
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%; /* Slate 200 */
+    --border: 214.3 31.8% 91.4%;
+    /* Slate 200 */
     --input: 214.3 31.8% 91.4%;
-    --ring: 247 74% 50%; /* Match Primary */
+    --ring: 247 74% 50%;
+    /* Match Primary */
 
-    --radius: 0.5rem; /* 8px - Cleaner, sharper compliance */
+    --radius: 0.5rem;
+    /* 8px - Cleaner, sharper compliance */
 
     /* Gradients */
     --primary-start: 247 74% 50%;
-    --primary-end: 260 80% 60%; 
+    --primary-end: 260 80% 60%;
 
     /* Charts (New Palette) */
-    --chart-1: 247 74% 50%; /* Indigo */
-    --chart-2: 24 95% 53%; /* Coral */
-    --chart-3: 199 89% 48%; /* Sky */
-    --chart-4: 160 84% 39%; /* Emerald */
-    --chart-5: 45 93% 47%; /* Amber */
+    --chart-1: 247 74% 50%;
+    /* Indigo */
+    --chart-2: 24 95% 53%;
+    /* Coral */
+    --chart-3: 199 89% 48%;
+    /* Sky */
+    --chart-4: 160 84% 39%;
+    /* Emerald */
+    --chart-5: 45 93% 47%;
+    /* Amber */
 
     /* Safe Areas */
     --safe-area-top: env(safe-area-inset-top, 0px);
@@ -61,26 +75,31 @@
 
   .dark {
     /* Base Colors - Deep Blue/Slate for Dark Mode */
-    --background: 222 47% 11%; /* #0F172A */
+    --background: 222 47% 11%;
+    /* #0F172A */
     --foreground: 210 40% 98%;
 
-    --card: 217 33% 17%; /* #1E293B Slate 800 - distinct card layer */
+    --card: 217 33% 17%;
+    /* #1E293B Slate 800 - distinct card layer */
     --card-foreground: 210 40% 98%;
 
     --popover: 217 33% 17%;
     --popover-foreground: 210 40% 98%;
 
     /* Brand adjustments for dark mode readability */
-    --primary: 247 74% 65%; /* Lighter Indigo */
+    --primary: 247 74% 65%;
+    /* Lighter Indigo */
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 24 95% 60%; /* Lighter Coral */
+    --secondary: 24 95% 60%;
+    /* Lighter Coral */
     --secondary-foreground: 210 40% 98%;
 
     --accent: 199 89% 58%;
     --accent-foreground: 210 40% 98%;
 
-    --muted: 217 33% 20%; /* Slate 800ish */
+    --muted: 217 33% 20%;
+    /* Slate 800ish */
     --muted-foreground: 215 20.2% 65.1%;
 
     --destructive: 0 62.8% 30.6%;
@@ -112,7 +131,7 @@
   }
 
   body {
-    @apply bg-background text-foreground font-body;
+    @apply bg-background text-foreground font-body px-4 sm:px-0;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     padding-top: env(safe-area-inset-top);
