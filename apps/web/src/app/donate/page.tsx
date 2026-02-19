@@ -7,8 +7,9 @@ import { createClient } from '@/lib/supabase/server';
 export const revalidate = 0;
 
 export const metadata: Metadata = {
-  title: 'Support UniNest – Fuel the Future of Students',
-  description: 'Your donation helps UniNest stay alive for your campus. Join the Hall of Heroes and contribute to keep the platform running for students.',
+    title: 'Student Relief & Community Support Fund | UniNest',
+    description: 'Support the Uninest student community. Your contributions power student relief funds, academic grants, and platform maintenance for underprivileged students.',
+    keywords: ['donate to students', 'scholarship support', 'student community fund', 'campus social impact'],
 };
 
 type AggregatedDonor = {
@@ -31,7 +32,7 @@ type DonationWithProfile = {
 
 export default async function DonatePage() {
     const supabase = createClient();
-    
+
     const [donationsResult, goalResult] = await Promise.all([
         supabase
             .from('donations')
@@ -112,7 +113,7 @@ export default async function DonatePage() {
 
     const initialRaisedAmount = donations.reduce((sum, d) => sum + d.amount, 0);
 
-    return <DonateContent 
+    return <DonateContent
         initialDonors={aggregatedDonors as any[] || []}
         initialGoal={goalAmount}
         initialRaised={initialRaisedAmount}

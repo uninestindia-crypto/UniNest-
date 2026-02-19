@@ -5,8 +5,9 @@ import { createClient } from '@/lib/supabase/server';
 import type { Product } from '@/lib/types';
 
 export const metadata: Metadata = {
-  title: 'Marketplace – Buy & Sell Textbooks, Hostel Needs, & More',
-  description: 'Explore the UniNest marketplace to buy and sell textbooks, hostel needs, food mess subscriptions, clothes, and other products from fellow students.',
+  title: 'Student Marketplace | Buy & Sell Books, Furniture & More',
+  description: 'Explore India’s top student marketplace. Buy and sell second-hand textbooks, cycles, electronics, and hostel essentials within your campus community.',
+  keywords: ['student marketplace', 'buy sell books', 'used college supplies', 'student discounts', 'campus classifieds'],
 };
 
 async function getProducts(category?: string) {

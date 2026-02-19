@@ -9,8 +9,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 export const metadata: Metadata = {
-    title: 'Find Verified Hostels & PGs | UniNest',
-    description: 'Discover verified student hostels and PG accommodations. Browse by location, amenities, and price. Book your perfect stay with UniNest.',
+    title: 'Verified Student Hostels & PGs Near You | UniNest',
+    description: 'Find safe, verified student hostels and PG accommodations near your college. Browse by price, amenities (Wi-Fi, AC), and location. Book your perfect stay today.',
+    keywords: ['hostels near me', 'student pg', 'verified hostels', 'luxury student housing', 'pg for students'],
 };
 
 export const revalidate = 60; // Cache for 60 seconds
