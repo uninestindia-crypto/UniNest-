@@ -242,8 +242,8 @@ export default function WorkspaceClient() {
               <Trophy className="w-4 h-4 text-yellow-400" />
               <span>Level Up Your Career</span>
             </div>
-            <h1 className="text-4xl md:text-6xl font-black tracking-tight leading-time">
-              Your Gateway to <br />
+            <h1 className="text-3xl md:text-6xl font-black tracking-tight leading-time text-balance max-w-full overflow-hidden">
+              Your Gateway to <br className="hidden sm:block" />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-400 to-teal-400">Opportunities</span>
             </h1>
             <p className="text-lg text-slate-300 max-w-2xl leading-relaxed">
@@ -251,17 +251,17 @@ export default function WorkspaceClient() {
               Build your portfolio, earn rewards, and get hired.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <div className="relative flex-1 max-w-md">
+            <div className="flex flex-col sm:flex-row gap-4 pt-4 w-full">
+              <div className="relative flex-1 w-full max-w-md">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
                 <Input
-                  placeholder="Search interactions, internships..."
-                  className="bg-white/10 border-white/10 text-white placeholder:text-slate-400 pl-11 h-12 rounded-xl focus:bg-white/20 transition-all"
+                  placeholder="Search interactions..."
+                  className="bg-white/10 border-white/10 text-white placeholder:text-slate-400 pl-11 h-12 rounded-xl focus:bg-white/20 transition-all text-base w-full"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                 />
               </div>
-              <Button asChild size="lg" className="rounded-xl bg-blue-600 hover:bg-blue-500 text-white border-0 shadow-lg shadow-blue-500/25 h-12 px-8">
+              <Button asChild size="lg" className="rounded-xl bg-blue-600 hover:bg-blue-500 text-white border-0 shadow-lg shadow-blue-500/25 h-12 px-8 w-full sm:w-auto">
                 <Link href="/workspace/suggest">
                   <Sparkles className="mr-2 h-4 w-4" /> Suggest Opportunity
                 </Link>
