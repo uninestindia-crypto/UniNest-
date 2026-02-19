@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { Toaster } from "@/components/ui/toaster";
 import MainLayout from '@/components/layout/main-layout';
 import { AuthProvider } from '@/hooks/use-auth';
+import { GroqAssistant } from '@/components/ai/GroqAssistant';
 import { BrandingAssetsProvider } from '@/components/branding/branding-provider';
 import { getBrandingAssets } from '@/lib/branding';
 import { Poppins } from 'next/font/google';
@@ -165,6 +166,7 @@ export default async function RootLayout({
               {children}
             </MainLayout>
           </BrandingAssetsProvider>
+          <GroqAssistant />
         </AuthProvider>
         <Toaster />
       </body>

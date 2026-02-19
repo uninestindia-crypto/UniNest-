@@ -12,3 +12,6 @@ export * from './notification';
 
 // Workspace types
 export * from './workspace';
+
+// AI types
+export * from './ai';
