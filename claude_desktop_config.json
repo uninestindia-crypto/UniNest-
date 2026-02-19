@@ -1,9 +1,10 @@
 {
     "mcpServers": {
-        "studio-uninest": {
-            "command": "node",
+        "supabase": {
+            "command": "npx",
             "args": [
-                "c:/Users/Jawed Akhter/Desktop/New folder (2)/studio-uninest-deployed-main/mcp-server/build/index.js"
+                "-y",
+                "@supabase/mcp-server"
             ],
             "env": {
                 "SUPABASE_URL": "https://dfkgefoqodjccrrqmqis.supabase.co",
