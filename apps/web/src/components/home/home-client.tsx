@@ -185,7 +185,7 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
               {heroSlides.map((slide, index) => (
                 <CarouselItem key={slide.id ?? `${slide.title}-${index}`} className="w-full min-w-0">
                   <div className="grid gap-8 lg:gap-16 lg:grid-cols-2 lg:items-center">
-                    <div className="space-y-6 lg:space-y-8 animate-in slide-in-from-left duration-700 fade-in">
+                    <div className="order-2 lg:order-1 space-y-6 lg:space-y-8 animate-in slide-in-from-left duration-700 fade-in mt-8 lg:mt-0">
                       <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs sm:text-sm font-medium text-primary shadow-sm backdrop-blur-sm">
                         <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse"></span>
                         {slide.tag || "What's New"}
@@ -238,7 +238,7 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
                       </div>
                     </div>
 
-                    <div className="relative mx-auto w-full max-w-[500px] lg:max-w-none perspective-1000 mt-8 lg:mt-0">
+                    <div className="order-1 lg:order-2 relative mx-auto w-full max-w-[500px] lg:max-w-none perspective-1000 mt-0 lg:mt-0">
                       <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[2rem] border border-white/20 bg-muted/20 shadow-2xl transition-transform duration-500 hover:rotate-1 dark:border-white/5 dark:bg-slate-900/50">
                         {slide.imageUrl ? (
                           <Image

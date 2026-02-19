@@ -81,13 +81,13 @@ export function SidebarNav() {
                 "w-full justify-start gap-3 px-3 py-2.5 text-sm font-medium transition-all duration-200",
                 "hover:bg-muted/60 hover:text-foreground",
                 isActive
-                  ? "bg-primary/10 text-primary font-semibold shadow-sm ring-1 ring-primary/20"
+                  ? "primary-gradient text-white font-semibold shadow-md active:scale-95"
                   : "text-muted-foreground"
               )}
               onClick={handleLinkClick}
             >
               <Link href={item.href}>
-                <item.icon className={cn("size-4.5 transition-colors", isActive ? "text-primary" : "text-muted-foreground")} />
+                <item.icon className={cn("size-4.5 transition-colors", isActive ? "text-white" : "text-muted-foreground")} />
                 <span>{item.label}</span>
               </Link>
             </SidebarMenuButton>
@@ -130,7 +130,7 @@ export function SidebarNav() {
                 onClick={handleLinkClick}
               >
                 <Link href={donateItem.href}>
-                  <Heart className={cn("size-4.5", pathname.startsWith('/donate') ? "fill-primary text-primary" : "")} />
+                  <Heart className={cn("size-4.5", pathname.startsWith('/donate') ? "fill-white text-white" : "")} />
                   <span>{donateItem.label}</span>
                 </Link>
               </SidebarMenuButton>
@@ -264,14 +264,19 @@ export function MobileBottomNav() {
                 href={item.href}
                 className={cn(
                   "group relative flex flex-col items-center justify-center gap-1 w-16 h-12 rounded-xl transition-all duration-300",
-                  isActive ? "bg-primary/10" : "hover:bg-muted/30"
+                  "active:scale-90 touch-none", // Tap feedback
+                  isActive
+                    ? "bg-primary/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] ring-1 ring-primary/30"
+                    : "hover:bg-muted/30"
                 )}
               >
                 <div className="relative z-10 flex flex-col items-center">
                   {item.icon === 'avatar' ? (
                     <Avatar className={cn(
-                      "size-6 transition-transform duration-300 border border-transparent",
-                      isActive ? "scale-105 ring-2 ring-primary ring-offset-1 ring-offset-background" : "opacity-80 group-hover:opacity-100"
+                      "size-6 transition-all duration-300 border border-transparent",
+                      isActive
+                        ? "scale-110 ring-2 ring-primary ring-offset-2 ring-offset-background shadow-lg shadow-primary/20"
+                        : "opacity-80 group-hover:opacity-100"
                     )}>
                       {user && <AvatarImage src={user.user_metadata?.avatar_url} />}
                       <AvatarFallback className="text-[9px] bg-muted text-muted-foreground font-bold">
@@ -281,17 +286,23 @@ export function MobileBottomNav() {
                   ) : (
                     <item.icon className={cn(
                       "size-5 transition-all duration-300",
-                      isActive ? "text-primary fill-primary/20 scale-105" : "text-muted-foreground group-hover:text-foreground"
+                      isActive
+                        ? "text-primary fill-primary/30 scale-110 drop-shadow-[0_0_8px_rgba(var(--primary),0.5)]"
+                        : "text-muted-foreground group-hover:text-foreground"
                     )} />
                   )}
-                  {/* Optional Label (Hidden for minimal 'Dock' look, or visible for usability. Keeping hidden for cleaner 'professional' look on small screens, or very small text) */}
+                  {/* Optional Label */}
                   <span className={cn(
-                    "text-[9px] font-medium transition-colors mt-0.5",
+                    "text-[9px] font-bold transition-colors mt-1",
                     isActive ? "text-primary" : "text-muted-foreground/70"
                   )}>
                     {item.label}
                   </span>
                 </div>
+                {/* Visual indicator bar at bottom for active tab */}
+                {isActive && (
+                  <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary rounded-full animate-in fade-in zoom-in duration-300" />
+                )}
               </Link>
             );
           })}
