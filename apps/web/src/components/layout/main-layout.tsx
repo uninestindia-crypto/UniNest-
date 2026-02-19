@@ -187,8 +187,8 @@ export default function MainLayout({ children }: { children: ReactNode }) {
             )}
           </SidebarFooter>
         </Sidebar>
-        <SidebarInset>
-          <header className="flex h-16 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-md supports-[backdrop-filter]:bg-background/60 lg:px-6 sticky top-0 z-40">
+        <SidebarInset className="min-w-0">
+          <header className="flex h-16 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-md supports-[backdrop-filter]:bg-background/60 lg:px-6 sticky top-0 z-40 w-full overflow-hidden">
             <div className="flex items-center gap-2 lg:hidden">
               <SidebarTrigger className="-ml-2" />
               <Link href="/" className="flex items-center gap-2">
@@ -215,7 +215,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
             </div>
           </header>
           <main className={cn(
-            "flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 lg:p-8 w-full max-w-full",
+            "flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 lg:p-8 w-full max-w-full min-w-0",
             // Remove padding on mobile home for full-bleed feel if desired, but general padding needed for other pages
             isMobile && isHomePage && "px-0 py-4",
             // Ensure bottom padding for nav bar on mobile/tablet (anything < lg)

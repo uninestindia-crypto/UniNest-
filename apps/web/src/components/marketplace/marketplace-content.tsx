@@ -462,7 +462,7 @@ export default function MarketplaceContent({ initialProducts }: MarketplaceConte
             </div>
 
             <div className="space-y-4">
-              <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-6xl lg:text-7xl leading-[1.1] text-balance">
+              <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-6xl lg:text-7xl leading-[1.1] text-balance max-w-full overflow-hidden">
                 Your Campus <br className="hidden sm:block" />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-200 via-cyan-200 to-white animate-gradient-x">Essentials Hub</span>
               </h1>
@@ -472,23 +472,23 @@ export default function MarketplaceContent({ initialProducts }: MarketplaceConte
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-4 pt-2">
+            <div className="flex flex-col sm:flex-row gap-4 pt-2">
               {user && (
-                <Button asChild size="lg" className="h-14 rounded-full bg-white px-8 text-base font-bold text-primary shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all hover:-translate-y-1 hover:shadow-[0_20px_40px_rgb(0,0,0,0.12)] active:translate-y-0 text-lg">
+                <Button asChild size="lg" className="h-14 rounded-full bg-white px-8 text-base font-bold text-primary shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all hover:-translate-y-1 hover:shadow-[0_20px_40px_rgb(0,0,0,0.12)] active:translate-y-0 text-lg w-full sm:w-auto">
                   <Link href="/marketplace/new">
                     <Plus className="mr-2 h-5 w-5 stroke-[3]" /> Start Selling
                   </Link>
                 </Button>
               )}
-              <Button variant="outline" size="lg" className="h-14 rounded-full border-white/20 bg-white/5 px-8 text-base text-white backdrop-blur-sm transition-all hover:bg-white/10 hover:border-white/40">
+              <Button variant="outline" size="lg" className="h-14 rounded-full border-white/20 bg-white/5 px-8 text-base text-white backdrop-blur-sm transition-all hover:bg-white/10 hover:border-white/40 w-full sm:w-auto">
                 <ShieldCheck className="mr-2 h-5 w-5" /> Verified Vendors
               </Button>
             </div>
           </div>
 
           <div className="relative w-full max-w-lg lg:ml-auto">
-            <div className="relative overflow-hidden rounded-3xl border border-white/20 bg-white/10 p-2 shadow-2xl backdrop-blur-xl transition-transform hover:scale-[1.02] duration-500">
-              <div className="relative">
+            <div className="relative overflow-hidden rounded-3xl border border-white/20 bg-white/10 p-2 shadow-2xl backdrop-blur-xl transition-transform hover:scale-[1.02] duration-500 w-full">
+              <div className="relative w-full">
                 <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-6 w-6 text-white/70" />
                 <Input
                   placeholder="Search products..."

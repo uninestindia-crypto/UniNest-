@@ -180,10 +180,10 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 h-[800px] w-[800px] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white/40 via-transparent to-transparent dark:from-white/5 blur-3xl" />
 
         <div className="mx-auto max-w-7xl">
-          <Carousel opts={{ align: 'center', loop: true }} plugins={[heroAutoplay]} className="w-full">
-            <CarouselContent>
+          <Carousel className="w-full max-w-full" opts={{ loop: true, align: 'start' }}>
+            <CarouselContent className="max-w-full">
               {heroSlides.map((slide, index) => (
-                <CarouselItem key={slide.id ?? `${slide.title}-${index}`} className="w-full">
+                <CarouselItem key={slide.id ?? `${slide.title}-${index}`} className="w-full min-w-0">
                   <div className="grid gap-8 lg:gap-16 lg:grid-cols-2 lg:items-center">
                     <div className="space-y-6 lg:space-y-8 animate-in slide-in-from-left duration-700 fade-in">
                       <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs sm:text-sm font-medium text-primary shadow-sm backdrop-blur-sm">
@@ -192,7 +192,7 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
                       </div>
 
                       <div className="space-y-4">
-                        <h1 className="text-3xl sm:text-5xl lg:text-7xl font-headline font-extrabold leading-[1.1] tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-foreground to-foreground/70 dark:from-white dark:to-white/70 text-balance break-words">
+                        <h1 className="text-3xl sm:text-5xl lg:text-7xl font-headline font-extrabold leading-[1.1] tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-foreground to-foreground/70 dark:from-white dark:to-white/70 text-balance break-words max-w-full overflow-hidden">
                           {slide.title}
                         </h1>
                         <p className="text-lg sm:text-xl text-muted-foreground max-w-xl leading-relaxed">
@@ -200,19 +200,15 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
                         </p>
                       </div>
 
-                      <div className="flex flex-col sm:flex-row gap-4">
-                        {slide.ctaHref && slide.ctaLabel && (
-                          <Button size="lg" className="h-14 px-8 text-base font-semibold shadow-xl shadow-primary/20 hover:shadow-primary/40 transition-all hover:-translate-y-0.5" asChild>
-                            <Link href={slide.ctaHref}>
-                              {slide.ctaLabel} <ArrowRight className="ml-2 h-4 w-4" />
-                            </Link>
-                          </Button>
-                        )}
-                        {slide.secondaryCtaHref && slide.secondaryCtaLabel && (
-                          <Button size="lg" variant="outline" className="h-14 px-8 text-base font-semibold border-primary/20 hover:bg-primary/5 hover:text-primary transition-all" asChild>
-                            <Link href={slide.secondaryCtaHref}>{slide.secondaryCtaLabel}</Link>
-                          </Button>
-                        )}
+                      <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                        <Button asChild size="lg" className="h-14 rounded-full bg-primary px-8 text-base font-bold text-white shadow-xl transition-all hover:-translate-y-1 hover:shadow-2xl active:translate-y-0 text-lg w-full sm:w-auto">
+                          <Link href={slide.buttonLink || '#'}>
+                            <slide.buttonIcon className="mr-2 h-5 w-5 stroke-[3]" /> {slide.buttonText}
+                          </Link>
+                        </Button>
+                        <Button variant="outline" size="lg" className="h-14 rounded-full border-primary/20 bg-background/50 px-8 text-base font-semibold backdrop-blur-sm transition-all hover:bg-primary/5 w-full sm:w-auto">
+                          Know More
+                        </Button>
                       </div>
 
                       <div className="flex items-center gap-4 text-sm text-muted-foreground pt-2">
