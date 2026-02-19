@@ -23,30 +23,30 @@ export default function TopDonorsTable({ donors }: TopDonorsTableProps) {
         <CardTitle className="text-lg font-semibold text-foreground">Top Donors</CardTitle>
         <CardDescription className="text-muted-foreground">Highest contributors this month.</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-0 sm:p-6 min-w-0">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>User</TableHead>
-              <TableHead className="text-right">Total Donated</TableHead>
+              <TableHead className="pl-4 sm:pl-0">User</TableHead>
+              <TableHead className="text-right pr-4 sm:pr-0">Total Donated</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {donors && donors.length > 0 ? (
               donors.map((donor) => (
                 <TableRow key={donor.userId}>
-                  <TableCell>
+                  <TableCell className="pl-4 sm:pl-0">
                     <div className="flex items-center gap-3">
-                      <Avatar className="h-9 w-9">
+                      <Avatar className="h-8 w-8 sm:h-9 sm:w-9 shrink-0">
                         <AvatarImage src={donor.avatar || ''} alt="Avatar" data-ai-hint="person face" />
                         <AvatarFallback>{donor.name.charAt(0)}</AvatarFallback>
                       </Avatar>
-                      <div className="grid gap-0.5">
-                        <p className="font-medium leading-none">{donor.name}</p>
+                      <div className="grid gap-0.5 min-w-0">
+                        <p className="font-medium leading-none truncate text-sm sm:text-base">{donor.name}</p>
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="text-right font-medium">₹{donor.total.toLocaleString()}</TableCell>
+                  <TableCell className="text-right font-medium pr-4 sm:pr-0 text-sm sm:text-base">₹{donor.total.toLocaleString()}</TableCell>
                 </TableRow>
               ))
             ) : (

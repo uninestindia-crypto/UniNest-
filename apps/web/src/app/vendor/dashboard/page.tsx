@@ -19,23 +19,24 @@ export default async function VendorDashboardPage() {
 
     const vendorCategories = user.user_metadata?.vendor_categories || [];
 
+
     // Fetch real stats
     const [productsResult, ordersResult] = await Promise.all([
-        supabase.from('products').select('id', { count: 'exact', head: true }).eq('owner_id', user.id),
-        supabase.from('orders').select('id, total_amount', { count: 'exact' }).eq('buyer_id', user.id) // Note: orders table usually links to buyer. If vendor, we need a way to link to sold items. For now demonstrating structure.
+        supabase.from('products').select('id', { count: 'exact', head: true }).eq('seller_id', user.id),
+        supabase.from('orders').select('total_amount').eq('vendor_id', user.id)
     ]);
 
-    // Construct stats (Mocking revenue/orders logic as 'orders' table structure for vendors is complex without 'order_items' check)
-    // Assuming 'orders' table is simplified or we just show "My Purchases" if it's buyer-centric, 
-    // BUT this is a VENDOR dashboard. We'll use mock data for revenue for now if the DB schema for vendor-sales isn't clear from context,
-    // but we can use the 'products' count which is real.
+    const productsCount = productsResult.count || 0;
+    const ordersCount = ordersResult.data?.length || 0;
+    const totalRevenue = (ordersResult.data || []).reduce((sum, order) => sum + (order.total_amount || 0), 0);
 
     const stats = {
-        products: productsResult.count || 0,
-        orders: ordersResult.count || 0, // This might be "My Orders" as a buyer, need to verify schema for "Sales". keeping as placeholder.
-        revenue: 0,
+        products: productsCount,
+        orders: ordersCount,
+        revenue: totalRevenue,
         rating: 4.8
     };
+
 
     return (
         <VendorDashboardContent

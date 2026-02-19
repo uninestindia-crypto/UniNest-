@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Paperclip, Send, Loader2, ArrowLeft, X } from 'lucide-react';
+import { Paperclip, Send, Loader2, ArrowLeft, X, ShieldCheck, Lock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { cn } from '@/lib/utils';
@@ -33,10 +33,10 @@ export default function ChatMessages({ room, messages, onSendMessage, loading, c
 
   useEffect(() => {
     if (scrollAreaRef.current) {
-        const scrollContainer = scrollAreaRef.current.querySelector('div');
-        if (scrollContainer) {
-            scrollContainer.scrollTop = scrollContainer.scrollHeight;
-        }
+      const scrollContainer = scrollAreaRef.current.querySelector('div');
+      if (scrollContainer) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      }
     }
   }, [messages]);
 
@@ -57,11 +57,11 @@ export default function ChatMessages({ room, messages, onSendMessage, loading, c
 
   const handleFileUpload = async (file: File) => {
     if (!supabase || !room) return;
-    
+
     const fileExt = file.name.split('.').pop();
     const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
     const filePath = `chat-files/${room.id}/${fileName}`;
-    
+
     setIsUploading(true);
     setUploadProgress(0);
 
@@ -75,7 +75,7 @@ export default function ChatMessages({ room, messages, onSendMessage, loading, c
 
       if (error) throw error;
       setUploadProgress(100);
-      
+
       // Get the public URL
       const { data: { publicUrl } } = supabase.storage
         .from('chat-files')
@@ -83,7 +83,7 @@ export default function ChatMessages({ room, messages, onSendMessage, loading, c
 
       // Send the file URL as a message
       onSendMessage(`[File] ${file.name}: ${publicUrl}`);
-      
+
       toast({
         title: 'File uploaded',
         description: `${file.name} has been shared in the chat`,
@@ -114,7 +114,7 @@ export default function ChatMessages({ room, messages, onSendMessage, loading, c
   };
 
   if (loading) {
-     return (
+    return (
       <div className="flex flex-1 items-center justify-center text-muted-foreground">
         <Loader2 className="size-8 animate-spin" />
       </div>
@@ -128,7 +128,7 @@ export default function ChatMessages({ room, messages, onSendMessage, loading, c
       </div>
     );
   }
-  
+
   const roomAvatar = room.avatar || `https://picsum.photos/seed/${room.id}/40`;
   const roomName = room.name || 'Chat';
 
@@ -144,7 +144,13 @@ export default function ChatMessages({ room, messages, onSendMessage, loading, c
           <AvatarImage src={roomAvatar} alt={roomName} data-ai-hint="person face" />
           <AvatarFallback>{roomName.charAt(0)}</AvatarFallback>
         </Avatar>
-        <h2 className="text-lg font-semibold">{roomName}</h2>
+        <div className="flex flex-col">
+          <h2 className="text-lg font-semibold">{roomName}</h2>
+          <div className="flex items-center gap-1 text-[10px] text-primary">
+            <ShieldCheck className="size-3" />
+            <span className="uppercase tracking-widest font-bold">End-to-End Encrypted</span>
+          </div>
+        </div>
       </div>
       <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
         <div className="space-y-6">
@@ -164,10 +170,16 @@ export default function ChatMessages({ room, messages, onSendMessage, loading, c
                 ) : null}
                 <div
                   className={cn(
-                    'max-w-xs rounded-lg p-3 md:max-w-md',
-                    isSentByMe ? 'primary-gradient text-primary-foreground' : 'bg-muted'
+                    'max-w-xs rounded-2xl p-4 md:max-w-md shadow-sm transition-all hover:shadow-md cursor-default',
+                    isSentByMe
+                      ? 'primary-gradient text-primary-foreground rounded-br-none'
+                      : 'bg-background/60 backdrop-blur-md border border-white/20 text-foreground rounded-bl-none'
                   )}
                 >
+                  <div className="flex items-center gap-2 mb-1 opacity-70">
+                    <span className="text-[10px] font-bold uppercase tracking-wider">{senderName}</span>
+                    {isSentByMe && <Lock className="size-2" />}
+                  </div>
                   <p className="text-sm">{message.content}</p>
                   <p
                     className={cn(

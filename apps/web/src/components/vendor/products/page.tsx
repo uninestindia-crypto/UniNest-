@@ -145,7 +145,7 @@ export default function VendorProductsContent({ initialProducts }: VendorProduct
             disabled={!vendorSubscriptionStatus.isVendorActive}
             title={vendorSubscriptionStatus.isVendorActive ? undefined : 'Activate your subscription to add listings'}
           >
-            <Link href="/marketplace/new">
+            <Link href="/vendor/products/new">
               <PlusCircle className="mr-2" />
               Add New Product
             </Link>

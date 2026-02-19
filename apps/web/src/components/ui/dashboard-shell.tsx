@@ -67,15 +67,15 @@ export function DashboardShell({
                 )}
             </Sidebar>
             <SidebarInset className="bg-background">
-                <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b border-border/50 bg-background/80 px-6 backdrop-blur-md">
+                <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b border-border/50 bg-background/80 px-4 md:px-6 backdrop-blur-md">
                     <SidebarTrigger className="-ml-2 text-muted-foreground hover:text-foreground" />
                     <Separator orientation="vertical" className="h-6" />
-                    <div className="flex flex-1 items-center gap-4">
+                    <div className="flex flex-1 items-center gap-4 min-w-0">
                         {headerContent}
                     </div>
                 </header>
-                <main className={cn("flex-1 overflow-auto p-8", className)}>
-                    <div className="mx-auto max-w-7xl w-full space-y-8 animate-fade-in-up">
+                <main className={cn("flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-6 lg:p-8 w-full min-w-0", className)}>
+                    <div className="mx-auto max-w-7xl w-full space-y-6 md:space-y-8 animate-fade-in-up min-w-0">
                         {children}
                     </div>
                 </main>

@@ -1,6 +1,6 @@
 
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, ShoppingCart, CreditCard, ScrollText, Settings, Briefcase, Trophy, LifeBuoy, Lightbulb, Megaphone, Heart, Activity } from 'lucide-react';
+import { LayoutDashboard, Users, ShoppingCart, CreditCard, ScrollText, Settings, Briefcase, Trophy, LifeBuoy, Lightbulb, Megaphone, Heart, Activity, Bot, Zap } from 'lucide-react';
 import { SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel, SidebarGroupContent } from '@/components/ui/sidebar';
 import Link from 'next/link';
 
@@ -35,6 +35,13 @@ const navGroups = [
       { href: '/admin/suggestions', label: 'Suggestions', icon: Lightbulb },
       { href: '/admin/tickets', label: 'Support Tickets', icon: LifeBuoy },
       { href: '/admin/logs', label: 'Audit Logs', icon: ScrollText },
+    ]
+  },
+  {
+    label: "Automation",
+    items: [
+      { href: '/admin/leads', label: 'Lead Management', icon: Zap },
+      { href: '/admin/instagram', label: 'Instagram Bot', icon: Bot },
     ]
   },
   {

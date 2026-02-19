@@ -97,7 +97,7 @@ function VendorLayoutShell({ children, user, signOut }: VendorLayoutShellProps) 
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href="/settings" className="cursor-pointer">
+                <Link href="/vendor/settings" className="cursor-pointer">
                   <Settings className="mr-2 size-4" />
                   Profile Settings
                 </Link>

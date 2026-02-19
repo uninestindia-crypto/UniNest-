@@ -551,14 +551,14 @@ export default function HomeClient({ posterConfig }: HomeClientProps) {
           <h2 className="text-3xl font-headline font-extrabold text-white sm:text-5xl lg:text-6xl tracking-tight text-balance">
             Ready to upgrade your <br className="hidden sm:block" /> campus life?
           </h2>
-          <p className="mx-auto mt-8 max-w-2xl text-xl text-primary-foreground/90 leading-relaxed font-light">
+          <p className="mx-auto mt-8 max-w-2xl text-xl text-white/80 leading-relaxed font-light">
             Join the community today. Access exclusive internships, find verified housing, and connect with peers across India.
           </p>
           <div className="mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Button size="lg" variant="secondary" className="h-16 px-10 text-lg font-bold rounded-2xl shadow-2xl hover:scale-105 transition-transform" asChild>
+            <Button size="lg" className="h-16 px-10 text-lg font-bold rounded-2xl shadow-2xl hover:scale-105 transition-transform bg-white text-primary hover:bg-white/90" asChild>
               <Link href="/signup">Get Started for Free</Link>
             </Button>
-            <Button size="lg" variant="outline" className="h-16 px-10 text-lg font-bold rounded-2xl bg-transparent text-white border-white/40 hover:bg-white/10 hover:text-white hover:border-white transition-all" asChild>
+            <Button size="lg" variant="outline" className="h-16 px-10 text-lg font-bold rounded-2xl bg-transparent text-white border-white/60 hover:bg-white/10 hover:text-white hover:border-white transition-all" asChild>
               <Link href="/about">Learn More</Link>
             </Button>
           </div>

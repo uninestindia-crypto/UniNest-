@@ -116,10 +116,10 @@ export default function VendorAnalyticsContent({ userName, stats }: VendorAnalyt
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
               <Button asChild>
-                <Link href="/marketplace/new">Create a Listing</Link>
+                <Link href="/vendor/products/new">Create a Listing</Link>
               </Button>
               <Button variant="outline" asChild>
-                <Link href="/vendor">Go to Dashboard</Link>
+                <Link href="/vendor/dashboard">Go to Dashboard</Link>
               </Button>
             </div>
           </CardContent>

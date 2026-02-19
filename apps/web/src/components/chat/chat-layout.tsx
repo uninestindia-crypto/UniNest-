@@ -14,6 +14,14 @@ import NewChatModal from './new-chat-modal';
 import { Input } from '../ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { cn } from '@/lib/utils';
+import {
+  generateSessionKey,
+  wrapSessionKey,
+  unwrapSessionKey,
+  encryptContent,
+  decryptContent,
+  importPublicKey
+} from '@/lib/crypto';
 
 export default function ChatLayout() {
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -21,7 +29,8 @@ export default function ChatLayout() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loadingRooms, setLoadingRooms] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
-  const { user, supabase, loading: authLoading } = useAuth();
+  const [sessionKey, setSessionKey] = useState<CryptoKey | null>(null);
+  const { user, supabase, loading: authLoading, e2eeKeys } = useAuth();
   const isMobile = useIsMobile();
   const { toast } = useToast();
   const router = useRouter();
@@ -119,7 +128,7 @@ export default function ChatLayout() {
         }
         return;
       }
-      
+
       const normalizedRooms = (data || []).map((room: any) => ({
         ...room,
         unread_count: room?.unread_count ?? 0,
@@ -129,19 +138,19 @@ export default function ChatLayout() {
       setRooms(normalizedRooms);
 
     } catch (error: any) {
-        console.error('Error fetching user rooms:', error);
-        try {
-          const fallbackRooms = await fetchRoomsWithoutRpc();
-          setRooms(fallbackRooms);
-        } catch (fallbackError) {
-          console.error('Fallback room fetch failed:', fallbackError);
-          toast({ variant: 'destructive', title: 'Error loading chats', description: 'Could not fetch your chat rooms. Please try refreshing.' });
-        }
+      console.error('Error fetching user rooms:', error);
+      try {
+        const fallbackRooms = await fetchRoomsWithoutRpc();
+        setRooms(fallbackRooms);
+      } catch (fallbackError) {
+        console.error('Fallback room fetch failed:', fallbackError);
+        toast({ variant: 'destructive', title: 'Error loading chats', description: 'Could not fetch your chat rooms. Please try refreshing.' });
+      }
     } finally {
-        setLoadingRooms(false);
+      setLoadingRooms(false);
     }
   }, [user, supabase, toast, fetchRoomsWithoutRpc]);
-  
+
   useEffect(() => {
     if (user && supabase) {
       fetchRooms();
@@ -154,7 +163,52 @@ export default function ChatLayout() {
     setSelectedRoom(room);
     setLoadingMessages(true);
     setMessages([]);
+    setSessionKey(null);
 
+    // 1. Fetch encrypted session key for this room
+    const { data: keyData, error: keyError } = await supabase
+      .from('chat_room_keys')
+      .select('encrypted_session_key, room_id, user_id')
+      .eq('room_id', room.id)
+      .eq('user_id', user?.id)
+      .maybeSingle();
+
+    let currentSessionKey: CryptoKey | null = null;
+
+    if (keyData && e2eeKeys) {
+      try {
+        // Find the other participant's public key to unwrap the session key
+        // (In a private chat, there's only one other person)
+        const { data: participants } = await supabase
+          .from('chat_participants')
+          .select('user_id')
+          .eq('room_id', room.id)
+          .neq('user_id', user?.id);
+
+        const otherUserId = participants?.[0]?.user_id;
+        if (otherUserId) {
+          const { data: otherProfile } = await supabase
+            .from('profiles')
+            .select('public_key')
+            .eq('id', otherUserId)
+            .single();
+
+          if (otherProfile?.public_key) {
+            const otherPublicKey = await importPublicKey(otherProfile.public_key);
+            currentSessionKey = await unwrapSessionKey(
+              keyData.encrypted_session_key,
+              otherPublicKey,
+              e2eeKeys.privateKey
+            );
+            setSessionKey(currentSessionKey);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to unwrap session key:', err);
+      }
+    }
+
+    // 2. Fetch messages
     const { data: messageRows, error } = await supabase
       .from('chat_messages')
       .select('id, content, created_at, room_id, user_id')
@@ -190,10 +244,24 @@ export default function ChatLayout() {
 
     const profileMap = new Map((profileRows || []).map((profile) => [profile.id, profile]));
 
-    const messagesWithProfiles = rawMessages.map((message) => ({
-      ...message,
-      profile: profileMap.get(message.user_id) || null,
-    }));
+    const messagesWithProfiles = await Promise.all(
+      rawMessages.map(async (message) => {
+        let content = message.content;
+        // Try to decrypt if it's an encrypted message
+        if (currentSessionKey && (message as any).iv) {
+          try {
+            content = await decryptContent(message.content, (message as any).iv, currentSessionKey);
+          } catch (err) {
+            content = '[Decryption Failed]';
+          }
+        }
+        return {
+          ...message,
+          content,
+          profile: profileMap.get(message.user_id) || null,
+        };
+      })
+    );
 
     setMessages(messagesWithProfiles);
     setLoadingMessages(false);
@@ -215,21 +283,31 @@ export default function ChatLayout() {
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'chat_messages' },
         async (payload) => {
-           // Refetch rooms to get new "last message" and order
+          // Refetch rooms to get new "last message" and order
           fetchRooms();
           // If the message is for the currently selected room, add it to the view
           if (selectedRoom && payload.new.room_id === selectedRoom.id) {
-              const newMessage = payload.new as Message;
-              const { data: profileData, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', newMessage.user_id)
-                .single();
-              
-              if (!error && profileData) {
-                  newMessage.profile = profileData as Profile;
+            const newMessage = payload.new as Message;
+            const { data: profileData, error } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', newMessage.user_id)
+              .single();
+
+            if (!error && profileData) {
+              newMessage.profile = profileData as Profile;
+            }
+
+            // Decrypt matching message
+            if (sessionKey && (payload.new as any).iv) {
+              try {
+                newMessage.content = await decryptContent(newMessage.content, (payload.new as any).iv, sessionKey);
+              } catch (err) {
+                newMessage.content = '[Decryption Failed]';
               }
-             setMessages((prevMessages) => [...prevMessages, newMessage]);
+            }
+
+            setMessages((prevMessages) => [...prevMessages, newMessage]);
           }
         }
       )
@@ -239,18 +317,33 @@ export default function ChatLayout() {
       supabase.removeChannel(channel);
     };
   }, [selectedRoom, supabase, fetchRooms, user]);
-  
+
 
   const handleSendMessage = async (content: string) => {
     if (!selectedRoom || !user || !supabase) return;
 
+    let finalContent = content;
+    let iv: string | undefined;
+
+    if (sessionKey) {
+      try {
+        const encrypted = await encryptContent(content, sessionKey);
+        finalContent = encrypted.ciphertext;
+        iv = encrypted.iv;
+      } catch (err) {
+        console.error('Encryption failed:', err);
+        return; // Don't send unencrypted if encryption failed
+      }
+    }
+
     const { error } = await supabase
       .from('chat_messages')
       .insert({
-        content,
+        content: finalContent,
         room_id: selectedRoom.id,
         user_id: user.id,
-      });
+        iv, // Include IV for decryption
+      } as any);
 
     if (error) {
       toast({ variant: 'destructive', title: 'Error sending message' });
@@ -268,22 +361,22 @@ export default function ChatLayout() {
       return;
     }
     setIsNewChatModalOpen(false);
-    
+
     try {
-        const { error } = await supabase.rpc('create_private_chat', {
-            p_user1_id: user.id,
-            p_user2_id: otherUser.id,
-        });
+      const { error } = await supabase.rpc('create_private_chat', {
+        p_user1_id: user.id,
+        p_user2_id: otherUser.id,
+      });
 
-        if (error) throw error;
+      if (error) throw error;
 
-        await fetchRooms();
-        router.push('/chat');
-        // The selection will happen via useEffect after rooms are refetched
-        
+      await fetchRooms();
+      router.push('/chat');
+      // The selection will happen via useEffect after rooms are refetched
+
     } catch (error) {
-        console.error('Error starting chat session:', error);
-        toast({ variant: 'destructive', title: 'Error', description: 'Could not start a new chat session.' });
+      console.error('Error starting chat session:', error);
+      toast({ variant: 'destructive', title: 'Error', description: 'Could not start a new chat session.' });
     }
   }
 
@@ -412,7 +505,7 @@ export default function ChatLayout() {
       </div>
     );
   }
-  
+
   if (!user) {
     return (
       <div className="flex h-[calc(100vh-8rem)] items-center justify-center">
@@ -423,9 +516,9 @@ export default function ChatLayout() {
 
   return (
     <>
-      <NewChatModal 
-        isOpen={isNewChatModalOpen} 
-        onOpenChange={setIsNewChatModalOpen} 
+      <NewChatModal
+        isOpen={isNewChatModalOpen}
+        onOpenChange={setIsNewChatModalOpen}
         onSelectUser={handleStartNewChat}
       />
       <div className="grid grid-cols-1 md:grid-cols-3 h-[calc(100vh-8rem)]">

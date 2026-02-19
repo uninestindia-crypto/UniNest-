@@ -52,13 +52,13 @@ export default function VendorDashboardContent({ userName, vendorCategories, sta
     : [];
 
   return (
-    <div className="mx-auto max-w-7xl space-y-10 px-4 py-8 lg:px-8">
+    <div className="mx-auto max-w-7xl space-y-8 md:space-y-10 min-w-0">
       {/* Header */}
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <p className="text-xs font-medium uppercase tracking-[0.3em] text-muted-foreground">Vendor HQ</p>
-          <h1 className="mt-2 text-3xl font-semibold text-foreground lg:text-4xl">Welcome back, {userName}</h1>
-          <p className="mt-3 max-w-xl text-sm text-muted-foreground">
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between min-w-0">
+        <div className="min-w-0">
+          <p className="text-[10px] md:text-xs font-medium uppercase tracking-[0.3em] text-muted-foreground">Vendor HQ</p>
+          <h1 className="mt-2 text-2xl md:text-3xl font-semibold text-foreground lg:text-4xl truncate">Welcome back, {userName}</h1>
+          <p className="mt-2 md:mt-3 max-w-xl text-xs md:text-sm text-muted-foreground leading-relaxed">
             Manage your listings, track orders, and grow your business on UniNest.
           </p>
           {normalizedVendorCategories.length > 0 && (
