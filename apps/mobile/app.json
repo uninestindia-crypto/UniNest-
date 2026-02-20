@@ -1,6 +1,14 @@
 {
-    "expo": {
-        "name": "Uninest",
-        "slug": "uninest"
+  "expo": {
+    "name": "Uninest",
+    "slug": "uninest",
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "02bb77d0-a798-4d93-bee5-0b118c6d15bc"
+      }
     }
+  }
 }

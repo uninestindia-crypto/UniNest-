@@ -94,6 +94,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         razorpayKeyId: process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID,
         apiUrl: process.env.EXPO_PUBLIC_API_URL,
         sentryDsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
+        eas: {
+            projectId: '02bb77d0-a798-4d93-bee5-0b118c6d15bc',
+        },
     },
 });
 
