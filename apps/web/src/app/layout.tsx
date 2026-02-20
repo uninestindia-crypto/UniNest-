@@ -8,6 +8,7 @@ import { AuthProvider } from '@/hooks/use-auth';
 import { GroqAssistant } from '@/components/ai/GroqAssistant';
 import { BrandingAssetsProvider } from '@/components/branding/branding-provider';
 import { getBrandingAssets } from '@/lib/branding';
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Poppins } from 'next/font/google';
 
 export const revalidate = 60; // Cache for 60 seconds, revalidate in background
@@ -217,6 +218,7 @@ export default async function RootLayout({
           <GroqAssistant />
         </AuthProvider>
         <Toaster />
+        <SpeedInsights />
       </body>
     </html>
   );

@@ -28,18 +28,21 @@ function getApiKeys(): string[] {
     return keys;
 }
 
-const apiKeys = getApiKeys();
+let apiKeys: string[] | null = null;
 let currentKeyIndex = 0;
-
-if (apiKeys.length === 0) {
-    console.warn('No Groq API keys found in the environment. AI features may fail.');
-}
 
 /**
  * Returns a Groq client instance, automatically rotating to the next available API key.
  * This helps mitigate rate limits when using the free tier or high volume requests.
  */
 export function getGroqClient(): Groq {
+    if (apiKeys === null) {
+        apiKeys = getApiKeys();
+        if (apiKeys.length === 0) {
+            console.warn('No Groq API keys found in the environment. AI features may fail.');
+        }
+    }
+
     if (apiKeys.length === 0) {
         // Return a client with a dummy key so it builds, but will fail gracefully at runtime
         // if not configured properly rather than crashing during startup.
