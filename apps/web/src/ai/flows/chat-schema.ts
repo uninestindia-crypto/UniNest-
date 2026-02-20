@@ -6,7 +6,7 @@ import { z } from 'zod';
 export const ChatInputSchema = z.object({
   history: z.array(
     z.object({
-      role: z.enum(['user', 'model']),
+      role: z.enum(['user', 'model', 'system']),
       content: z.array(z.object({ text: z.string() })),
     })
   ),

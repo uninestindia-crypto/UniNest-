@@ -66,11 +66,15 @@ export async function generateText(prompt: string, history: any[] = []): Promise
     try {
         const messages = [
             ...history.map(msg => ({
-                role: msg.role === 'model' ? 'assistant' : msg.role,
-                content: msg.content.map((c: any) => c.text).join('\n')
+                role: msg.role === 'model' ? 'assistant' : (msg.role === 'system' ? 'system' : 'user'),
+                content: Array.isArray(msg.content)
+                    ? msg.content.map((c: any) => c.text).join('\n')
+                    : String(msg.content)
             })),
             { role: 'user', content: prompt }
         ];
+
+        console.log('[Groq AI] Request messages:', JSON.stringify(messages, null, 2));
 
         const chatCompletion = await groq.chat.completions.create({
             messages: messages as any,
@@ -80,6 +84,10 @@ export async function generateText(prompt: string, history: any[] = []): Promise
             top_p: 1,
             stream: false,
         });
+
+        const result = chatCompletion.choices[0]?.message?.content || '';
+        console.log('[Groq AI] Response length:', result.length);
+        return result;
 
         return chatCompletion.choices[0]?.message?.content || '';
     } catch (error) {

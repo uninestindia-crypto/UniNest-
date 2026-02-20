@@ -1,17 +1,13 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { useAuth } from './use-auth';
-import { createAiApi } from '@uninest/api-client';
-import type { AIMessage, AIChatRequest } from '@uninest/shared-types';
+import { chat as groqChat } from '@/ai/flows/chat-flow';
+import type { AIMessage } from '@uninest/shared-types';
 
 export function useAi() {
-    const { supabase } = useAuth();
     const [messages, setMessages] = useState<AIMessage[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<Error | null>(null);
-
-    const api = createAiApi(supabase);
 
     const chat = useCallback(async (content: string, systemPrompt?: string) => {
         setIsLoading(true);
@@ -28,10 +24,27 @@ export function useAi() {
         setMessages(currentMessages);
 
         try {
-            const response = await api.chat({ messages: requestMessages });
-            const assistantMessage: AIMessage = { role: 'assistant', content: response.message };
+            const history = messages.map(m => ({
+                role: m.role === 'assistant' ? 'model' as const : m.role as 'user' | 'model' | 'system',
+                content: [{ text: m.content }]
+            }));
+
+            if (systemPrompt) {
+                history.unshift({
+                    role: 'system',
+                    content: [{ text: systemPrompt }]
+                });
+            }
+
+            const chatInput = {
+                history,
+                message: content
+            };
+
+            const response = await groqChat(chatInput as any);
+            const assistantMessage: AIMessage = { role: 'assistant', content: response };
             setMessages(prev => [...prev, assistantMessage]);
-            return response.message;
+            return response;
         } catch (err) {
             const error = err as Error;
             setError(error);
@@ -40,7 +53,7 @@ export function useAi() {
         } finally {
             setIsLoading(false);
         }
-    }, [messages, api]);
+    }, [messages]);
 
     const clearHistory = useCallback(() => {
         setMessages([]);
