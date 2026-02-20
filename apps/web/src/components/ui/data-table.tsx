@@ -108,7 +108,7 @@ export function DataTable<T extends Record<string, any>>({
     }
 
     return (
-        <div className={cn("space-y-4", className)}>
+        <div className={cn("space-y-4 max-w-full overflow-x-auto", className)}>
             <div className="flex items-center justify-between">
                 {searchKey && (
                     <div className="relative max-w-sm w-full">

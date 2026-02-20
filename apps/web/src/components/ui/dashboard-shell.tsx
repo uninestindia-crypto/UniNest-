@@ -74,8 +74,8 @@ export function DashboardShell({
                         {headerContent}
                     </div>
                 </header>
-                <main className={cn("flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-6 lg:p-8 w-full min-w-0", className)}>
-                    <div className="mx-auto max-w-7xl w-full space-y-6 md:space-y-8 animate-fade-in-up min-w-0">
+                <main className={cn("flex-1 overflow-x-hidden overflow-y-auto w-full min-w-0 md:p-6 lg:p-8 p-4", className)}>
+                    <div className="mx-auto max-w-7xl w-full min-w-0 space-y-6 md:space-y-8 animate-fade-in-up">
                         {children}
                     </div>
                 </main>
