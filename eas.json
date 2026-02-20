@@ -1,18 +1,25 @@
 {
   "cli": {
     "version": ">= 16.24.1",
-    "appVersionSource": "remote"
+    "appVersionSource": "remote",
+    "packageManager": "pnpm"
   },
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "node": "18.18.0",
+      "pnpm": "9.0.0"
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "node": "18.18.0",
+      "pnpm": "9.0.0"
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "node": "18.18.0",
+      "pnpm": "9.0.0"
     }
   },
   "submit": {
