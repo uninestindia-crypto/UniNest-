@@ -88,8 +88,6 @@ export async function generateText(prompt: string, history: any[] = []): Promise
         const result = chatCompletion.choices[0]?.message?.content || '';
         console.log('[Groq AI] Response length:', result.length);
         return result;
-
-        return chatCompletion.choices[0]?.message?.content || '';
     } catch (error) {
         console.error('Error generating text with Groq:', error);
         throw new Error('Failed to generate response');
