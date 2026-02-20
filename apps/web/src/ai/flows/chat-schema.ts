@@ -1,13 +1,13 @@
 /**
  * @fileoverview Defines schemas and types for the AI chat flow.
  */
-import {z} from 'genkit';
+import { z } from 'zod';
 
 export const ChatInputSchema = z.object({
   history: z.array(
     z.object({
       role: z.enum(['user', 'model']),
-      content: z.array(z.object({text: z.string()})),
+      content: z.array(z.object({ text: z.string() })),
     })
   ),
   message: z.string(),

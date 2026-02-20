@@ -47,7 +47,22 @@ export default function ChatLayout() {
   }, [authLoading, user, router, hasRedirected]);
 
   const fetchRoomsWithoutRpc = useCallback(async (): Promise<Room[]> => {
-    if (!supabase) {
+    if (!supabase || !user) {
+      return [];
+    }
+
+    // First get the room IDs this user participates in
+    const { data: participantRows, error: participantError } = await supabase
+      .from('chat_participants')
+      .select('room_id')
+      .eq('user_id', user.id);
+
+    if (participantError) {
+      throw participantError;
+    }
+
+    const userRoomIds = (participantRows || []).map((r: any) => r.room_id);
+    if (userRoomIds.length === 0) {
       return [];
     }
 
@@ -61,6 +76,7 @@ export default function ChatLayout() {
     const { data: roomRows, error: roomError } = await supabase
       .from('chat_rooms')
       .select('id, created_at, name, avatar')
+      .in('id', userRoomIds)
       .order('created_at', { ascending: false });
 
     if (roomError) {
@@ -106,7 +122,7 @@ export default function ChatLayout() {
         room_created_at: room.created_at,
       } satisfies Room;
     });
-  }, [supabase]);
+  }, [supabase, user]);
 
   const fetchRooms = useCallback(async () => {
     if (!user || !supabase) {
