@@ -57,12 +57,45 @@ export function getGroqClient(): Groq {
 }
 
 /**
+ * Executes a chat completion request with automatic key rotation on failure.
+ */
+export async function createChatCompletionWithRetries(
+    messages: any[],
+    model: string = 'llama-3.3-70b-versatile',
+    options: any = {}
+) {
+    if (apiKeys === null) {
+        apiKeys = getApiKeys();
+    }
+
+    // Attempt with each available key at most once
+    const maxRetries = Math.max(1, apiKeys.length);
+    let lastError: any = null;
+
+    for (let attempts = 0; attempts < maxRetries; attempts++) {
+        const groq = getGroqClient();
+        try {
+            const completion = await groq.chat.completions.create({
+                model,
+                messages,
+                ...options
+            });
+            return completion;
+        } catch (error: any) {
+            console.warn(`[Groq AI] Request failed. Retrying... Error:`, error.message);
+            lastError = error;
+            // Continue to next iteration, which will grab the next key
+        }
+    }
+
+    throw lastError;
+}
+
+/**
  * Generates text using the Groq API.
  * Uses `llama-3.3-70b-versatile` as the default model.
  */
 export async function generateText(prompt: string, history: any[] = []): Promise<string> {
-    const groq = getGroqClient();
-
     try {
         const messages = [
             ...history.map(msg => ({
@@ -76,9 +109,7 @@ export async function generateText(prompt: string, history: any[] = []): Promise
 
         console.log('[Groq AI] Request messages:', JSON.stringify(messages, null, 2));
 
-        const chatCompletion = await groq.chat.completions.create({
-            messages: messages as any,
-            model: 'llama-3.3-70b-versatile',
+        const chatCompletion = await createChatCompletionWithRetries(messages as any, 'llama-3.3-70b-versatile', {
             temperature: 0.7,
             max_tokens: 4000,
             top_p: 1,

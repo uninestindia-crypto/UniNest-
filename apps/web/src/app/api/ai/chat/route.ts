@@ -10,7 +10,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getGroqClient } from '@/ai/groq';
+import { getGroqClient, createChatCompletionWithRetries } from '@/ai/groq';
 import { uninestTools, UNINEST_SYSTEM_PROMPT } from '@/ai/uninest-tools';
 import { executeTool, type ToolResult } from '@/ai/tool-executor';
 
@@ -52,15 +52,12 @@ export async function POST(request: NextRequest) {
             messages.push({ role: 'user', content: message });
         }
 
-        const groq = getGroqClient();
         const toolResults: ToolResult[] = [];
         let finalResponse = '';
         let toolCallsMade: { name: string; args: any; result: ToolResult }[] = [];
 
         // Step 1: Initial API call with tools
-        let completion = await groq.chat.completions.create({
-            model: 'llama-3.3-70b-versatile',
-            messages: messages as any,
+        let completion = await createChatCompletionWithRetries(messages as any, 'llama-3.3-70b-versatile', {
             tools: uninestTools,
             tool_choice: 'auto',
             max_tokens: 1024,
@@ -106,9 +103,7 @@ export async function POST(request: NextRequest) {
             }
 
             // Step 3: Get the model's response after tool execution
-            completion = await groq.chat.completions.create({
-                model: 'llama-3.3-70b-versatile',
-                messages: messages as any,
+            completion = await createChatCompletionWithRetries(messages as any, 'llama-3.3-70b-versatile', {
                 tools: uninestTools,
                 tool_choice: 'auto',
                 max_tokens: 1024,
@@ -146,7 +141,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
             {
                 success: false,
-                response: 'Sorry, I encountered an error. Please try again in a moment.',
+                response: 'Sorry for inconvinece we are having high traffic at the moment. Our team is working on it. ',
                 error: error.message,
             },
             { status: 500 }
