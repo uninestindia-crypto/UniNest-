@@ -7,7 +7,7 @@ type StatsCardProps = {
   title: string;
   value: string;
   icon: LucideIcon;
-  change: string;
+  change?: string;
   trend?: 'up' | 'down' | 'neutral';
   className?: string;
 };

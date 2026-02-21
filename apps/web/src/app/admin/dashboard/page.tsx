@@ -118,7 +118,10 @@ export default async function AdminDashboardPage() {
 
   const totalDonations = donations.reduce((sum, donation) => sum + donation.amount, 0);
   const totalCompetitionFees = competitionEntries.reduce(
-    (sum, entry) => sum + (entry.competitions?.entry_fee || 0),
+    (sum, entry) => {
+      const comp = Array.isArray(entry.competitions) ? entry.competitions[0] : entry.competitions;
+      return sum + (comp?.entry_fee || 0);
+    },
     0
   );
 
@@ -135,8 +138,14 @@ export default async function AdminDashboardPage() {
       .filter((donation) => donation.amount > 0 && donation.created_at)
       .map((donation) => ({ amount: donation.amount, created_at: donation.created_at })),
     ...competitionEntries
-      .filter((entry) => (entry.competitions?.entry_fee || 0) > 0 && entry.created_at)
-      .map((entry) => ({ amount: entry.competitions?.entry_fee || 0, created_at: entry.created_at })),
+      .filter((entry) => {
+        const comp = Array.isArray(entry.competitions) ? entry.competitions[0] : entry.competitions;
+        return (comp?.entry_fee || 0) > 0 && entry.created_at;
+      })
+      .map((entry) => {
+        const comp = Array.isArray(entry.competitions) ? entry.competitions[0] : entry.competitions;
+        return { amount: comp?.entry_fee || 0, created_at: entry.created_at };
+      }),
   ];
 
   const monthlyRevenueBuckets: Record<string, number> = {};
@@ -158,30 +167,36 @@ export default async function AdminDashboardPage() {
     .reverse();
 
   const recentActivity = [
-    ...donations.map(d => ({
-      id: `donation-${d.created_at}`,
-      user: {
-        name: d.profiles?.full_name || 'Anonymous Donor',
-        email: null,
-        avatar: d.profiles?.avatar_url
-      },
-      amount: d.amount,
-      type: 'donation' as const,
-      status: 'completed' as const,
-      created_at: d.created_at
-    })),
-    ...competitionEntries.map(c => ({
-      id: `comp-${c.created_at}`,
-      user: {
-        name: 'Competition Participant',
-        email: null,
-        avatar: null
-      },
-      amount: c.competitions?.entry_fee || 0,
-      type: 'competition' as const,
-      status: 'completed' as const,
-      created_at: c.created_at
-    }))
+    ...donations.map(d => {
+      const profile = Array.isArray(d.profiles) ? d.profiles[0] : d.profiles;
+      return {
+        id: `donation-${d.created_at}`,
+        user: {
+          name: profile?.full_name || 'Anonymous Donor',
+          email: '',
+          avatar: profile?.avatar_url
+        },
+        amount: d.amount,
+        type: 'donation' as const,
+        status: 'completed' as const,
+        created_at: d.created_at
+      };
+    }),
+    ...competitionEntries.map(c => {
+      const comp = Array.isArray(c.competitions) ? c.competitions[0] : c.competitions;
+      return {
+        id: `comp-${c.created_at}`,
+        user: {
+          name: 'Competition Participant',
+          email: '',
+          avatar: null
+        },
+        amount: comp?.entry_fee || 0,
+        type: 'competition' as const,
+        status: 'completed' as const,
+        created_at: c.created_at
+      };
+    })
   ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, 6);
 
