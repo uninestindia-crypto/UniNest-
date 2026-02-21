@@ -121,6 +121,6 @@ export async function generateText(prompt: string, history: any[] = []): Promise
         return result;
     } catch (error) {
         console.error('Error generating text with Groq:', error);
-        throw new Error('Failed to generate response');
+        return 'Sorry for inconvinece we are having high traffic at the moment. Our team is working on it. ';
     }
 }
