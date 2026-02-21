@@ -7,5 +7,9 @@ export const metadata: Metadata = {
 };
 
 export default function AIChatPage() {
-  return <UniNestChat />;
+  return (
+    <div className="w-full h-full">
+      <UniNestChat />
+    </div>
+  );
 }
