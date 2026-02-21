@@ -55,9 +55,12 @@ async function searchMarketplace(args: Record<string, any>): Promise<ToolResult>
         product: 'Other Products',
     };
 
-    const dbCategory = categoryMap[category];
+    let dbCategory = categoryMap[category];
     if (!dbCategory && category !== 'all') {
-        // Try matching anyway
+        // Use a heuristic mapping to match incoming category with what might be in the db dynamically.
+        // E.g 'books' -> 'Books', 'cyber_cafe' -> 'Cyber Café'
+        dbCategory = category.split('_').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        if (category === 'cyber_cafe') dbCategory = 'Cyber Café';
     }
 
     let queryBuilder = supabase
@@ -208,10 +211,38 @@ async function searchOpportunities(args: Record<string, any>): Promise<ToolResul
         }
 
         queryBuilder = queryBuilder.order('deadline', { ascending: true }).limit(10);
-        const { data, error } = await queryBuilder;
+        let { data, error } = await queryBuilder;
 
         if (error) {
             return { success: false, error: error.message };
+        }
+
+        let has_only_expired = false;
+
+        if (!data || data.length === 0) {
+            // Check for expired ones
+            let fallbackQueryBuilder = supabase
+                .from('internships')
+                .select('id, role, company, stipend, stipend_period, location, deadline, description, requirements, image_url')
+                .lt('deadline', new Date().toISOString());
+
+            if (query) {
+                fallbackQueryBuilder = fallbackQueryBuilder.or(`role.ilike.%${query}%,company.ilike.%${query}%,description.ilike.%${query}%`);
+            }
+            if (location) {
+                fallbackQueryBuilder = fallbackQueryBuilder.ilike('location', `%${location}%`);
+            }
+            if (min_stipend) {
+                fallbackQueryBuilder = fallbackQueryBuilder.gte('stipend', min_stipend);
+            }
+
+            fallbackQueryBuilder = fallbackQueryBuilder.order('deadline', { ascending: false }).limit(10);
+            const fallbackData = await fallbackQueryBuilder;
+
+            if (fallbackData.data && fallbackData.data.length > 0) {
+                data = fallbackData.data;
+                has_only_expired = true;
+            }
         }
 
         return {
@@ -220,6 +251,7 @@ async function searchOpportunities(args: Record<string, any>): Promise<ToolResul
                 type: 'internship',
                 results: data || [],
                 count: data?.length || 0,
+                has_only_expired: has_only_expired
             },
             ui_action: 'show_opportunity_cards',
         };
@@ -236,10 +268,30 @@ async function searchOpportunities(args: Record<string, any>): Promise<ToolResul
         }
 
         queryBuilder = queryBuilder.order('deadline', { ascending: true }).limit(10);
-        const { data, error } = await queryBuilder;
+        let { data, error } = await queryBuilder;
 
         if (error) {
             return { success: false, error: error.message };
+        }
+
+        let has_only_expired = false;
+        if (!data || data.length === 0) {
+            // check expired ones
+            let fallbackQueryBuilder = supabase
+                .from('competitions')
+                .select('id, title, description, prize, deadline, entry_fee, image_url')
+                .lt('deadline', new Date().toISOString());
+
+            if (query) {
+                fallbackQueryBuilder = fallbackQueryBuilder.or(`title.ilike.%${query}%,description.ilike.%${query}%`);
+            }
+            fallbackQueryBuilder = fallbackQueryBuilder.order('deadline', { ascending: false }).limit(10);
+            const fallbackData = await fallbackQueryBuilder;
+
+            if (fallbackData.data && fallbackData.data.length > 0) {
+                data = fallbackData.data;
+                has_only_expired = true;
+            }
         }
 
         return {
@@ -248,6 +300,7 @@ async function searchOpportunities(args: Record<string, any>): Promise<ToolResul
                 type: 'competition',
                 results: data || [],
                 count: data?.length || 0,
+                has_only_expired: has_only_expired
             },
             ui_action: 'show_opportunity_cards',
         };
