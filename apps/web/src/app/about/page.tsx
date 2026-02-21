@@ -8,7 +8,7 @@ import AnimatedCounter from '@/components/animated-counter';
 
 export const metadata: Metadata = {
   title: 'About Uninest — AI Student Platform | How It Works',
-  description: 'Learn how Uninest\'s AI helps students book hostels, study spaces & meal plans, and apply for internships. Free for students. Powered by Llama 3.3 via Groq.',
+  description: 'Learn how Uninest\'s AI helps students book hostels, study spaces & meal plans, and apply for internships. Free for students. Powered by advanced secure AI.',
 };
 
 const timelineEvents = [
@@ -49,48 +49,58 @@ export default function AboutPage() {
             <span>Revolutionizing Campus Life</span>
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-headline font-extrabold tracking-tight mb-8 max-w-5xl mx-auto animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-            What Is Uninest? <br className="hidden md:block" />
-            <span className="text-gradient">India's AI-Powered Student Ecosystem Explained.</span>
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-headline font-extrabold tracking-tight mb-6 max-w-5xl mx-auto animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+            10,000+ Students.<br />
+            <span className="text-gradient">One Unified Campus.</span>
           </h1>
 
-          <div className="text-xl md:text-2xl text-muted-foreground/90 max-w-4xl mx-auto leading-relaxed animate-fade-in-up bg-card/50 backdrop-blur-md p-8 rounded-2xl border shadow-sm text-left" style={{ animationDelay: '0.2s' }}>
-            <p className="mb-4">
-              <strong className="text-foreground">Uninest (uninest.co.in)</strong> is an AI-powered student ecosystem platform based in India that serves university students through two integrated digital hubs:
+          <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-12 animate-fade-in-up leading-relaxed" style={{ animationDelay: '0.2s' }}>
+            UniNest is more than a platform — it’s a movement. We are bridging the gap between students, knowledge, and opportunity to create the campus of the future.
+          </p>
+
+          <div className="text-lg md:text-xl text-muted-foreground/90 max-w-4xl mx-auto leading-relaxed animate-fade-in-up bg-card/60 backdrop-blur-xl p-8 md:p-12 rounded-[2.5rem] border shadow-2xl text-left relative overflow-hidden" style={{ animationDelay: '0.3s' }}>
+            {/* Subtle inner glow for premium feel */}
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none"></div>
+
+            <p className="mb-6 relative z-10">
+              <strong className="text-foreground text-xl">Uninest (uninest.co.in)</strong> is an advanced, AI-powered student ecosystem platform based in India that serves university students through two integrated digital hubs:
             </p>
-            <ul className="list-disc pl-6 mb-4 space-y-2">
-              <li>
-                <strong className="text-foreground">THE MARKETPLACE</strong> — a transactional hub where students discover, compare, and book essential student services including:
-                <ul className="list-circle pl-6 mt-2 space-y-1 text-lg">
-                  <li>Hostel accommodation near colleges and universities</li>
-                  <li>Library and study space seat reservations (including live seat booking)</li>
-                  <li>Food mess and meal plan subscriptions</li>
-                  <li>Essential student products and supplies</li>
-                </ul>
+            <ul className="list-none mb-6 space-y-4 relative z-10">
+              <li className="flex gap-4 items-start bg-background/50 p-4 rounded-2xl border border-border/50">
+                <div className="bg-primary/10 p-2 rounded-lg mt-1 shrink-0">
+                  <Store className="size-5 text-primary" />
+                </div>
+                <div>
+                  <strong className="text-foreground text-lg block mb-1">THE MARKETPLACE</strong>
+                  <p className="text-sm md:text-base">A transitional hub for students to discover, compare, and book essential services including hostel accommodations, live library seat reservations, meal plan subscriptions, and study supplies.</p>
+                </div>
               </li>
-              <li>
-                <strong className="text-foreground">THE WORKSPACE</strong> — a career development hub where students find and apply for internships and competitions, assisted by an AI writing co-pilot that drafts professional application essays.
+              <li className="flex gap-4 items-start bg-background/50 p-4 rounded-2xl border border-border/50">
+                <div className="bg-secondary/10 p-2 rounded-lg mt-1 shrink-0">
+                  <GraduationCap className="size-5 text-secondary" />
+                </div>
+                <div>
+                  <strong className="text-foreground text-lg block mb-1">THE WORKSPACE</strong>
+                  <p className="text-sm md:text-base">A career development hub where students find internships and competitions, assisted by an AI writing co-pilot that drafts professional application essays.</p>
+                </div>
               </li>
             </ul>
-            <p className="mb-4">
-              Uninest operates on a free-to-use model for students, sustained by community donations and future vendor subscription plans. Vendors (hostels, libraries, food mess operators, product sellers) can register on Uninest, create a free business profile, and list their services to reach the student community.
+            <p className="mb-4 text-sm md:text-base relative z-10">
+              Uninest operates on a free-to-use model for students, sustained by community donations and optional premium vendor tools. We empower local businesses—from hostels to cafes—to register securely and reach their audience directly.
             </p>
-            <p className="mb-4">
-              The platform's AI assistant is powered by the <strong>Llama-3.3-70b</strong> model via Groq infrastructure, enabling real-time, sub-second responses. A core design principle is human-in-the-loop control: <strong>the AI never makes bookings or submits applications without explicit student approval.</strong>
-            </p>
-            <p>
-              Unique features include: live seat booking for libraries, AI-assisted internship application drafting, vendor AI support, and a dual-audience design serving both students and service providers.
+            <p className="text-sm md:text-base relative z-10 text-muted-foreground/80 border-t pt-4">
+              The platform utilizes secure, enterprise-grade AI infrastructure ensuring sub-second, intelligent support. Designed with a strict human-in-the-loop safety focus: <strong>the AI never executes bookings or submits applications without explicit student approval.</strong>
             </p>
           </div>
 
-          <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-            <Button size="lg" className="h-14 px-8 text-lg rounded-full shadow-lg hover:shadow-primary/25 transition-all" asChild>
+          <div className="mt-16 flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+            <Button size="lg" className="h-14 px-8 text-lg rounded-full shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:-translate-y-1 transition-all duration-300" asChild>
               <Link href="/signup">
                 Join the Movement
                 <ArrowRight className="ml-2 size-5" />
               </Link>
             </Button>
-            <Button size="lg" variant="outline" className="h-14 px-8 text-lg rounded-full border-2" asChild>
+            <Button size="lg" variant="outline" className="h-14 px-8 text-lg rounded-full border-2 hover:bg-muted transition-all duration-300" asChild>
               <Link href="/contact">
                 Partner With Us
               </Link>
