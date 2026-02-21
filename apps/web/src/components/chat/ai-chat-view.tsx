@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, Sparkles } from 'lucide-react';
+import { Send, Sparkles, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { chat } from '@/ai/flows/chat-flow';
 import type { ChatInput } from '@/ai/flows/chat-schema';
@@ -72,21 +72,18 @@ export default function AIChatView() {
 
   return (
     <div className="flex flex-1 flex-col h-[calc(100vh-8rem)] max-w-4xl mx-auto w-full">
-      <div className="flex items-center gap-4 border-b p-4">
-        <Avatar className="h-10 w-10 border-2 border-primary">
-          <div className="p-1 bg-background h-full w-full flex items-center justify-center">
-            <Logo className="size-6 text-primary" />
-          </div>
-        </Avatar>
-        <div>
-          <h2 className="text-lg font-semibold">UniNest AI Assistant</h2>
-          <p className="text-sm text-muted-foreground flex items-center gap-1.5">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-            </span>
-            Online
-          </p>
+      <div className="flex items-center gap-3 border-b border-border/50 p-4 bg-background/95 backdrop-blur-sm shadow-sm">
+        <div className="relative">
+          <Avatar className="h-10 w-10 border border-primary/20 bg-primary/5 shadow-sm">
+            <div className="p-1.5 h-full w-full flex items-center justify-center">
+              <Logo className="size-6 text-primary" />
+            </div>
+          </Avatar>
+          <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-background"></span>
+        </div>
+        <div className="flex flex-col">
+          <h2 className="text-base font-bold tracking-tight">AI Assistant</h2>
+          <p className="text-[11px] font-semibold text-primary uppercase tracking-widest">Powered by Google Gemini</p>
         </div>
       </div>
       <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
