@@ -68,29 +68,23 @@ export default function AdminDashboardContent({
           title="Total Revenue"
           value={`₹${stats.revenue.toLocaleString()}`}
           icon={DollarSign}
-          change="+20.1% from last month"
-          trend="up"
         />
         <StatsCard
           title="Total Donations"
           value={`₹${stats.donations.toLocaleString()}`}
           icon={Gift}
           change={`${stats.donationsCount} donations processed`}
-          trend="up"
+          trend="neutral"
         />
         <StatsCard
           title="Total Users"
           value={stats.users.toLocaleString()}
           icon={Users}
-          change="+180 new users"
-          trend="up"
         />
         <StatsCard
           title="Active Listings"
           value={stats.listings.toLocaleString()}
           icon={ShoppingCart}
-          change="+12 since last week"
-          trend="neutral"
         />
       </div>
 

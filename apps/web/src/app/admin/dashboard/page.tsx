@@ -161,8 +161,8 @@ export default async function AdminDashboardPage() {
     ...donations.map(d => ({
       id: `donation-${d.created_at}`,
       user: {
-        name: d.profiles?.full_name || 'Anonymous',
-        email: 'Donor', // We don't fetch email for donors here effectively, keeping generic
+        name: d.profiles?.full_name || 'Anonymous Donor',
+        email: null,
         avatar: d.profiles?.avatar_url
       },
       amount: d.amount,
@@ -173,8 +173,8 @@ export default async function AdminDashboardPage() {
     ...competitionEntries.map(c => ({
       id: `comp-${c.created_at}`,
       user: {
-        name: 'Competition Entrant', // We didn't fetch profile for entries in original code
-        email: 'User',
+        name: 'Competition Participant',
+        email: null,
         avatar: null
       },
       amount: c.competitions?.entry_fee || 0,

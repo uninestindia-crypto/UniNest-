@@ -97,9 +97,9 @@ export async function getLiveUsersStats(): Promise<{ data: LiveUsersStats | null
         return {
             data: {
                 totalUsers: totalUsers || 0,
-                totalVisitors: Math.floor((totalUsers || 0) * 0.3), // Estimate visitors as 30% of users
+                totalVisitors: totalUsers || 0, // Using total users as a baseline proxy until proper visitor tracking is added
                 activeUsers: activeAdminIds.size || Math.min(recentSessions.length, 5),
-                activeVisitors: Math.floor(Math.random() * 10) + 1, // Placeholder - would need proper tracking
+                activeVisitors: activeAdminIds.size || 0, // Using active admins as a proxy
                 recentSessions,
             },
             error: null,

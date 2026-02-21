@@ -9,7 +9,7 @@ export const revalidate = 0; // force dynamic rendering
 export default async function AdminUsersPage() {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
-    
+
     let users: UserProfile[] = [];
     let error: string | null = null;
 
@@ -17,12 +17,15 @@ export default async function AdminUsersPage() {
         error = "Supabase service credentials are not configured.";
     } else {
         const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
-        
-        const { data: { users: authUsers }, error: authError } = await supabaseAdmin.auth.admin.listUsers({
+
+        const response = await supabaseAdmin.auth.admin.listUsers({
             page: 1,
             perPage: 1000,
         });
-        
+
+        const authUsers = response.data?.users || [];
+        const authError = response.error;
+
         if (authError) {
             console.error("Error fetching auth users:", authError);
             error = "Could not fetch users from authentication service. Ensure your SUPABASE_SERVICE_KEY is correct.";
