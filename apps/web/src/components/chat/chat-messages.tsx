@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Paperclip, Send, Loader2, ArrowLeft, X, ShieldCheck, Lock } from 'lucide-react';
+import { Paperclip, Send, Loader2, ArrowLeft, X, ShieldCheck, Lock, CheckCheck } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { cn } from '@/lib/utils';
@@ -134,26 +134,26 @@ export default function ChatMessages({ room, messages, onSendMessage, loading, c
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className="flex items-center gap-2 border-b p-2 md:p-4">
+      <div className="flex items-center gap-3 border-b border-border/40 p-3 md:px-5 md:py-3.5 bg-background/95 backdrop-blur z-10 sticky top-0">
         {onBack ? (
-          <Button onClick={onBack} variant="ghost" size="icon" className="md:hidden">
-            <ArrowLeft />
+          <Button onClick={onBack} variant="ghost" size="icon" className="md:hidden -ml-2 h-9 w-9 rounded-full">
+            <ArrowLeft className="size-5" />
           </Button>
         ) : null}
-        <Avatar className="h-10 w-10 border border-border/50 shadow-sm">
+        <Avatar className="h-10 w-10 border border-background shadow-sm">
           <AvatarImage src={roomAvatar} alt={roomName} data-ai-hint="person face" />
-          <AvatarFallback className="bg-primary/10 text-primary">{roomName.charAt(0)}</AvatarFallback>
+          <AvatarFallback className="bg-primary/5 text-primary text-sm font-medium">{roomName.charAt(0)}</AvatarFallback>
         </Avatar>
         <div className="flex flex-col ml-1">
           <h2 className="text-base font-semibold tracking-tight">{roomName}</h2>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground/80 font-medium">
-            <ShieldCheck className="size-3.5" />
+            <ShieldCheck className="size-3.5 text-primary/70" />
             <span>End-to-End Encrypted</span>
           </div>
         </div>
       </div>
-      <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
-        <div className="space-y-6">
+      <ScrollArea className="flex-1 p-4 md:p-6" ref={scrollAreaRef}>
+        <div className="space-y-4 md:space-y-6">
           {messages.map((message) => {
             const isSentByMe = message.user_id === user?.id;
             const senderProfile = message.profile;
@@ -161,38 +161,39 @@ export default function ChatMessages({ room, messages, onSendMessage, loading, c
             const senderName = senderProfile?.full_name || 'User';
 
             return (
-              <div key={message.id} className={cn('flex flex-col gap-1 w-full max-w-[85%] md:max-w-[75%]', isSentByMe ? 'ml-auto items-end' : 'mr-auto items-start')}>
+              <div key={message.id} className={cn('flex flex-col gap-1 w-full max-w-[85%] md:max-w-[70%]', isSentByMe ? 'ml-auto items-end' : 'mr-auto items-start')}>
                 <div className="flex items-end gap-2 w-full">
                   {!isSentByMe ? (
-                    <Avatar className="h-6 w-6 shrink-0 mb-1 border border-border/30">
+                    <Avatar className="h-7 w-7 shrink-0 mb-1 border border-background shadow-sm">
                       <AvatarImage src={senderAvatar} alt={senderName} data-ai-hint="person face" />
-                      <AvatarFallback className="text-[10px] bg-muted">{senderName.charAt(0)}</AvatarFallback>
+                      <AvatarFallback className="text-[10px] bg-primary/10 text-primary font-medium">{senderName.charAt(0)}</AvatarFallback>
                     </Avatar>
                   ) : null}
                   <div
                     className={cn(
                       'relative flex flex-col px-4 py-2.5 text-[15px] shadow-sm',
                       isSentByMe
-                        ? 'bg-primary text-primary-foreground rounded-2xl rounded-br-sm ml-auto'
-                        : 'bg-muted/80 border border-border/30 text-foreground rounded-2xl rounded-bl-sm mr-auto'
+                        ? 'bg-primary text-primary-foreground rounded-2xl rounded-br-[4px] ml-auto'
+                        : 'bg-card border border-border/40 text-foreground rounded-2xl rounded-tl-[4px] mr-auto'
                     )}
                   >
                     {!isSentByMe && (
-                      <span className="text-[11px] font-semibold text-primary/80 mb-0.5">{senderName}</span>
+                      <span className="text-[12px] font-semibold text-primary/80 mb-0.5 leading-none">{senderName}</span>
                     )}
                     <span className="leading-relaxed whitespace-pre-wrap break-words">{message.content}</span>
 
                     <div className={cn(
                       "flex items-center gap-1 mt-1 justify-end self-end",
-                      isSentByMe ? "text-primary-foreground/70" : "text-muted-foreground/70"
+                      isSentByMe ? "text-primary-foreground/70" : "text-muted-foreground/60"
                     )}>
-                      {isSentByMe && <Lock className="size-2.5 opacity-70" />}
+                      {isSentByMe && <Lock className="size-2.5 opacity-60 hidden" />}
                       <span className="text-[10px] tabular-nums font-medium">
                         {new Date(message.created_at).toLocaleTimeString([], {
                           hour: '2-digit',
                           minute: '2-digit',
                         })}
                       </span>
+                      {isSentByMe && <CheckCheck className="size-[14px] ml-0.5 opacity-90" />}
                     </div>
                   </div>
                 </div>
@@ -201,7 +202,7 @@ export default function ChatMessages({ room, messages, onSendMessage, loading, c
           })}
         </div>
       </ScrollArea>
-      <div className="p-3 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-border/50">
+      <div className="p-3 md:p-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-border/40">
         <div className="space-y-2 max-w-4xl mx-auto w-full">
           {isUploading ? (
             <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-secondary/50 mx-2">
@@ -237,7 +238,7 @@ export default function ChatMessages({ room, messages, onSendMessage, loading, c
               id="file-upload"
               disabled={isUploading}
             />
-            <div className="relative flex-1 flex items-center bg-muted/50 border border-border/50 rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.04)] focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/30 transition-all duration-200">
+            <div className="relative flex-1 flex items-center bg-muted/60 border border-transparent rounded-full shadow-sm focus-within:bg-background focus-within:ring-1 focus-within:ring-border transition-all duration-200 hover:bg-muted/80 focus-within:hover:bg-background">
               <Button variant="ghost" size="icon" asChild disabled={isUploading} className="absolute left-1 h-9 w-9 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted shrink-0 z-10 transition-colors">
                 <label htmlFor="file-upload" className="cursor-pointer flex items-center justify-center">
                   <Paperclip className="size-4.5" />

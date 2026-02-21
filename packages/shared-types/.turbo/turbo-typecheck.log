@@ -1,0 +1,4 @@
+
+> @uninest/shared-types@0.0.1 typecheck D:\studio-uninest-deployed-main\packages\shared-types
+> tsc --noEmit
+

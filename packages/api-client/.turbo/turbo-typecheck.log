@@ -1,0 +1,4 @@
+
+> @uninest/api-client@0.0.1 typecheck D:\studio-uninest-deployed-main\packages\api-client
+> tsc --noEmit
+

@@ -25,30 +25,30 @@ export default function ChatList({ rooms, selectedRoom, onSelectRoom }: ChatList
   return (
     <div className="flex h-full flex-col bg-background">
       <ScrollArea className="flex-1">
-        <div className="space-y-1 px-2 pb-16">
+        <div className="space-y-0.5 px-2 pb-16 pt-2">
           {rooms.length > 0 ? (
             rooms.map((room) => (
               <button
                 key={room.id}
                 onClick={() => onSelectRoom(room)}
                 className={cn(
-                  'flex w-full items-center gap-4 rounded-2xl p-3.5 text-left transition-all duration-200 outline-none',
+                  'flex w-full items-center gap-3.5 rounded-xl p-3 text-left transition-all duration-200 outline-none group',
                   selectedRoom?.id === room.id
-                    ? 'bg-muted/60 shadow-sm'
-                    : 'hover:bg-muted/40 focus-visible:bg-muted/40'
+                    ? 'bg-primary/5 shadow-sm'
+                    : 'hover:bg-muted/50 focus-visible:bg-muted/50'
                 )}
               >
-                <Avatar className="h-12 w-12 border border-border/50 shadow-sm">
+                <Avatar className="h-12 w-12 shadow-sm border border-border/20">
                   <AvatarImage src={room.avatar || `https://picsum.photos/seed/${room.id}/40`} alt={room.name || 'Chat'} data-ai-hint="person face" />
-                  <AvatarFallback className="bg-primary/10 text-primary">{room.name?.charAt(0) || 'C'}</AvatarFallback>
+                  <AvatarFallback className="bg-primary/5 text-primary text-sm font-medium">{room.name?.charAt(0) || 'C'}</AvatarFallback>
                 </Avatar>
                 <div className="flex flex-1 flex-col gap-1">
-                  <div className="flex items-center justify-between">
-                    <p className="truncate text-[15px] font-semibold text-foreground tracking-tight">{room.name || 'Conversation'}</p>
+                  <div className="flex items-center justify-between pb-0.5">
+                    <p className="truncate text-[15px] font-semibold text-foreground/90 tracking-tight">{room.name || 'Conversation'}</p>
                     <p
                       className={cn(
-                        'ml-2 flex-shrink-0 text-xs text-muted-foreground/80',
-                        room.unread_count && room.unread_count > 0 ? 'text-primary font-bold' : ''
+                        'ml-2 flex-shrink-0 text-[11px] font-medium transition-colors',
+                        room.unread_count && room.unread_count > 0 ? 'text-primary' : 'text-muted-foreground'
                       )}
                     >
                       {formatTimestamp(room.last_message_timestamp)}
@@ -56,8 +56,8 @@ export default function ChatList({ rooms, selectedRoom, onSelectRoom }: ChatList
                   </div>
                   <div className="flex items-center justify-between gap-3">
                     <p className={cn(
-                      "truncate text-[13px]",
-                      room.unread_count && room.unread_count > 0 ? "text-foreground font-medium" : "text-muted-foreground/80"
+                      "truncate text-[13px] leading-tight",
+                      room.unread_count && room.unread_count > 0 ? "text-foreground font-semibold" : "text-muted-foreground/80 group-hover:text-muted-foreground"
                     )}>
                       {room.last_message || 'Select to view messages'}
                     </p>

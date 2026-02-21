@@ -14,6 +14,7 @@ import NewChatModal from './new-chat-modal';
 import { Input } from '../ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 import {
   generateSessionKey,
   wrapSessionKey,
@@ -425,25 +426,25 @@ export default function ChatLayout() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="rounded-full hover:bg-muted"
+                className="rounded-full hover:bg-muted/80"
                 onClick={() => router.back()}
               >
-                <ArrowLeft className="size-5" />
+                <ArrowLeft className="size-6" />
               </Button>
             ) : null}
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-foreground">Chats</h1>
+              <h1 className="text-3xl font-bold tracking-tight text-foreground">Chats</h1>
             </div>
           </div>
           <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" className="rounded-full text-muted-foreground hover:text-foreground">
-              <Filter className="size-5" />
+            <Button variant="ghost" size="icon" className="rounded-full bg-muted/50 text-foreground hover:bg-muted">
+              <Filter className="size-4" />
               <span className="sr-only">Filter</span>
             </Button>
             <Button
               variant="default"
               size="icon"
-              className="rounded-full shadow-sm"
+              className="rounded-full shadow-md hover:shadow-lg transition-all"
               onClick={() => setIsNewChatModalOpen(true)}
             >
               <Plus className="size-5" />
@@ -453,44 +454,44 @@ export default function ChatLayout() {
         </div>
         <div className="space-y-4 px-4 pt-2">
           <div className="relative group">
-            <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground/70 transition-colors group-focus-within:text-primary" />
             <Input
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Search chats"
-              className="h-9 w-full rounded-2xl border-none bg-muted/80 pl-10 pr-4 text-sm shadow-none transition-colors focus-visible:bg-background focus-visible:ring-1 focus-visible:ring-primary/50"
+              placeholder="Search chat or messages"
+              className="h-10 w-full rounded-2xl border-none bg-muted/60 pl-9 pr-4 text-[15px] shadow-inner transition-colors focus-visible:bg-muted focus-visible:ring-0"
             />
           </div>
 
-          <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide">
-            {highlightRooms.map((room) => (
-              <div key={room.id} className="flex shrink-0 flex-col items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => handleSelectRoom(room)}>
-                <div className="rounded-full p-[2px] ring-2 ring-transparent transition-all hover:ring-primary/20">
-                  <Avatar className="h-14 w-14 shadow-sm">
-                    <AvatarImage src={room.avatar || `https://picsum.photos/seed/${room.id}/80`} alt={room.name || 'Chat'} data-ai-hint="person face" />
-                    <AvatarFallback className="bg-primary/10 text-primary">{room.name?.charAt(0) || 'C'}</AvatarFallback>
-                  </Avatar>
+          {highlightRooms.length > 0 && (
+            <div className="flex items-center gap-4 overflow-x-auto pb-2 scrollbar-hide pt-2">
+              {highlightRooms.map((room) => (
+                <div key={room.id} className="flex shrink-0 flex-col items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => handleSelectRoom(room)}>
+                  <div className="rounded-full p-[2px] ring-2 ring-primary/10 overflow-hidden transition-all hover:ring-primary/40">
+                    <Avatar className="h-14 w-14 shadow-sm border border-background">
+                      <AvatarImage src={room.avatar || `https://picsum.photos/seed/${room.id}/80`} alt={room.name || 'Chat'} data-ai-hint="person face" />
+                      <AvatarFallback className="bg-primary/5 text-primary text-base font-medium">{room.name?.charAt(0) || 'C'}</AvatarFallback>
+                    </Avatar>
+                  </div>
+                  <span className="w-16 truncate text-center text-[11px] font-medium text-muted-foreground">{room.name?.split(' ')[0] || 'User'}</span>
                 </div>
-                <span className="w-16 truncate text-center text-[10px] font-medium text-muted-foreground">{room.name || 'User'}</span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
 
-          <div className="flex w-full rounded-xl bg-muted/50 p-1">
+          <div className="flex w-full gap-2 overflow-x-auto scrollbar-hide pt-2 pb-1">
             {inboxTabs.map((tab) => (
-              <button
+              <Badge
                 key={tab.value}
-                type="button"
+                variant={activeInboxTab === tab.value ? 'default' : 'secondary'}
                 onClick={() => setActiveInboxTab(tab.value)}
                 className={cn(
-                  'flex-1 rounded-lg px-3 py-1.5 text-xs font-semibold capitalize transition-all duration-200',
-                  activeInboxTab === tab.value
-                    ? 'bg-background text-foreground shadow-[0_1px_3px_rgba(0,0,0,0.05)]'
-                    : 'text-muted-foreground hover:text-foreground/80'
+                  'cursor-pointer rounded-full px-4 py-1.5 text-xs font-medium capitalize transition-all duration-200 border-none whitespace-nowrap',
+                  activeInboxTab !== tab.value && 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'
                 )}
               >
                 {tab.label}
-              </button>
+              </Badge>
             ))}
           </div>
         </div>
@@ -529,18 +530,21 @@ export default function ChatLayout() {
         onSelectUser={handleStartNewChat}
       />
       {/* Desktop: side-by-side layout */}
-      <div className="hidden md:grid md:grid-cols-3 h-full overflow-hidden bg-background">
-        <div className="col-span-1 border-r border-border/50 overflow-hidden bg-background/95">
+      <div className="hidden md:grid md:grid-cols-[380px_1fr] lg:grid-cols-[420px_1fr] h-full overflow-hidden bg-background">
+        <div className="border-r border-border/40 overflow-hidden bg-background">
           <ChatListScreen />
         </div>
-        <div className="col-span-2 flex flex-col overflow-hidden">
-          <ChatMessages
-            room={selectedRoom}
-            messages={messages}
-            onSendMessage={handleSendMessage}
-            loading={loadingMessages}
-            currentUser={user}
-          />
+        <div className="flex flex-col overflow-hidden bg-[url('https://i.pinimg.com/736x/8c/98/99/8c98994518b575bfd8c949e91d20548b.jpg')] bg-cover bg-center bg-fixed relative">
+          <div className="absolute inset-0 bg-background/90 md:bg-background/95 backdrop-blur-[2px]" />
+          <div className="relative z-10 flex col-span-2 flex-col overflow-hidden h-full">
+            <ChatMessages
+              room={selectedRoom}
+              messages={messages}
+              onSendMessage={handleSendMessage}
+              loading={loadingMessages}
+              currentUser={user}
+            />
+          </div>
         </div>
       </div>
       {/* Mobile: show list OR messages */}

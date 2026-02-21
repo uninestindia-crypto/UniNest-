@@ -1,0 +1,32 @@
+
+> @uninest/web@0.1.0 typecheck D:\studio-uninest-deployed-main\apps\web
+> tsc --noEmit
+
+src/app/admin/internships/page.tsx(53,88): error TS2339: Property 'message' does not exist on type 'never'.
+src/app/admin/marketing/page.tsx(69,7): error TS2739: Type '{ logoUrl: string | null; faviconUrl: string | null; }' is missing the following properties from type 'BrandingAssets': pwaIcon192Url, pwaIcon512Url, pwaIcon1024Url, pwaScreenshotDesktopUrl, pwaScreenshotMobileUrl
+src/app/donate/donate-content.tsx(12,23): error TS2307: Cannot find module '../ui/input' or its corresponding type declarations.
+src/app/donate/donate-content.tsx(15,28): error TS2307: Cannot find module '../ui/scroll-area' or its corresponding type declarations.
+src/app/donate/donate-content.tsx(244,32): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/app/marketplace/new/page.tsx(14,9): error TS2353: Object literal may only specify known properties, and 'charge_for_posts' does not exist in type 'VendorMonetizationSetting'.
+src/app/marketplace/new/page.tsx(47,27): error TS2339: Property 'charge_for_posts' does not exist on type 'StudentMonetizationSetting | VendorMonetizationSetting'.
+  Property 'charge_for_posts' does not exist on type 'VendorMonetizationSetting'.
+src/app/marketplace/new/page.tsx(61,41): error TS2339: Property 'post_price' does not exist on type 'StudentMonetizationSetting | VendorMonetizationSetting'.
+  Property 'post_price' does not exist on type 'VendorMonetizationSetting'.
+src/app/vendor/products/new/page.tsx(14,9): error TS2353: Object literal may only specify known properties, and 'charge_for_posts' does not exist in type 'VendorMonetizationSetting'.
+src/app/vendor/products/new/page.tsx(45,27): error TS2339: Property 'charge_for_posts' does not exist on type 'VendorMonetizationSetting'.
+src/app/vendor/products/new/page.tsx(59,41): error TS2339: Property 'post_price' does not exist on type 'VendorMonetizationSetting'.
+src/components/donate/donate-content.tsx(425,114): error TS2322: Type '{ value: number; className: string; indicatorClassName: string; }' is not assignable to type 'IntrinsicAttributes & Omit<ProgressProps & RefAttributes<HTMLDivElement>, "ref"> & RefAttributes<HTMLDivElement>'.
+  Property 'indicatorClassName' does not exist on type 'IntrinsicAttributes & Omit<ProgressProps & RefAttributes<HTMLDivElement>, "ref"> & RefAttributes<HTMLDivElement>'.
+src/components/feed/feed-content.tsx(110,13): error TS2322: Type '{ likes: never[]; comments: never[]; isLiked: false; isFollowed: false; id: any; content: any; created_at: any; user_id: any; profiles: { full_name: any; avatar_url: any; handle: any; }[]; }' is not assignable to type 'PostWithAuthor'.
+  Types of property 'profiles' are incompatible.
+    Type '{ full_name: any; avatar_url: any; handle: any; }[]' is missing the following properties from type '{ full_name: string; avatar_url: string; handle: string; }': full_name, avatar_url, handle
+src/components/home/donation-modal.tsx(56,78): error TS2339: Property 'email' does not exist on type '{ full_name: any; email: any; }[]'.
+src/components/home/donation-modal.tsx(61,48): error TS2339: Property 'full_name' does not exist on type '{ full_name: any; email: any; }[]'.
+src/components/home/donation-modal.tsx(62,49): error TS2339: Property 'email' does not exist on type '{ full_name: any; email: any; }[]'.
+src/components/search/search-results.tsx(126,124): error TS2322: Type '{ key: string; product: Product; user: null; onBuyNow: () => void; onChat: () => void; isBuying: false; isRazorpayLoaded: false; }' is not assignable to type 'IntrinsicAttributes & ProductCardProps'.
+  Property 'onChat' does not exist on type 'IntrinsicAttributes & ProductCardProps'.
+src/components/vendor/onboarding/page.tsx(234,38): error TS2322: Type 'Dispatch<SetStateAction<"verification" | "business-profile" | "catalog-setup" | "payouts" | "launch-checklist">>' is not assignable to type '(value: string) => void'.
+  Types of parameters 'value' and 'value' are incompatible.
+    Type 'string' is not assignable to type 'SetStateAction<"verification" | "business-profile" | "catalog-setup" | "payouts" | "launch-checklist">'.
+src/test/smoke.test.ts(2,32): error TS2307: Cannot find module '@testing-library/react' or its corresponding type declarations.
+ ELIFECYCLE  Command failed with exit code 2.

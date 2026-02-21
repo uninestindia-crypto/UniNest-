@@ -4,7 +4,7 @@ import ChatLayout from '@/components/chat/chat-layout';
 
 export default function ChatPage() {
   return (
-    <div className="h-[calc(100vh-8rem)] pb-20 lg:pb-0 min-h-[400px] w-full max-w-7xl mx-auto rounded-xl overflow-hidden border bg-background flex flex-col">
+    <div className="h-[calc(100vh-4rem)] md:h-[calc(100vh-5rem)] w-full max-w-[1400px] mx-auto md:mt-2 md:rounded-3xl overflow-hidden border-x md:border border-border/40 bg-background flex flex-col shadow-none md:shadow-xl">
       <ChatLayout />
     </div>
   );
