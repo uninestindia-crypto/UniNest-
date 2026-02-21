@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -18,11 +19,15 @@ type Message = {
 };
 
 export function GroqAssistant() {
+    const pathname = usePathname();
     const [isOpen, setIsOpen] = useState(false);
     const [input, setInput] = useState('');
     const [messages, setMessages] = useState<Message[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
+
+    // Hide on the dedicated AI chat page to avoid redundancy
+    if (pathname === '/ai/chat') return null;
 
     useEffect(() => {
         if (scrollRef.current) {
