@@ -349,9 +349,9 @@ export default function ProductDetailClient({ product, currentUser }: ProductDet
                             <div className="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0">
                                 {canInteract && (
                                     <Button
-                                        variant="default"
-                                        size="sm"
-                                        className="rounded-full flex-1 sm:flex-none shadow-md shadow-primary/20"
+                                        variant="secondary"
+                                        size="default"
+                                        className="rounded-full flex-1 sm:flex-none h-10 px-6 font-semibold bg-muted/50 border border-border/50 hover:bg-muted transition-all active:scale-95"
                                         onClick={async () => {
                                             if (!currentUser) {
                                                 toast({ title: "Login required", description: "Log in to chat with sellers", variant: "destructive" });
@@ -364,7 +364,7 @@ export default function ProductDetailClient({ product, currentUser }: ProductDet
                                                     p_user2_id: product.seller_id,
                                                 });
                                                 if (error) throw error;
-                                                toast({ title: "Opening Chat...", description: "Redirecting to your messages." });
+                                                toast({ title: "Opening Chat", description: "Taking you to your messages." });
                                                 router.push('/chat');
                                             } catch (err) {
                                                 console.error('Failed to start chat:', err);
@@ -372,7 +372,7 @@ export default function ProductDetailClient({ product, currentUser }: ProductDet
                                             }
                                         }}
                                     >
-                                        <MessageCircle className="w-4 h-4 mr-2" />
+                                        <MessageCircle className="w-4.5 h-4.5 mr-2 text-primary" />
                                         Chat
                                     </Button>
                                 )}
