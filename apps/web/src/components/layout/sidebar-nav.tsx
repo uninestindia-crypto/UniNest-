@@ -17,6 +17,7 @@ import {
   ArrowLeft,
   Trophy,
   Briefcase,
+  Bot,
   User as UserIcon
 } from 'lucide-react';
 import {
@@ -39,6 +40,7 @@ const mainNavItems = [
   { href: '/', label: 'Home', icon: Home, roles: ['student', 'vendor', 'guest', 'admin'] },
   { href: '/marketplace', label: 'Marketplace', icon: ShoppingBag, roles: ['student', 'guest', 'vendor', 'admin'] },
   { href: '/workspace', label: 'Workspace', icon: LayoutGrid, roles: ['student', 'vendor', 'guest', 'admin'] },
+  { href: '/ai/chat', label: 'AI Assistant', icon: Bot, roles: ['student', 'vendor', 'guest', 'admin'] },
 ];
 
 const secondaryNavItems = [
@@ -228,6 +230,7 @@ export function MobileBottomNav() {
   const defaultNavItems = [
     { href: '/', label: 'Home', icon: Home, roles: ['student', 'vendor', 'guest', 'admin'] },
     { href: '/marketplace', label: 'Market', icon: ShoppingBag, roles: ['student', 'vendor', 'guest', 'admin'] },
+    { href: '/ai/chat', label: 'AI', icon: Bot, roles: ['student', 'vendor', 'guest', 'admin'] },
     { href: '/workspace', label: 'Work', icon: LayoutGrid, roles: ['student', 'vendor', 'guest', 'admin'] },
     { href: profileLink, label: role === 'guest' ? 'Login' : 'Profile', icon: role === 'guest' ? UserIcon : 'avatar', roles: ['student', 'vendor', 'admin', 'guest'] },
   ];

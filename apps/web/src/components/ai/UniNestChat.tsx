@@ -1,0 +1,549 @@
+'use client';
+
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+    Send,
+    Sparkles,
+    Bed,
+    BookOpen,
+    Briefcase,
+    Trophy,
+    ShoppingBag,
+    UtensilsCrossed,
+    Bot,
+    User,
+    Loader2,
+    ArrowRight,
+    RotateCcw,
+    Trash2,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import MarketplaceCard, { MarketplaceCardSkeleton } from './MarketplaceCard';
+import WorkspaceDraftPanel, { OpportunityCard, OpportunityCardSkeleton } from './WorkspaceDraftPanel';
+import { createClient } from '@/lib/supabase/client';
+import { useAuth } from '@/hooks/use-auth';
+
+type Message = {
+    id: string;
+    role: 'user' | 'assistant';
+    content: string;
+    tool_calls?: any[];
+    ui_actions?: any[];
+    created_at?: string;
+};
+
+const quickActions = [
+    { label: 'Find hostels', icon: Bed, prompt: 'Find me a hostel', color: 'text-orange-500 bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800 hover:bg-orange-100' },
+    { label: 'Browse libraries', icon: BookOpen, prompt: 'Show me available libraries', color: 'text-blue-500 bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800 hover:bg-blue-100' },
+    { label: 'Food mess options', icon: UtensilsCrossed, prompt: 'Search for food mess options', color: 'text-green-500 bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800 hover:bg-green-100' },
+    { label: 'Internships', icon: Briefcase, prompt: 'Show me internship opportunities', color: 'text-indigo-500 bg-indigo-50 dark:bg-indigo-950/30 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100' },
+    { label: 'Competitions', icon: Trophy, prompt: 'Find competitions I can enter', color: 'text-amber-500 bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800 hover:bg-amber-100' },
+    { label: 'Shop products', icon: ShoppingBag, prompt: 'Browse products in the marketplace', color: 'text-purple-500 bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800 hover:bg-purple-100' },
+];
+
+export default function UniNestChat() {
+    const { user } = useAuth();
+    const [messages, setMessages] = useState<Message[]>([]);
+    const [input, setInput] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [isLoadingHistory, setIsLoadingHistory] = useState(true);
+    const [activeDraft, setActiveDraft] = useState<any>(null);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    // Load chat history from Supabase on mount
+    useEffect(() => {
+        if (!user) {
+            setIsLoadingHistory(false);
+            return;
+        }
+
+        const loadHistory = async () => {
+            try {
+                const supabase = createClient();
+                const { data, error } = await supabase
+                    .from('ai_chat_messages')
+                    .select('id, role, content, tool_calls, ui_actions, created_at')
+                    .eq('user_id', user.id)
+                    .order('created_at', { ascending: true })
+                    .limit(100);
+
+                if (error) {
+                    console.error('Failed to load chat history:', error);
+                    return;
+                }
+
+                if (data && data.length > 0) {
+                    const loadedMessages: Message[] = data.map((row) => ({
+                        id: `db-${row.id}`,
+                        role: row.role as 'user' | 'assistant',
+                        content: row.content,
+                        tool_calls: row.tool_calls || undefined,
+                        ui_actions: row.ui_actions || undefined,
+                        created_at: row.created_at,
+                    }));
+                    setMessages(loadedMessages);
+                }
+            } catch (err) {
+                console.error('Error loading chat history:', err);
+            } finally {
+                setIsLoadingHistory(false);
+            }
+        };
+
+        loadHistory();
+    }, [user]);
+
+    // Save message to Supabase
+    const saveMessage = useCallback(async (msg: Message) => {
+        if (!user) return;
+        try {
+            const supabase = createClient();
+            await supabase.from('ai_chat_messages').insert({
+                user_id: user.id,
+                role: msg.role,
+                content: msg.content,
+                tool_calls: msg.tool_calls || null,
+                ui_actions: msg.ui_actions || null,
+            });
+        } catch (err) {
+            console.error('Failed to save message:', err);
+        }
+    }, [user]);
+
+    // Delete all chat history
+    const deleteHistory = useCallback(async () => {
+        if (!user) return;
+        try {
+            const supabase = createClient();
+            await supabase
+                .from('ai_chat_messages')
+                .delete()
+                .eq('user_id', user.id);
+            setMessages([]);
+            setActiveDraft(null);
+            setShowDeleteConfirm(false);
+        } catch (err) {
+            console.error('Failed to delete history:', err);
+        }
+    }, [user]);
+
+    useEffect(() => {
+        if (scrollRef.current) {
+            const scrollContainer = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
+            if (scrollContainer) {
+                setTimeout(() => {
+                    scrollContainer.scrollTop = scrollContainer.scrollHeight;
+                }, 100);
+            }
+        }
+    }, [messages, isLoading]);
+
+    const sendMessage = useCallback(async (content: string) => {
+        if (!content.trim() || isLoading) return;
+
+        const userMsg: Message = {
+            id: `user-${Date.now()}`,
+            role: 'user',
+            content: content.trim(),
+        };
+
+        setMessages(prev => [...prev, userMsg]);
+        setInput('');
+        setIsLoading(true);
+
+        // Save user message to DB
+        saveMessage(userMsg);
+
+        try {
+            const history = messages.map(m => ({
+                role: m.role,
+                content: m.content,
+            }));
+
+            const res = await fetch('/api/ai/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    messages: history,
+                    message: content.trim(),
+                }),
+            });
+
+            const data = await res.json();
+
+            const assistantMsg: Message = {
+                id: `assistant-${Date.now()}`,
+                role: 'assistant',
+                content: data.response || 'Sorry, I could not process that.',
+                tool_calls: data.tool_calls || [],
+                ui_actions: data.ui_actions || [],
+            };
+
+            // Check for draft panel action
+            const draftAction = data.ui_actions?.find(
+                (a: any) => a.action === 'show_draft_panel'
+            );
+            if (draftAction) {
+                setActiveDraft(draftAction.data);
+            }
+
+            setMessages(prev => [...prev, assistantMsg]);
+            // Save assistant message to DB
+            saveMessage(assistantMsg);
+        } catch (error) {
+            console.error('Chat error:', error);
+            const errorMsg: Message = {
+                id: `error-${Date.now()}`,
+                role: 'assistant',
+                content: 'Sorry, something went wrong. Please try again.',
+            };
+            setMessages(prev => [...prev, errorMsg]);
+            saveMessage(errorMsg);
+        } finally {
+            setIsLoading(false);
+            inputRef.current?.focus();
+        }
+    }, [messages, isLoading, saveMessage]);
+
+    const handleQuickAction = (prompt: string) => {
+        sendMessage(prompt);
+    };
+
+    const handleItemSelect = (item: any) => {
+        sendMessage(`Tell me more about "${item.name}" (ID: ${item.id})`);
+    };
+
+    const handleOpportunitySelect = (opp: any) => {
+        const title = opp.role || opp.title;
+        sendMessage(`I'm interested in "${title}" (ID: ${opp.id}). Can you help me draft an application?`);
+    };
+
+    const handleDraftApprove = (draftText: string) => {
+        if (!activeDraft) return;
+        const oppId = activeDraft.opportunity?.id;
+        const oppType = activeDraft.opportunity?.role ? 'internship' : 'competition';
+        sendMessage(`I approve the draft. Please submit my application for opportunity ID ${oppId} (${oppType}). Here is my approved cover letter: ${draftText}`);
+        setActiveDraft(null);
+    };
+
+    const handleDraftReject = () => {
+        setActiveDraft(null);
+        sendMessage('I want to discard this draft and start over.');
+    };
+
+    const handleNewChat = () => {
+        setMessages([]);
+        setActiveDraft(null);
+        setInput('');
+    };
+
+    const renderToolResults = (msg: Message) => {
+        if (!msg.ui_actions || msg.ui_actions.length === 0) return null;
+
+        return msg.ui_actions.map((action: any, idx: number) => {
+            if (action.action === 'show_marketplace_cards' && action.data?.results?.length > 0) {
+                return (
+                    <div key={idx} className="grid gap-2 mt-3">
+                        {action.data.results.map((item: any) => (
+                            <MarketplaceCard key={item.id} item={item} onSelect={handleItemSelect} />
+                        ))}
+                    </div>
+                );
+            }
+
+            if (action.action === 'show_opportunity_cards' && action.data?.results?.length > 0) {
+                return (
+                    <div key={idx} className="grid gap-2 mt-3">
+                        {action.data.results.map((opp: any) => (
+                            <OpportunityCard
+                                key={opp.id}
+                                opportunity={opp}
+                                type={action.data.type}
+                                onSelect={handleOpportunitySelect}
+                            />
+                        ))}
+                    </div>
+                );
+            }
+
+            if (action.action === 'show_order_draft' && action.data?.order_summary) {
+                const order = action.data.order_summary;
+                return (
+                    <div key={idx} className="rounded-2xl border border-green-200 dark:border-green-800 bg-gradient-to-br from-green-500/10 to-emerald-500/10 p-4 mt-3">
+                        <div className="flex items-center gap-2 mb-2">
+                            <ShoppingBag className="h-4 w-4 text-green-600" />
+                            <span className="text-sm font-semibold text-green-700 dark:text-green-300">Order Draft Ready</span>
+                        </div>
+                        <div className="text-xs space-y-1 text-foreground">
+                            <p><strong>{order.item?.name}</strong></p>
+                            <p>Quantity: {order.quantity} × ₹{order.unit_price?.toLocaleString('en-IN')}</p>
+                            <p className="text-base font-bold">Total: ₹{order.total_amount?.toLocaleString('en-IN')}</p>
+                        </div>
+                        <Button className="w-full mt-3 bg-green-600 hover:bg-green-700 text-white text-sm shadow-md" size="sm">
+                            <ShoppingBag className="h-4 w-4 mr-1.5" />
+                            Confirm & Pay
+                        </Button>
+                        <p className="text-[10px] text-muted-foreground text-center mt-1.5">
+                            Payment is handled securely through Razorpay
+                        </p>
+                    </div>
+                );
+            }
+
+            if (action.action === 'show_submission_confirmation') {
+                return (
+                    <div key={idx} className="rounded-2xl border border-indigo-200 dark:border-indigo-800 bg-gradient-to-br from-indigo-500/10 to-violet-500/10 p-4 mt-3 text-center">
+                        <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900/50 mb-2">
+                            <Sparkles className="h-5 w-5 text-indigo-600" />
+                        </div>
+                        <p className="text-sm font-semibold text-foreground">Application Submitted!</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                            Track your application in the Workspace section.
+                        </p>
+                    </div>
+                );
+            }
+
+            return null;
+        });
+    };
+
+    // Loading state while fetching history
+    if (isLoadingHistory) {
+        return (
+            <div className="flex flex-col h-[calc(100vh-8rem)] max-w-4xl mx-auto w-full items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+                <p className="text-sm text-muted-foreground mt-2">Loading your conversations...</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex flex-col h-[calc(100vh-8rem)] max-w-4xl mx-auto w-full">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b px-4 py-3 md:px-6">
+                <div className="flex items-center gap-3">
+                    <div className="relative">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 shadow-lg shadow-indigo-500/25">
+                            <Bot className="h-5 w-5 text-white" />
+                        </div>
+                        <div className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-green-500 border-2 border-background"></span>
+                        </div>
+                    </div>
+                    <div>
+                        <h1 className="text-base font-bold text-foreground">UniNest AI</h1>
+                        <p className="text-xs text-muted-foreground">
+                            Your campus co-pilot • Marketplace & Workspace
+                        </p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-1">
+                    {messages.length > 0 && (
+                        <>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={handleNewChat}
+                                className="text-xs text-muted-foreground hover:text-foreground"
+                            >
+                                <RotateCcw className="h-3.5 w-3.5 mr-1" />
+                                New chat
+                            </Button>
+                            {user && (
+                                <div className="relative">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setShowDeleteConfirm(!showDeleteConfirm)}
+                                        className="text-xs text-muted-foreground hover:text-red-500"
+                                    >
+                                        <Trash2 className="h-3.5 w-3.5 mr-1" />
+                                        Clear history
+                                    </Button>
+                                    {showDeleteConfirm && (
+                                        <div className="absolute right-0 top-full mt-1 z-50 rounded-xl border bg-background shadow-xl p-3 w-56 animate-in fade-in slide-in-from-top-2 duration-200">
+                                            <p className="text-xs text-foreground font-medium mb-2">
+                                                Delete all chat history?
+                                            </p>
+                                            <p className="text-[10px] text-muted-foreground mb-3">
+                                                This will permanently remove all your conversations with the AI.
+                                            </p>
+                                            <div className="flex gap-2">
+                                                <Button
+                                                    size="sm"
+                                                    variant="destructive"
+                                                    className="flex-1 text-xs h-7"
+                                                    onClick={deleteHistory}
+                                                >
+                                                    Delete all
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    className="flex-1 text-xs h-7"
+                                                    onClick={() => setShowDeleteConfirm(false)}
+                                                >
+                                                    Cancel
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
+            </div>
+
+            {/* Messages */}
+            <ScrollArea className="flex-1 px-4 py-4 md:px-6" ref={scrollRef}>
+                <div className="space-y-4">
+                    {/* Welcome State */}
+                    {messages.length === 0 && (
+                        <div className="flex flex-col items-center justify-center py-8 space-y-6 animate-in fade-in duration-500">
+                            <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-indigo-600 to-violet-600 shadow-2xl shadow-indigo-500/30">
+                                <Sparkles className="h-8 w-8 text-white" />
+                            </div>
+                            <div className="text-center space-y-1">
+                                <h2 className="text-xl font-bold text-foreground">Welcome to UniNest AI</h2>
+                                <p className="text-sm text-muted-foreground max-w-sm">
+                                    I can help you find hostels, libraries, internships, and more. What would you like to do?
+                                </p>
+                            </div>
+
+                            {/* Quick Action Chips */}
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 w-full max-w-lg">
+                                {quickActions.map((action) => {
+                                    const Icon = action.icon;
+                                    return (
+                                        <button
+                                            key={action.label}
+                                            onClick={() => handleQuickAction(action.prompt)}
+                                            className={cn(
+                                                'flex items-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-medium transition-all',
+                                                'hover:shadow-md hover:scale-[1.02] active:scale-[0.98]',
+                                                action.color
+                                            )}
+                                        >
+                                            <Icon className="h-4 w-4 shrink-0" />
+                                            {action.label}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Message Bubbles */}
+                    {messages.map((msg) => (
+                        <div key={msg.id} className={cn('flex gap-3', msg.role === 'user' ? 'justify-end' : '')}>
+                            {/* AI Avatar */}
+                            {msg.role === 'assistant' && (
+                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 shadow-sm">
+                                    <Bot className="h-4 w-4 text-white" />
+                                </div>
+                            )}
+
+                            <div className={cn('max-w-[85%] space-y-0')}>
+                                {/* Text Bubble */}
+                                <div
+                                    className={cn(
+                                        'rounded-2xl px-4 py-2.5 text-sm leading-relaxed',
+                                        msg.role === 'user'
+                                            ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-tr-md shadow-md shadow-indigo-500/20'
+                                            : 'bg-muted text-foreground rounded-tl-md border'
+                                    )}
+                                >
+                                    <p className="whitespace-pre-wrap">{msg.content}</p>
+                                </div>
+
+                                {/* Tool Result Cards */}
+                                {msg.role === 'assistant' && renderToolResults(msg)}
+                            </div>
+
+                            {/* User Avatar */}
+                            {msg.role === 'user' && (
+                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-600 to-slate-700 shadow-sm">
+                                    <User className="h-4 w-4 text-white" />
+                                </div>
+                            )}
+                        </div>
+                    ))}
+
+                    {/* Loading State (Skeleton) */}
+                    {isLoading && (
+                        <div className="flex gap-3">
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 shadow-sm">
+                                <Bot className="h-4 w-4 text-white" />
+                            </div>
+                            <div className="space-y-3 w-full max-w-[85%]">
+                                <div className="rounded-2xl rounded-tl-md bg-muted border px-4 py-3 flex items-center gap-2">
+                                    <Loader2 className="h-4 w-4 animate-spin text-indigo-600" />
+                                    <span className="text-xs text-muted-foreground">Searching UniNest...</span>
+                                </div>
+                                <div className="grid gap-2">
+                                    <MarketplaceCardSkeleton />
+                                    <MarketplaceCardSkeleton />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Active Draft Panel */}
+                    {activeDraft && (
+                        <div className="ml-11">
+                            <WorkspaceDraftPanel
+                                draft={activeDraft}
+                                type={activeDraft.opportunity?.role ? 'internship' : 'competition'}
+                                onApprove={handleDraftApprove}
+                                onReject={handleDraftReject}
+                            />
+                        </div>
+                    )}
+                </div>
+            </ScrollArea>
+
+            {/* Input Bar */}
+            <div className="border-t bg-background/80 backdrop-blur-sm px-4 py-3 md:px-6">
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        sendMessage(input);
+                    }}
+                    className="flex items-center gap-2"
+                >
+                    <Input
+                        ref={inputRef}
+                        placeholder="Ask me about hostels, internships, or anything..."
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        disabled={isLoading}
+                        className="flex-1 rounded-xl border-muted-foreground/20 bg-muted/50 focus-visible:ring-indigo-500 h-11"
+                    />
+                    <Button
+                        type="submit"
+                        disabled={isLoading || !input.trim()}
+                        className="h-11 w-11 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 shadow-lg shadow-indigo-500/25 shrink-0"
+                        size="icon"
+                    >
+                        {isLoading ? (
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                        ) : (
+                            <Send className="h-5 w-5" />
+                        )}
+                    </Button>
+                </form>
+                <p className="text-[10px] text-muted-foreground text-center mt-1.5">
+                    UniNest AI may produce inaccurate information. Always verify critical details.
+                </p>
+            </div>
+        </div>
+    );
+}

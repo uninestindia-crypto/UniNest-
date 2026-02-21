@@ -49,6 +49,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
       '/',
       '/marketplace',
       '/workspace',
+      '/ai',
       '/notes',
       '/donate',
       '/support',
