@@ -1,5 +1,23 @@
-require('dotenv').config({ path: '.env' });
 const { createClient } = require('@supabase/supabase-js');
+const fs = require('fs');
+const path = require('path');
+
+// Manually parse .env since dotenv is not available
+const envPath = path.join(__dirname, '..', '.env');
+try {
+    const envFile = fs.readFileSync(envPath, 'utf8');
+    envFile.split('\n').forEach(line => {
+        const match = line.match(/^([^#=]+)=(.*)$/);
+        if (match) {
+            let val = match[2].trim();
+            if (val.startsWith('"') && val.endsWith('"')) val = val.slice(1, -1);
+            if (val.startsWith("'") && val.endsWith("'")) val = val.slice(1, -1);
+            process.env[match[1]] = val;
+        }
+    });
+} catch (e) {
+    console.log("Could not read .env file", e);
+}
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
@@ -17,7 +35,6 @@ async function createVendor() {
 
     console.log(`Checking for existing user: ${email}`);
 
-    // 1. Check if user exists, if they do, delete them to start fresh
     const { data: users, error: listError } = await supabase.auth.admin.listUsers();
     if (!listError && users?.users) {
         const existingUser = users.users.find(u => u.email === email);
@@ -28,7 +45,6 @@ async function createVendor() {
     }
 
     console.log(`Creating user: ${email}`);
-    // 2. Create the user through Admin API to bypass email confirmation and inject raw metadata
     const { data: userAuth, error: createError } = await supabase.auth.admin.createUser({
         email,
         password,
@@ -48,7 +64,6 @@ async function createVendor() {
     const userId = userAuth.user.id;
     console.log(`User created successfully! ID: ${userId}`);
 
-    // 3. Ensure a profile exists for them as well
     const { error: profileError } = await supabase.from('profiles').upsert({
         id: userId,
         full_name: 'Test Vendor User',

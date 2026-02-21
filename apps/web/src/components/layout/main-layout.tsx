@@ -50,6 +50,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
       '/marketplace',
       '/workspace',
       '/ai',
+      '/chat',
       '/notes',
       '/donate',
       '/support',

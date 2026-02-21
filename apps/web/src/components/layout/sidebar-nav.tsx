@@ -18,6 +18,7 @@ import {
   Trophy,
   Briefcase,
   Bot,
+  MessageCircle,
   User as UserIcon
 } from 'lucide-react';
 import {
@@ -44,6 +45,7 @@ const mainNavItems = [
 ];
 
 const secondaryNavItems = [
+  { href: '/chat', label: 'Messages', icon: MessageCircle, roles: ['student', 'vendor', 'admin'] },
   { href: '/about', label: 'About Us', icon: Info, roles: ['student', 'vendor', 'guest', 'admin'] },
   { href: '/support', label: 'Support', icon: LifeBuoy, roles: ['student', 'vendor', 'admin'] },
 ];

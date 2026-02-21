@@ -537,11 +537,12 @@ export default function ChatLayout() {
         onOpenChange={setIsNewChatModalOpen}
         onSelectUser={handleStartNewChat}
       />
-      <div className="grid grid-cols-1 md:grid-cols-3 h-[calc(100vh-8rem)]">
-        <div className="col-span-1 border-r">
+      {/* Desktop: side-by-side layout */}
+      <div className="hidden md:grid md:grid-cols-3 h-full overflow-hidden">
+        <div className="col-span-1 border-r overflow-hidden">
           <ChatListScreen />
         </div>
-        <div className="col-span-2 flex flex-col">
+        <div className="col-span-2 flex flex-col overflow-hidden">
           <ChatMessages
             room={selectedRoom}
             messages={messages}
@@ -550,6 +551,21 @@ export default function ChatLayout() {
             currentUser={user}
           />
         </div>
+      </div>
+      {/* Mobile: show list OR messages */}
+      <div className="flex flex-col h-full md:hidden overflow-hidden">
+        {selectedRoom ? (
+          <ChatMessages
+            room={selectedRoom}
+            messages={messages}
+            onSendMessage={handleSendMessage}
+            loading={loadingMessages}
+            currentUser={user}
+            onBack={() => setSelectedRoom(null)}
+          />
+        ) : (
+          <ChatListScreen />
+        )}
       </div>
     </>
   );
