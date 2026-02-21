@@ -7,9 +7,39 @@ import { createClient } from '@/lib/supabase/server';
 export const revalidate = 0;
 
 export const metadata: Metadata = {
-    title: 'Student Relief & Community Support Fund | UniNest',
-    description: 'Support the Uninest student community. Your contributions power student relief funds, academic grants, and platform maintenance for underprivileged students.',
-    keywords: ['donate to students', 'scholarship support', 'student community fund', 'campus social impact'],
+    title: 'Donate & Pricing Details | Uninest Business Model Explained',
+    description: 'Uninest is 100% free for students. Our platform is supported by voluntary community donations and optional premium vendor tools. See how we operate.',
+};
+
+const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+        {
+            "@type": "Question",
+            "name": "How does Uninest make money?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Uninest is currently free for both students and vendors. We are supported by community donations and will introduce premium analytics tools for vendors in the future."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "Is Uninest really free for students?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes, standard student accounts are 100% free forever. This includes searching for hostels, booking library seats, finding internships, and using the AI assistant for application drafting."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "Why do vendors use Uninest?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Uninest connects local businesses directly with student populations. Free listings offer high visibility within campus communities, simplifying customer acquisition."
+            }
+        }
+    ]
 };
 
 type AggregatedDonor = {
@@ -113,9 +143,17 @@ export default async function DonatePage() {
 
     const initialRaisedAmount = donations.reduce((sum, d) => sum + d.amount, 0);
 
-    return <DonateContent
-        initialDonors={aggregatedDonors as any[] || []}
-        initialGoal={goalAmount}
-        initialRaised={initialRaisedAmount}
-    />
+    return (
+        <>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+            />
+            <DonateContent
+                initialDonors={aggregatedDonors as any[] || []}
+                initialGoal={goalAmount}
+                initialRaised={initialRaisedAmount}
+            />
+        </>
+    );
 }
