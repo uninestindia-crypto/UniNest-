@@ -5,12 +5,12 @@ import { defaultHomePosterConfig } from '@/lib/home-poster';
 import type { HomePosterConfig } from '@/lib/types';
 
 export const metadata: Metadata = {
-  title: 'UniNest | India’s #1 Student Hub – Hostels, Internships & Marketplace',
+  title: 'Uninest — AI Student Platform | Hostels, Libraries & Internships India',
   description:
-    'UniNest is the ultimate student ecosystem. Book verified hostels, find internships, shop in the marketplace, and partner as a vendor to reach 10,000+ campus students.',
-  keywords: ['student platform', 'student housing india', 'list your hostel', 'student marketing', 'campus opportunities'],
+    'Find student hostels, book library seats live, discover meal plans & apply for internships — all with AI help. Free for students. Vendors: list your services free.',
+  keywords: ['student platform', 'student housing india', 'list your hostel', 'student marketing', 'campus opportunities', 'live seat booking', 'AI internship helper'],
   alternates: {
-    canonical: 'https://uninest.app/',
+    canonical: 'https://uninest.co.in/',
   },
 };
 

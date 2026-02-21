@@ -9,8 +9,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 export const metadata: Metadata = {
-    title: 'Verified Student Hostels & PGs Near You | UniNest',
-    description: 'Find safe, verified student hostels and PG accommodations near your college. Browse by price, amenities (Wi-Fi, AC), and location. Book your perfect stay today.',
+    title: 'Student Hostel Booking Near Your College | Uninest Marketplace',
+    description: 'Browse verified student hostels near your college in India. Filter by location & budget. Book safely — Uninest AI never processes payment without your approval.',
     keywords: ['hostels near me', 'student pg', 'verified hostels', 'luxury student housing', 'pg for students'],
 };
 

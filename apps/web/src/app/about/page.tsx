@@ -7,8 +7,8 @@ import { GraduationCap, BookOpen, Store, Library, Rocket, Globe, UserCheck, Spar
 import AnimatedCounter from '@/components/animated-counter';
 
 export const metadata: Metadata = {
-  title: 'About UniNest | Our Mission, Story, and Impact',
-  description: 'Join the movement of over 10,000 students. Learn about UniNest\'s mission to empower learners and our incredible journey so far.',
+  title: 'About Uninest — AI Student Platform | How It Works',
+  description: 'Learn how Uninest\'s AI helps students book hostels, study spaces & meal plans, and apply for internships. Free for students. Powered by Llama 3.3 via Groq.',
 };
 
 const timelineEvents = [
@@ -50,13 +50,38 @@ export default function AboutPage() {
           </div>
 
           <h1 className="text-5xl md:text-7xl font-headline font-extrabold tracking-tight mb-8 max-w-5xl mx-auto animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-            10,000+ Students. <br className="hidden md:block" />
-            <span className="text-gradient">One Unified Campus.</span>
+            What Is Uninest? <br className="hidden md:block" />
+            <span className="text-gradient">India's AI-Powered Student Ecosystem Explained.</span>
           </h1>
 
-          <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-            UniNest is more than a platform — it’s a movement. We are bridging the gap between students, knowledge, and opportunity to create the campus of the future.
-          </p>
+          <div className="text-xl md:text-2xl text-muted-foreground/90 max-w-4xl mx-auto leading-relaxed animate-fade-in-up bg-card/50 backdrop-blur-md p-8 rounded-2xl border shadow-sm text-left" style={{ animationDelay: '0.2s' }}>
+            <p className="mb-4">
+              <strong className="text-foreground">Uninest (uninest.co.in)</strong> is an AI-powered student ecosystem platform based in India that serves university students through two integrated digital hubs:
+            </p>
+            <ul className="list-disc pl-6 mb-4 space-y-2">
+              <li>
+                <strong className="text-foreground">THE MARKETPLACE</strong> — a transactional hub where students discover, compare, and book essential student services including:
+                <ul className="list-circle pl-6 mt-2 space-y-1 text-lg">
+                  <li>Hostel accommodation near colleges and universities</li>
+                  <li>Library and study space seat reservations (including live seat booking)</li>
+                  <li>Food mess and meal plan subscriptions</li>
+                  <li>Essential student products and supplies</li>
+                </ul>
+              </li>
+              <li>
+                <strong className="text-foreground">THE WORKSPACE</strong> — a career development hub where students find and apply for internships and competitions, assisted by an AI writing co-pilot that drafts professional application essays.
+              </li>
+            </ul>
+            <p className="mb-4">
+              Uninest operates on a free-to-use model for students, sustained by community donations and future vendor subscription plans. Vendors (hostels, libraries, food mess operators, product sellers) can register on Uninest, create a free business profile, and list their services to reach the student community.
+            </p>
+            <p className="mb-4">
+              The platform's AI assistant is powered by the <strong>Llama-3.3-70b</strong> model via Groq infrastructure, enabling real-time, sub-second responses. A core design principle is human-in-the-loop control: <strong>the AI never makes bookings or submits applications without explicit student approval.</strong>
+            </p>
+            <p>
+              Unique features include: live seat booking for libraries, AI-assisted internship application drafting, vendor AI support, and a dual-audience design serving both students and service providers.
+            </p>
+          </div>
 
           <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
             <Button size="lg" className="h-14 px-8 text-lg rounded-full shadow-lg hover:shadow-primary/25 transition-all" asChild>

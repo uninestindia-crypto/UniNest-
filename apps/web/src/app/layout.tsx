@@ -23,10 +23,10 @@ const poppins = Poppins({
 const baseMetadata: Metadata = {
   metadataBase: new URL('https://uninest.co.in'),
   title: {
-    default: 'UniNest – India’s #1 Student Platform for Internships, Hostels & Marketplace',
-    template: '%s | UniNest',
+    default: 'Uninest — AI Student Platform | Hostels, Libraries & Internships India',
+    template: '%s | Uninest',
   },
-  description: 'Join 10,000+ students on UniNest. Find verified hostels, book library seats, find internships, and shop in India’s fastest-growing student community.',
+  description: 'Find student hostels, book library seats live, discover meal plans & apply for internships — all with AI help. Free for students. Vendors: list your services free.',
   keywords: [
     'uninest',
     'student platform',
@@ -48,13 +48,13 @@ const baseMetadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'UniNest',
+    title: 'Uninest',
   },
   verification: {
     google: 'google-site-verification=PLACEHOLDER_TOKEN',
   },
   other: {
-    'meta-title': 'UniNest – India’s #1 Student Platform for Internships, Hostels & Marketplace',
+    'meta-title': 'Uninest — AI Student Platform | Hostels, Libraries & Internships India',
   },
   robots: {
     index: true,
@@ -70,18 +70,18 @@ const baseMetadata: Metadata = {
 };
 
 const baseOpenGraph: NonNullable<Metadata['openGraph']> = {
-  title: 'UniNest – Student Housing, Internships & Marketplace',
-  description: 'Join 10,000+ students on UniNest. Find verified hostels, book library seats, and grow together.',
+  title: 'Uninest — Everything a Student Needs, Powered by AI',
+  description: 'Hostels. Libraries. Food Mess. Internships. Competitions. One AI platform. Always free for students. List your business free as a vendor.',
   url: 'https://uninest.co.in/',
-  siteName: 'UniNest',
+  siteName: 'Uninest',
   locale: 'en_IN',
   type: 'website',
 };
 
 const baseTwitter: NonNullable<Metadata['twitter']> = {
   card: 'summary_large_image',
-  title: 'UniNest – India’s #1 Student Platform for Internships & Competitions',
-  description: 'Join 10,000+ students on UniNest. Connect, study, and grow with your peers.',
+  title: 'Uninest — AI Student Platform | Hostels, Libraries & Internships India',
+  description: 'Hostels. Libraries. Food Mess. Internships. Competitions. One AI platform. Always free for students. List your business free as a vendor.',
 };
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -161,9 +161,19 @@ export default async function RootLayout({
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': 'Organization',
-              name: 'UniNest',
+              name: 'Uninest',
               url: 'https://uninest.co.in',
               logo: brandingAssets.logoUrl ?? brandingAssets.faviconUrl ?? undefined,
+              description: 'AI-powered student ecosystem platform in India offering hostel booking, live library seat reservation, food mess subscriptions, student product discovery, internship search, and AI-assisted application drafting.',
+              foundingCountry: 'IN',
+              audience: {
+                '@type': 'EducationalAudience',
+                educationalRole: 'student'
+              },
+              funding: {
+                '@type': 'Grant',
+                name: 'Community Donations and Future Vendor Subscriptions'
+              },
               contactPoint: {
                 '@type': 'ContactPoint',
                 telephone: '+91-XXXXXXXXXX',
@@ -172,8 +182,9 @@ export default async function RootLayout({
                 availableLanguage: ['en', 'hi']
               },
               sameAs: [
-                'https://www.instagram.com/uninest',
                 'https://www.linkedin.com/company/uninest',
+                'https://twitter.com/uninest',
+                'https://instagram.com/uninest'
               ],
             }),
           }}

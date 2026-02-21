@@ -212,6 +212,18 @@ export default function VendorOnboardingContent() {
             <CardDescription>Complete each step to unlock marketplace visibility and payout access.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
+            <div className="rounded-lg bg-muted/30 p-4 text-sm text-muted-foreground border border-primary/20">
+              <p className="mb-2">
+                If you run a hostel, library, food mess, or sell products to college students, Uninest is your direct channel to the student community. Register your business for free, build a profile, and list your services on a platform that thousands of students use to make their accommodation, study, and meal decisions.
+              </p>
+              <p className="mb-2">
+                An AI assistant is built in to help you manage your listings. As Uninest grows, early-registered vendors gain the strongest visibility.
+              </p>
+              <p>
+                Future premium subscription plans will unlock advanced analytics and priority placement — but registration and listing are free to start.
+              </p>
+            </div>
+
             <div className="space-y-3">
               <div className="flex items-center justify-between text-sm font-medium">
                 <span>Progress</span>

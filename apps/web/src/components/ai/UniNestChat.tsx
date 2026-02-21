@@ -324,48 +324,48 @@ export default function UniNestChat() {
     }
 
     return (
-        <div className="flex flex-col h-[calc(100vh-8rem)] max-w-4xl mx-auto w-full">
+        <div className="flex flex-col h-[calc(100vh-8rem)] pb-20 lg:pb-0 max-w-4xl mx-auto w-full overflow-hidden">
             {/* Header */}
-            <div className="flex items-center justify-between border-b px-4 py-3 md:px-6">
-                <div className="flex items-center gap-3">
-                    <div className="relative">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 shadow-lg shadow-indigo-500/25">
-                            <Bot className="h-5 w-5 text-white" />
+            <div className="flex items-center justify-between border-b px-3 py-2.5 md:px-6 md:py-3 gap-2">
+                <div className="flex items-center gap-2 md:gap-3 min-w-0">
+                    <div className="relative shrink-0">
+                        <div className="flex h-9 w-9 md:h-10 md:w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 shadow-lg shadow-indigo-500/25">
+                            <Bot className="h-4 w-4 md:h-5 md:w-5 text-white" />
                         </div>
-                        <div className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5">
+                        <div className="absolute -bottom-0.5 -right-0.5 flex h-3 w-3">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-green-500 border-2 border-background"></span>
+                            <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500 border-2 border-background"></span>
                         </div>
                     </div>
-                    <div>
-                        <h1 className="text-base font-bold text-foreground">UniNest AI</h1>
-                        <p className="text-xs text-muted-foreground">
-                            Your campus co-pilot • Marketplace & Workspace
+                    <div className="min-w-0">
+                        <h1 className="text-sm md:text-base font-bold text-foreground truncate">UniNest AI</h1>
+                        <p className="text-[10px] md:text-xs text-muted-foreground truncate">
+                            Your campus co-pilot
                         </p>
                     </div>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-0.5 shrink-0">
                     {messages.length > 0 && (
                         <>
                             <Button
                                 variant="ghost"
-                                size="sm"
+                                size="icon"
                                 onClick={handleNewChat}
-                                className="text-xs text-muted-foreground hover:text-foreground"
+                                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                                title="New chat"
                             >
-                                <RotateCcw className="h-3.5 w-3.5 mr-1" />
-                                New chat
+                                <RotateCcw className="h-3.5 w-3.5" />
                             </Button>
                             {user && (
                                 <div className="relative">
                                     <Button
                                         variant="ghost"
-                                        size="sm"
+                                        size="icon"
                                         onClick={() => setShowDeleteConfirm(!showDeleteConfirm)}
-                                        className="text-xs text-muted-foreground hover:text-red-500"
+                                        className="h-8 w-8 text-muted-foreground hover:text-red-500"
+                                        title="Clear history"
                                     >
-                                        <Trash2 className="h-3.5 w-3.5 mr-1" />
-                                        Clear history
+                                        <Trash2 className="h-3.5 w-3.5" />
                                     </Button>
                                     {showDeleteConfirm && (
                                         <div className="absolute right-0 top-full mt-1 z-50 rounded-xl border bg-background shadow-xl p-3 w-56 animate-in fade-in slide-in-from-top-2 duration-200">
@@ -373,7 +373,7 @@ export default function UniNestChat() {
                                                 Delete all chat history?
                                             </p>
                                             <p className="text-[10px] text-muted-foreground mb-3">
-                                                This will permanently remove all your conversations with the AI.
+                                                This will permanently remove all your conversations.
                                             </p>
                                             <div className="flex gap-2">
                                                 <Button
@@ -403,7 +403,7 @@ export default function UniNestChat() {
             </div>
 
             {/* Messages */}
-            <ScrollArea className="flex-1 px-4 py-4 md:px-6" ref={scrollRef}>
+            <ScrollArea className="flex-1 px-3 py-3 md:px-6 md:py-4 overflow-x-hidden" ref={scrollRef}>
                 <div className="space-y-4">
                     {/* Welcome State */}
                     {messages.length === 0 && (
@@ -419,7 +419,7 @@ export default function UniNestChat() {
                             </div>
 
                             {/* Quick Action Chips */}
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 w-full max-w-lg">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 md:gap-2 w-full max-w-lg">
                                 {quickActions.map((action) => {
                                     const Icon = action.icon;
                                     return (
@@ -442,8 +442,8 @@ export default function UniNestChat() {
                     )}
 
                     {/* Message Bubbles */}
-                    {messages.map((msg) => (
-                        <div key={msg.id} className={cn('flex gap-3', msg.role === 'user' ? 'justify-end' : '')}>
+                    {messages.map((msg) => ( /* eslint-disable-next-line */
+                        <div key={msg.id} className={cn('flex gap-2 md:gap-3 min-w-0', msg.role === 'user' ? 'justify-end' : '')}>
                             {/* AI Avatar */}
                             {msg.role === 'assistant' && (
                                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 shadow-sm">
@@ -451,17 +451,17 @@ export default function UniNestChat() {
                                 </div>
                             )}
 
-                            <div className={cn('max-w-[85%] space-y-0')}>
+                            <div className={cn('max-w-[80%] md:max-w-[85%] space-y-0 min-w-0')}>
                                 {/* Text Bubble */}
                                 <div
                                     className={cn(
-                                        'rounded-2xl px-4 py-2.5 text-sm leading-relaxed',
+                                        'rounded-2xl px-3 py-2 md:px-4 md:py-2.5 text-[13px] md:text-sm leading-relaxed',
                                         msg.role === 'user'
                                             ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-tr-md shadow-md shadow-indigo-500/20'
                                             : 'bg-muted text-foreground rounded-tl-md border'
                                     )}
                                 >
-                                    <p className="whitespace-pre-wrap">{msg.content}</p>
+                                    <p className="whitespace-pre-wrap break-words">{msg.content}</p>
                                 </div>
 
                                 {/* Tool Result Cards */}
@@ -511,7 +511,7 @@ export default function UniNestChat() {
             </ScrollArea>
 
             {/* Input Bar */}
-            <div className="border-t bg-background/80 backdrop-blur-sm px-4 py-3 md:px-6">
+            <div className="border-t bg-background/80 backdrop-blur-sm px-3 py-2.5 md:px-6 md:py-3">
                 <form
                     onSubmit={(e) => {
                         e.preventDefault();
@@ -521,16 +521,16 @@ export default function UniNestChat() {
                 >
                     <Input
                         ref={inputRef}
-                        placeholder="Ask me about hostels, internships, or anything..."
+                        placeholder="Ask UniNest AI anything..."
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         disabled={isLoading}
-                        className="flex-1 rounded-xl border-muted-foreground/20 bg-muted/50 focus-visible:ring-indigo-500 h-11"
+                        className="flex-1 rounded-xl border-muted-foreground/20 bg-muted/50 focus-visible:ring-indigo-500 h-10 md:h-11 text-sm"
                     />
                     <Button
                         type="submit"
                         disabled={isLoading || !input.trim()}
-                        className="h-11 w-11 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 shadow-lg shadow-indigo-500/25 shrink-0"
+                        className="h-10 w-10 md:h-11 md:w-11 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 shadow-lg shadow-indigo-500/25 shrink-0"
                         size="icon"
                     >
                         {isLoading ? (

@@ -4,8 +4,8 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 
 export const metadata: Metadata = {
-  title: 'Vendor Onboarding | UniNest',
-  description: 'Complete verification, catalog setup, and launch tasks to go live.',
+  title: 'List Your Student Business Free | Uninest Vendor Registration',
+  description: 'Register your hostel, library, food mess, or student product business on Uninest. Reach thousands of college students. Free to start. AI tools included.',
 };
 
 export default async function VendorOnboardingPage() {
