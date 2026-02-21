@@ -26,9 +26,6 @@ export function GroqAssistant() {
     const [isLoading, setIsLoading] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
 
-    // Hide on the dedicated AI chat page to avoid redundancy
-    if (pathname === '/ai/chat') return null;
-
     useEffect(() => {
         if (scrollRef.current) {
             const scrollContainer = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
@@ -37,6 +34,9 @@ export function GroqAssistant() {
             }
         }
     }, [messages]);
+
+    // Hide on the dedicated AI chat page to avoid redundancy
+    if (pathname === '/ai/chat') return null;
 
     const handleSend = async () => {
         if (!input.trim() || isLoading) return;

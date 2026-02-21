@@ -419,32 +419,31 @@ export default function ChatLayout() {
   const ChatListScreen = () => (
     <div className="flex h-full flex-col">
       <header className="border-b bg-background/95 pb-4 shadow-sm backdrop-blur">
-        <div className="flex items-center justify-between px-4 pt-4">
+        <div className="flex items-center justify-between px-4 pt-4 pb-2">
           <div className="flex items-center gap-3">
             {isMobile ? (
               <Button
-                variant="outline"
+                variant="ghost"
                 size="icon"
-                className="rounded-full"
+                className="rounded-full hover:bg-muted"
                 onClick={() => router.back()}
               >
                 <ArrowLeft className="size-5" />
               </Button>
             ) : null}
             <div>
-              <h1 className="text-xl font-semibold text-foreground md:text-2xl">Messages</h1>
-              <p className="text-xs text-muted-foreground md:text-sm">Stay on top of your conversations and leads</p>
+              <h1 className="text-2xl font-bold tracking-tight text-foreground">Chats</h1>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" className="rounded-full">
-              <Filter className="size-4" />
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="icon" className="rounded-full text-muted-foreground hover:text-foreground">
+              <Filter className="size-5" />
               <span className="sr-only">Filter</span>
             </Button>
             <Button
-              variant="outline"
+              variant="default"
               size="icon"
-              className="rounded-full border-primary text-primary"
+              className="rounded-full shadow-sm"
               onClick={() => setIsNewChatModalOpen(true)}
             >
               <Plus className="size-5" />
@@ -452,50 +451,42 @@ export default function ChatLayout() {
             </Button>
           </div>
         </div>
-        <div className="space-y-4 px-4 pt-4">
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <div className="space-y-4 px-4 pt-2">
+          <div className="relative group">
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
             <Input
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Search"
-              className="h-10 rounded-full border-none bg-muted pl-10 text-sm"
+              placeholder="Search chats"
+              className="h-9 w-full rounded-2xl border-none bg-muted/80 pl-10 pr-4 text-sm shadow-none transition-colors focus-visible:bg-background focus-visible:ring-1 focus-visible:ring-primary/50"
             />
           </div>
-          <div className="flex items-center gap-3 overflow-x-auto pb-1">
-            <button
-              type="button"
-              className="flex shrink-0 flex-col items-center gap-2"
-              onClick={() => setIsNewChatModalOpen(true)}
-            >
-              <span className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed border-primary/60 text-lg text-primary">
-                +
-              </span>
-              <span className="text-xs text-muted-foreground">New note</span>
-            </button>
+
+          <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide">
             {highlightRooms.map((room) => (
-              <div key={room.id} className="flex shrink-0 flex-col items-center gap-2">
-                <div className="rounded-full border-2 border-primary/60 p-[2px]">
-                  <Avatar className="h-16 w-16">
-                    <AvatarImage src={room.avatar || `https://picsum.photos/seed/${room.id}/80`} alt={room.name || 'Chat'} />
-                    <AvatarFallback>{room.name?.charAt(0) || 'C'}</AvatarFallback>
+              <div key={room.id} className="flex shrink-0 flex-col items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => handleSelectRoom(room)}>
+                <div className="rounded-full p-[2px] ring-2 ring-transparent transition-all hover:ring-primary/20">
+                  <Avatar className="h-14 w-14 shadow-sm">
+                    <AvatarImage src={room.avatar || `https://picsum.photos/seed/${room.id}/80`} alt={room.name || 'Chat'} data-ai-hint="person face" />
+                    <AvatarFallback className="bg-primary/10 text-primary">{room.name?.charAt(0) || 'C'}</AvatarFallback>
                   </Avatar>
                 </div>
-                <span className="w-16 truncate text-center text-xs text-muted-foreground">{room.name || 'Conversation'}</span>
+                <span className="w-16 truncate text-center text-[10px] font-medium text-muted-foreground">{room.name || 'User'}</span>
               </div>
             ))}
           </div>
-          <div className="flex gap-2 text-sm font-medium">
+
+          <div className="flex w-full rounded-xl bg-muted/50 p-1">
             {inboxTabs.map((tab) => (
               <button
                 key={tab.value}
                 type="button"
                 onClick={() => setActiveInboxTab(tab.value)}
                 className={cn(
-                  'rounded-full px-4 py-1.5 transition',
+                  'flex-1 rounded-lg px-3 py-1.5 text-xs font-semibold capitalize transition-all duration-200',
                   activeInboxTab === tab.value
-                    ? 'bg-primary text-primary-foreground shadow-sm'
-                    : 'bg-muted text-muted-foreground hover:bg-muted/70'
+                    ? 'bg-background text-foreground shadow-[0_1px_3px_rgba(0,0,0,0.05)]'
+                    : 'text-muted-foreground hover:text-foreground/80'
                 )}
               >
                 {tab.label}
@@ -538,8 +529,8 @@ export default function ChatLayout() {
         onSelectUser={handleStartNewChat}
       />
       {/* Desktop: side-by-side layout */}
-      <div className="hidden md:grid md:grid-cols-3 h-full overflow-hidden">
-        <div className="col-span-1 border-r overflow-hidden">
+      <div className="hidden md:grid md:grid-cols-3 h-full overflow-hidden bg-background">
+        <div className="col-span-1 border-r border-border/50 overflow-hidden bg-background/95">
           <ChatListScreen />
         </div>
         <div className="col-span-2 flex flex-col overflow-hidden">

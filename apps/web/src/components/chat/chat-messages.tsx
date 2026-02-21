@@ -140,15 +140,15 @@ export default function ChatMessages({ room, messages, onSendMessage, loading, c
             <ArrowLeft />
           </Button>
         ) : null}
-        <Avatar className="h-10 w-10">
+        <Avatar className="h-10 w-10 border border-border/50 shadow-sm">
           <AvatarImage src={roomAvatar} alt={roomName} data-ai-hint="person face" />
-          <AvatarFallback>{roomName.charAt(0)}</AvatarFallback>
+          <AvatarFallback className="bg-primary/10 text-primary">{roomName.charAt(0)}</AvatarFallback>
         </Avatar>
-        <div className="flex flex-col">
-          <h2 className="text-lg font-semibold">{roomName}</h2>
-          <div className="flex items-center gap-1 text-[10px] text-primary">
-            <ShieldCheck className="size-3" />
-            <span className="uppercase tracking-widest font-bold">End-to-End Encrypted</span>
+        <div className="flex flex-col ml-1">
+          <h2 className="text-base font-semibold tracking-tight">{roomName}</h2>
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground/80 font-medium">
+            <ShieldCheck className="size-3.5" />
+            <span>End-to-End Encrypted</span>
           </div>
         </div>
       </div>
@@ -161,102 +161,110 @@ export default function ChatMessages({ room, messages, onSendMessage, loading, c
             const senderName = senderProfile?.full_name || 'User';
 
             return (
-              <div key={message.id} className={cn('flex items-end gap-3', isSentByMe && 'justify-end')}>
-                {!isSentByMe ? (
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={senderAvatar} alt={senderName} data-ai-hint="person face" />
-                    <AvatarFallback>{senderName.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                ) : null}
-                <div
-                  className={cn(
-                    'max-w-xs rounded-2xl p-4 md:max-w-md shadow-sm transition-all hover:shadow-md cursor-default',
-                    isSentByMe
-                      ? 'primary-gradient text-primary-foreground rounded-br-none'
-                      : 'bg-background/60 backdrop-blur-md border border-white/20 text-foreground rounded-bl-none'
-                  )}
-                >
-                  <div className="flex items-center gap-2 mb-1 opacity-70">
-                    <span className="text-[10px] font-bold uppercase tracking-wider">{senderName}</span>
-                    {isSentByMe && <Lock className="size-2" />}
-                  </div>
-                  <p className="text-sm">{message.content}</p>
-                  <p
+              <div key={message.id} className={cn('flex flex-col gap-1 w-full max-w-[85%] md:max-w-[75%]', isSentByMe ? 'ml-auto items-end' : 'mr-auto items-start')}>
+                <div className="flex items-end gap-2 w-full">
+                  {!isSentByMe ? (
+                    <Avatar className="h-6 w-6 shrink-0 mb-1 border border-border/30">
+                      <AvatarImage src={senderAvatar} alt={senderName} data-ai-hint="person face" />
+                      <AvatarFallback className="text-[10px] bg-muted">{senderName.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                  ) : null}
+                  <div
                     className={cn(
-                      'mt-1 text-xs',
-                      isSentByMe ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                      'relative flex flex-col px-4 py-2.5 text-[15px] shadow-sm',
+                      isSentByMe
+                        ? 'bg-primary text-primary-foreground rounded-2xl rounded-br-sm ml-auto'
+                        : 'bg-muted/80 border border-border/30 text-foreground rounded-2xl rounded-bl-sm mr-auto'
                     )}
                   >
-                    {new Date(message.created_at).toLocaleTimeString([], {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </p>
+                    {!isSentByMe && (
+                      <span className="text-[11px] font-semibold text-primary/80 mb-0.5">{senderName}</span>
+                    )}
+                    <span className="leading-relaxed whitespace-pre-wrap break-words">{message.content}</span>
+
+                    <div className={cn(
+                      "flex items-center gap-1 mt-1 justify-end self-end",
+                      isSentByMe ? "text-primary-foreground/70" : "text-muted-foreground/70"
+                    )}>
+                      {isSentByMe && <Lock className="size-2.5 opacity-70" />}
+                      <span className="text-[10px] tabular-nums font-medium">
+                        {new Date(message.created_at).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                {isSentByMe ? (
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage
-                      src={user?.user_metadata?.avatar_url || 'https://picsum.photos/id/237/40/40'}
-                      alt="Your avatar"
-                    />
-                    <AvatarFallback>{user?.email?.[0].toUpperCase() || 'U'}</AvatarFallback>
-                  </Avatar>
-                ) : null}
               </div>
             );
           })}
         </div>
       </ScrollArea>
-      <div className="space-y-2 border-t p-4">
-        {isUploading ? (
-          <div className="relative h-2 w-full overflow-hidden rounded-full bg-secondary">
-            <div
-              className="h-full bg-primary transition-all duration-300"
-              style={{ width: `${uploadProgress}%` }}
-            />
-          </div>
-        ) : null}
-        {selectedFile ? (
-          <div className="flex items-center justify-between rounded-md bg-muted p-2 text-sm">
-            <span className="truncate">{selectedFile.name}</span>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6"
-              onClick={handleRemoveFile}
+      <div className="p-3 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-border/50">
+        <div className="space-y-2 max-w-4xl mx-auto w-full">
+          {isUploading ? (
+            <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-secondary/50 mx-2">
+              <div
+                className="absolute inset-y-0 left-0 bg-primary transition-all duration-300 ease-out"
+                style={{ width: `${uploadProgress}%` }}
+              />
+            </div>
+          ) : null}
+          {selectedFile ? (
+            <div className="flex items-center justify-between mx-2 rounded-xl bg-muted/80 border border-border/50 p-2 text-sm shadow-sm backdrop-blur-sm">
+              <div className="flex items-center gap-2 overflow-hidden px-2">
+                <Paperclip className="size-4 shrink-0 text-muted-foreground" />
+                <span className="truncate font-medium">{selectedFile.name}</span>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-full hover:bg-destructive/10 hover:text-destructive shrink-0"
+                onClick={handleRemoveFile}
+                disabled={isUploading}
+              >
+                <X className="size-4" />
+              </Button>
+            </div>
+          ) : null}
+          <div className="flex items-center gap-2">
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              className="hidden"
+              id="file-upload"
               disabled={isUploading}
-            >
-              <X className="size-4" />
-            </Button>
+            />
+            <div className="relative flex-1 flex items-center bg-muted/50 border border-border/50 rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.04)] focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/30 transition-all duration-200">
+              <Button variant="ghost" size="icon" asChild disabled={isUploading} className="absolute left-1 h-9 w-9 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted shrink-0 z-10 transition-colors">
+                <label htmlFor="file-upload" className="cursor-pointer flex items-center justify-center">
+                  <Paperclip className="size-4.5" />
+                  <span className="sr-only">Attach file</span>
+                </label>
+              </Button>
+              <Input
+                placeholder="Message..."
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                disabled={isUploading}
+                className="flex-1 h-11 pl-12 pr-12 rounded-full border-none bg-transparent shadow-none focus-visible:ring-0 text-[15px]"
+              />
+              {newMessage.trim() || selectedFile ? (
+                <Button
+                  onClick={handleSend}
+                  disabled={isUploading}
+                  size="icon"
+                  className="absolute right-1 h-9 w-9 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shrink-0 z-10 shadow-sm transition-transform active:scale-95"
+                >
+                  {isUploading ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4 ml-0.5" />}
+                  <span className="sr-only">Send</span>
+                </Button>
+              ) : null}
+            </div>
           </div>
-        ) : null}
-        <div className="flex items-center gap-2">
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            className="hidden"
-            id="file-upload"
-            disabled={isUploading}
-          />
-          <Button variant="ghost" size="icon" asChild disabled={isUploading}>
-            <label htmlFor="file-upload" className="cursor-pointer">
-              <Paperclip className="size-5" />
-              <span className="sr-only">Attach file</span>
-            </label>
-          </Button>
-          <Input
-            placeholder="Type a message..."
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            disabled={isUploading}
-            className="flex-1"
-          />
-          <Button onClick={handleSend} disabled={isUploading || (!newMessage.trim() && !selectedFile)}>
-            {isUploading ? <Loader2 className="size-5 animate-spin" /> : <Send className="size-5" />}
-            <span className="sr-only">Send</span>
-          </Button>
         </div>
       </div>
     </div>

@@ -18,7 +18,8 @@ import {
     Store,
     Star,
     Share2,
-    Heart
+    Heart,
+    MessageCircle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
@@ -331,21 +332,54 @@ export default function ProductDetailClient({ product, currentUser }: ProductDet
                         </Card>
 
                         {/* Seller Info */}
-                        <div className="flex items-center gap-4 p-4 rounded-xl border bg-card/50 backdrop-blur-sm shadow-sm transition-all hover:shadow-md hover:border-primary/20">
-                            <Avatar className="h-14 w-14 border-2 border-background shadow-sm">
-                                <AvatarImage src={product.seller.avatar_url || undefined} />
-                                <AvatarFallback className="bg-primary/10 text-primary font-bold text-lg">{product.seller.full_name?.[0]}</AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1">
-                                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Sold by</p>
-                                <Link href={`/profile/${product.seller.handle}`} className="font-bold text-lg hover:text-primary transition-colors flex items-center gap-1 group">
-                                    {product.seller.full_name}
-                                    <Store className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                                </Link>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-xl border bg-card/50 backdrop-blur-sm shadow-sm transition-all hover:shadow-md hover:border-primary/20">
+                            <div className="flex items-center gap-4 flex-1">
+                                <Avatar className="h-14 w-14 border-2 border-background shadow-sm">
+                                    <AvatarImage src={product.seller.avatar_url || undefined} />
+                                    <AvatarFallback className="bg-primary/10 text-primary font-bold text-lg">{product.seller.full_name?.[0]}</AvatarFallback>
+                                </Avatar>
+                                <div>
+                                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Sold by</p>
+                                    <Link href={`/profile/${product.seller.handle}`} className="font-bold text-lg hover:text-primary transition-colors flex items-center gap-1 group">
+                                        {product.seller.full_name}
+                                        <Store className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                                    </Link>
+                                </div>
                             </div>
-                            <Button variant="outline" size="sm" className="rounded-full" asChild>
-                                <Link href={`/profile/${product.seller.handle}`}>View Profile</Link>
-                            </Button>
+                            <div className="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                                {canInteract && (
+                                    <Button
+                                        variant="default"
+                                        size="sm"
+                                        className="rounded-full flex-1 sm:flex-none shadow-md shadow-primary/20"
+                                        onClick={async () => {
+                                            if (!currentUser) {
+                                                toast({ title: "Login required", description: "Log in to chat with sellers", variant: "destructive" });
+                                                router.push('/login');
+                                                return;
+                                            }
+                                            try {
+                                                const { error } = await supabase.rpc('create_private_chat', {
+                                                    p_user1_id: currentUser.id,
+                                                    p_user2_id: product.seller_id,
+                                                });
+                                                if (error) throw error;
+                                                toast({ title: "Opening Chat...", description: "Redirecting to your messages." });
+                                                router.push('/chat');
+                                            } catch (err) {
+                                                console.error('Failed to start chat:', err);
+                                                toast({ title: "Connection Error", description: "Could not start chat.", variant: "destructive" });
+                                            }
+                                        }}
+                                    >
+                                        <MessageCircle className="w-4 h-4 mr-2" />
+                                        Chat
+                                    </Button>
+                                )}
+                                <Button variant="outline" size="sm" className="rounded-full flex-1 sm:flex-none" asChild>
+                                    <Link href={`/profile/${product.seller.handle}`}>View Profile</Link>
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </div>
