@@ -27,6 +27,7 @@ import WorkspaceDraftPanel, { OpportunityCard, OpportunityCardSkeleton } from '.
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/use-auth';
 import ChatSessionSidebar, { type ChatSession } from './ChatSessionSidebar';
+import { useSearchParams } from 'next/navigation';
 
 type Message = {
     id: string;
@@ -62,6 +63,8 @@ export default function UniNestChat() {
     const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isFirstMessage, setIsFirstMessage] = useState(false);
+    const searchParams = useSearchParams();
+    const urlSessionId = searchParams.get('session_id');
 
     // Load sessions on mount
     useEffect(() => {
@@ -85,7 +88,10 @@ export default function UniNestChat() {
                     return;
                 }
 
-                if (data && data.length > 0) {
+                if (urlSessionId) {
+                    setActiveSessionId(urlSessionId);
+                    setSessions(data || []);
+                } else if (data && data.length > 0) {
                     setSessions(data);
                     setActiveSessionId(data[0].id);
                 } else {

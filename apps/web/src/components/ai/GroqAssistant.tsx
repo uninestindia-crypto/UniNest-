@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -12,6 +12,8 @@ import Link from 'next/link';
 import MarketplaceCard from './MarketplaceCard';
 import { OpportunityCard } from './WorkspaceDraftPanel';
 import { Heart, Users, TrendingUp, MessageSquare, Edit3 } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
+import { createClient } from '@/lib/supabase/client';
 
 type Message = {
     role: 'user' | 'assistant';
@@ -21,10 +23,13 @@ type Message = {
 
 export function GroqAssistant() {
     const pathname = usePathname();
+    const router = useRouter();
+    const { user } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
     const [input, setInput] = useState('');
     const [messages, setMessages] = useState<Message[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [isHandingOver, setIsHandingOver] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -38,6 +43,59 @@ export function GroqAssistant() {
 
     // Hide on the dedicated AI chat page to avoid redundancy
     if (pathname === '/ai/chat') return null;
+
+    const handleHandover = async (item?: any) => {
+        if (isHandingOver) return;
+
+        // If no messages or guest, just redirect
+        if (messages.length === 0 || !user) {
+            router.push('/ai/chat');
+            return;
+        }
+
+        setIsHandingOver(true);
+        try {
+            const supabase = createClient();
+
+            // 1. Create a session
+            const firstMsg = messages.find(m => m.role === 'user')?.content || 'Handover Chat';
+            const { data: session, error: sError } = await supabase
+                .from('ai_chat_sessions')
+                .insert({
+                    user_id: user.id,
+                    title: firstMsg.substring(0, 50),
+                })
+                .select()
+                .single();
+
+            if (sError) throw sError;
+
+            // 2. Batch save messages
+            const messagesToSave = messages.map(m => ({
+                user_id: user.id,
+                session_id: session.id,
+                role: m.role,
+                content: m.content,
+                ui_actions: m.ui_actions || null,
+            }));
+
+            const { error: mError } = await supabase
+                .from('ai_chat_messages')
+                .insert(messagesToSave);
+
+            if (mError) throw mError;
+
+            // 3. Redirect
+            router.push(`/ai/chat?session_id=${session.id}`);
+            setIsOpen(false);
+            setMessages([]);
+        } catch (err) {
+            console.error('Handover failed:', err);
+            router.push('/ai/chat');
+        } finally {
+            setIsHandingOver(false);
+        }
+    };
 
     const handleSend = async () => {
         if (!input.trim() || isLoading) return;
@@ -81,7 +139,7 @@ export function GroqAssistant() {
                 return (
                     <div key={idx} className="space-y-1.5 mt-2">
                         {action.data.results.slice(0, 3).map((item: any) => (
-                            <MarketplaceCard key={item.id} item={item} onSelect={() => { }} />
+                            <MarketplaceCard key={item.id} item={item} onSelect={() => handleHandover(item)} />
                         ))}
                     </div>
                 );
@@ -90,7 +148,7 @@ export function GroqAssistant() {
                 return (
                     <div key={idx} className="space-y-1.5 mt-2">
                         {action.data.results.slice(0, 3).map((opp: any) => (
-                            <OpportunityCard key={opp.id} opportunity={opp} type={action.data.type} onSelect={() => { }} />
+                            <OpportunityCard key={opp.id} opportunity={opp} type={action.data.type} onSelect={() => handleHandover(opp)} />
                         ))}
                     </div>
                 );
@@ -215,16 +273,16 @@ export function GroqAssistant() {
                             <CardTitle className="text-base font-bold">UniNest AI</CardTitle>
                         </div>
                         <div className="flex items-center gap-1">
-                            <Link href="/ai/chat">
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="text-white hover:bg-white/20 h-7 w-7"
-                                    title="Open full chat"
-                                >
-                                    <Maximize2 className="h-4 w-4" />
-                                </Button>
-                            </Link>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-white hover:bg-white/20 h-7 w-7"
+                                title="Open full chat"
+                                onClick={() => handleHandover()}
+                                disabled={isHandingOver}
+                            >
+                                {isHandingOver ? <Loader2 className="h-3 w-3 animate-spin" /> : <Maximize2 className="h-4 w-4" />}
+                            </Button>
                             <Button
                                 variant="ghost"
                                 size="icon"
