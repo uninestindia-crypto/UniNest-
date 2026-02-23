@@ -9,6 +9,7 @@ import {
     RefreshControl,
     TextInput,
     ScrollView,
+    Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
@@ -73,9 +74,25 @@ function ChatListItem({ room, onPress }: { room: Room; onPress: () => void }) {
                         {room.last_message_status === 'sent' && (
                             <Ionicons name="checkmark" size={16} color={theme.colors.mutedForeground} style={styles.statusIcon} />
                         )}
-                        <Text style={[styles.lastMessage, { color: theme.colors.mutedForeground }]} numberOfLines={1}>
-                            {room.last_message || 'No messages yet'}
-                        </Text>
+                        {room.last_message?.startsWith('[File]') ? (
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                <Ionicons name="camera" size={16} color={theme.colors.mutedForeground} style={{ marginRight: 4 }} />
+                                <Text style={[styles.lastMessage, { color: theme.colors.mutedForeground }]} numberOfLines={1}>
+                                    Photo
+                                </Text>
+                            </View>
+                        ) : room.last_message?.startsWith('[Voice Note]') ? (
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                <Ionicons name="mic" size={16} color={theme.colors.mutedForeground} style={{ marginRight: 4 }} />
+                                <Text style={[styles.lastMessage, { color: theme.colors.mutedForeground }]} numberOfLines={1}>
+                                    Voice message
+                                </Text>
+                            </View>
+                        ) : (
+                            <Text style={[styles.lastMessage, { color: theme.colors.mutedForeground }]} numberOfLines={1}>
+                                {room.last_message || 'No messages yet'}
+                            </Text>
+                        )}
                     </View>
                     {room.unread_count ? (
                         <View style={[styles.unreadBadge, { backgroundColor: theme.colors.whatsappGreen }]}>
@@ -149,11 +166,14 @@ export default function ChatListScreen() {
         <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
             {/* Custom Header */}
             <View style={styles.header}>
-                <Text style={[styles.headerTitle, { color: theme.colors.whatsappGreen }]}>UniNest</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                    <Image
+                        source={require('../../../assets/icon.png')}
+                        style={{ width: 32, height: 32, borderRadius: 6 }}
+                    />
+                    <Text style={[styles.headerTitle, { color: theme.colors.whatsappGreen || '#25D366' }]}>UniNest</Text>
+                </View>
                 <View style={styles.headerIcons}>
-                    <TouchableOpacity style={styles.headerIcon}>
-                        <Ionicons name="camera-outline" size={24} color={theme.colors.foreground} />
-                    </TouchableOpacity>
                     <TouchableOpacity style={styles.headerIcon}>
                         <Ionicons name="search-outline" size={24} color={theme.colors.foreground} />
                     </TouchableOpacity>
