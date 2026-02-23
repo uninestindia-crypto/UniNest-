@@ -23,6 +23,7 @@ import {
   decryptContent,
   importPublicKey
 } from '@/lib/crypto';
+import { BrandingLogo } from '@/components/branding/branding-logo';
 
 export default function ChatLayout() {
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -417,9 +418,10 @@ export default function ChatLayout() {
 
   const highlightRooms = useMemo(() => rooms.slice(0, 8), [rooms]);
 
+
   const ChatListScreen = () => (
     <div className="flex h-full flex-col bg-[#ffffff] dark:bg-[#111b21]">
-      <header className="bg-[#f0f2f5] dark:bg-[#202c33] px-4 py-2 flex items-center justify-between shrink-0">
+      <header className="bg-[#f0f2f5] dark:bg-[#202c33] px-4 py-2 flex items-center justify-between shrink-0 h-[59px]">
         <div className="flex items-center gap-2">
           {isMobile ? (
             <Button
@@ -432,19 +434,11 @@ export default function ChatLayout() {
             </Button>
           ) : null}
           <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10 cursor-pointer">
-              <AvatarImage src={user?.user_metadata?.avatar_url || `https://picsum.photos/seed/${user?.id}/80`} />
-              <AvatarFallback>{user?.email?.charAt(0).toUpperCase()}</AvatarFallback>
-            </Avatar>
+            <BrandingLogo size={36} className="h-9 w-auto" />
+            <span className="text-[19px] font-bold text-[#111b21] dark:text-[#e9edef] tracking-tight">UniNest</span>
           </div>
         </div>
-        <div className="flex items-center gap-2 text-[#54656f] dark:text-[#aebac1]">
-          <Button variant="ghost" size="icon" className="rounded-full hover:bg-black/5 dark:hover:bg-white/10">
-            <Plus className="size-5" />
-          </Button>
-          <Button variant="ghost" size="icon" className="rounded-full hover:bg-black/5 dark:hover:bg-white/10">
-            <Filter className="size-5" />
-          </Button>
+        <div className="flex items-center gap-1 text-[#54656f] dark:text-[#aebac1]">
           <Button
             variant="ghost"
             size="icon"
