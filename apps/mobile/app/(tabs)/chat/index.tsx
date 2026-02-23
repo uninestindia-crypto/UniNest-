@@ -149,7 +149,7 @@ export default function ChatListScreen() {
         <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
             {/* Custom Header */}
             <View style={styles.header}>
-                <Text style={[styles.headerTitle, { color: theme.colors.whatsappGreen }]}>WhatsApp</Text>
+                <Text style={[styles.headerTitle, { color: theme.colors.whatsappGreen }]}>UniNest</Text>
                 <View style={styles.headerIcons}>
                     <TouchableOpacity style={styles.headerIcon}>
                         <Ionicons name="camera-outline" size={24} color={theme.colors.foreground} />
@@ -168,7 +168,7 @@ export default function ChatListScreen() {
                 <Ionicons name="search" size={20} color={theme.colors.mutedForeground} style={styles.searchIcon} />
                 <TextInput
                     style={[styles.searchInput, { color: theme.colors.foreground }]}
-                    placeholder="Ask Meta AI or Search"
+                    placeholder="Search"
                     placeholderTextColor={theme.colors.mutedForeground}
                     value={searchQuery}
                     onChangeText={setSearchQuery}
@@ -216,15 +216,7 @@ export default function ChatListScreen() {
                 }
             />
 
-            {/* AI Circle FAB */}
-            <TouchableOpacity
-                style={[styles.aiFab, { backgroundColor: theme.colors.card }]}
-                onPress={() => {/* Meta AI Logic */ }}
-            >
-                <View style={styles.aiCircle}>
-                    <MaterialCommunityIcons name="circle-outline" size={24} color={theme.colors.whatsappBlue} />
-                </View>
-            </TouchableOpacity>
+            {/* AI Assistant is handled globally at the bottom of each page */}
 
             {/* Main FAB */}
             <TouchableOpacity

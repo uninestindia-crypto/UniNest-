@@ -17,6 +17,7 @@ import { useTheme } from '@/theme';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/services/supabase';
 import { Avatar } from '@/components/ui/Avatar';
+import { OptimizedImage } from '@/components/ui/OptimizedImage';
 import * as CryptoUtils from '@/utils/crypto';
 
 type Message = {
@@ -126,15 +127,45 @@ export default function ChatMessageScreen() {
                     {/* Tail */}
                     <View style={[
                         styles.tail,
-                        isMe ? [styles.myTail, { borderLeftColor: theme.colors.whatsappLightGreen }] : [styles.theirTail, { borderRightColor: theme.colors.card }]
+                        isMe ? [styles.myTail, { borderLeftColor: '#dcf8c6' }] : [styles.theirTail, { borderRightColor: theme.colors.card }]
                     ]} />
 
-                    <Text style={[
-                        styles.messageText,
-                        { color: theme.colors.foreground }
-                    ]}>
-                        {item.content}
-                    </Text>
+                    {item.content.startsWith('[File]') ? (
+                        <View style={styles.mediaContainer}>
+                            {item.content.match(/\.(jpg|jpeg|png|gif|webp)$|publicUrl\=.*(jpg|jpeg|png|gif|webp)/i) ? (
+                                <OptimizedImage
+                                    source={{ uri: item.content.split(': ')[1] }}
+                                    style={styles.imageThumbnail}
+                                />
+                            ) : (
+                                <View style={styles.filePlaceholder}>
+                                    <View style={styles.fileIcon}>
+                                        <Text style={styles.fileIconText}>{item.content.split(':')[0].split('.').pop()?.toUpperCase() || 'FILE'}</Text>
+                                    </View>
+                                    <Text style={[styles.fileName, { color: theme.colors.foreground }]} numberOfLines={1}>
+                                        {item.content.split(':')[0].replace('[File] ', '')}
+                                    </Text>
+                                </View>
+                            )}
+                        </View>
+                    ) : item.content.startsWith('[Voice Note]') ? (
+                        <View style={styles.voiceNoteContainer}>
+                            <View style={styles.voiceNoteIcon}>
+                                <Ionicons name="mic" size={20} color={theme.colors.whatsappGreen || '#25D366'} />
+                            </View>
+                            <View style={styles.voiceNoteWaveform}>
+                                <View style={[styles.waveformBar, { width: '40%', backgroundColor: theme.colors.whatsappGreen || '#25D366' }]} />
+                            </View>
+                            <Text style={styles.voiceNoteTime}>0:12</Text>
+                        </View>
+                    ) : (
+                        <Text style={[
+                            styles.messageText,
+                            { color: theme.colors.foreground }
+                        ]}>
+                            {item.content}
+                        </Text>
+                    )}
                     <View style={styles.messageFooter}>
                         <Text style={[
                             styles.messageTime,
@@ -188,10 +219,7 @@ export default function ChatMessageScreen() {
                 headerRight: () => (
                     <View style={styles.headerIcons}>
                         <TouchableOpacity style={styles.headerIcon}>
-                            <Ionicons name="videocam-outline" size={24} color={theme.colors.foreground} />
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.headerIcon}>
-                            <Ionicons name="call-outline" size={22} color={theme.colors.foreground} />
+                            <Ionicons name="search-outline" size={22} color={theme.colors.foreground} />
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.headerIcon}>
                             <Ionicons name="ellipsis-vertical" size={20} color={theme.colors.foreground} />
@@ -386,5 +414,73 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.2,
         shadowRadius: 2,
+    },
+    mediaContainer: {
+        marginTop: 4,
+        marginBottom: 4,
+        borderRadius: 8,
+        overflow: 'hidden',
+    },
+    imageThumbnail: {
+        width: 250,
+        height: 250,
+        borderRadius: 8,
+    },
+    filePlaceholder: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 10,
+        backgroundColor: 'rgba(0,0,0,0.05)',
+        borderRadius: 8,
+        width: 250,
+    },
+    fileIcon: {
+        width: 40,
+        height: 40,
+        backgroundColor: '#ef4444',
+        borderRadius: 4,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 10,
+    },
+    fileIconText: {
+        color: '#fff',
+        fontSize: 10,
+        fontWeight: 'bold',
+    },
+    fileName: {
+        flex: 1,
+        fontSize: 14,
+        fontWeight: '500',
+    },
+    voiceNoteContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 5,
+        minWidth: 200,
+    },
+    voiceNoteIcon: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: 'rgba(37, 211, 102, 0.1)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 10,
+    },
+    voiceNoteWaveform: {
+        flex: 1,
+        height: 3,
+        backgroundColor: 'rgba(0,0,0,0.1)',
+        borderRadius: 2,
+        marginRight: 10,
+    },
+    waveformBar: {
+        height: '100%',
+        borderRadius: 2,
+    },
+    voiceNoteTime: {
+        fontSize: 11,
+        color: '#667781',
     },
 });

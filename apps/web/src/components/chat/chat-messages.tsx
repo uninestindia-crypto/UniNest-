@@ -152,10 +152,6 @@ export default function ChatMessages({ room, messages, onSendMessage, loading, c
           </div>
         </div>
         <div className="flex items-center gap-4 text-[#54656f] dark:text-[#aebac1]">
-          <Button variant="ghost" size="icon" className="h-10 w-auto px-3 gap-2 rounded-full border border-border/20 text-[13px] font-medium hover:bg-black/5 dark:hover:bg-white/10 hidden md:flex">
-            <Video className="size-4" />
-            <span>Call</span>
-          </Button>
           <Search className="size-5 cursor-pointer hover:opacity-70 transition-opacity" />
           <X className="size-5 cursor-pointer hover:opacity-70 transition-opacity" />
         </div>
@@ -194,12 +190,38 @@ export default function ChatMessages({ room, messages, onSendMessage, loading, c
                 >
                   <div className="flex flex-col whitespace-pre-wrap break-words pr-12">
                     {message.content.startsWith('[File]') ? (
-                      <div className="flex flex-col gap-2 p-1 bg-black/5 dark:bg-white/5 rounded">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 bg-red-500 rounded text-white italic font-bold text-[10px]">PDF</div>
-                          <span className="text-[13px] font-medium truncate">{message.content.split(':')[0].replace('[File] ', '')}</span>
+                      <div className="flex flex-col gap-2 p-1 bg-black/5 dark:bg-white/5 rounded-lg overflow-hidden max-w-[280px]">
+                        {message.content.match(/\.(jpg|jpeg|png|gif|webp)$|publicUrl\=.*(jpg|jpeg|png|gif|webp)/i) ? (
+                          <div className="relative aspect-square w-full bg-muted rounded-md overflow-hidden">
+                            <img
+                              src={message.content.split(': ')[1]}
+                              alt="Shared image"
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-3 p-2">
+                            <div className="p-2 bg-red-500 rounded text-white italic font-bold text-[10px]">
+                              {message.content.split(':')[0].split('.').pop()?.toUpperCase() || 'FILE'}
+                            </div>
+                            <span className="text-[13px] font-medium truncate">{message.content.split(':')[0].replace('[File] ', '')}</span>
+                          </div>
+                        )}
+                        {!message.content.match(/\.(jpg|jpeg|png|gif|webp)$/i) && (
+                          <div className="px-2 pb-2 text-[11px] text-muted-foreground">Document • {message.content.split('.').pop()?.toUpperCase() || 'File'}</div>
+                        )}
+                      </div>
+                    ) : message.content.startsWith('[Voice Note]') ? (
+                      <div className="flex items-center gap-3 p-2 min-w-[200px] bg-black/5 dark:bg-white/5 rounded-lg">
+                        <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                          <Mic className="size-5 text-primary" />
                         </div>
-                        <div className="text-[11px] text-muted-foreground">28 pages • PDF • 3 MB</div>
+                        <div className="flex flex-col flex-1 gap-1">
+                          <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
+                            <div className="h-full w-1/3 bg-primary" />
+                          </div>
+                          <span className="text-[11px] text-muted-foreground">0:12</span>
+                        </div>
                       </div>
                     ) : message.content}
                   </div>
