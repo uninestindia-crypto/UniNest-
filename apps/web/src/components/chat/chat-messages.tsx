@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Paperclip, Send, Loader2, ArrowLeft, X, ShieldCheck, Lock, CheckCheck, Phone, Video, Mic, Smile } from 'lucide-react';
+import { Paperclip, Send, Loader2, ArrowLeft, X, ShieldCheck, Lock, CheckCheck, Phone, Video, Mic, Smile, Search, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { cn } from '@/lib/utils';

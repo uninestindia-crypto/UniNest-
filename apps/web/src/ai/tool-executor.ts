@@ -36,6 +36,12 @@ export async function executeTool(
             return draftApplicationResponses(args);
         case 'submit_workspace_application':
             return submitWorkspaceApplication(args);
+        case 'get_community_impact':
+            return getCommunityImpact(args);
+        case 'search_community_feed':
+            return searchCommunityFeed(args);
+        case 'draft_community_post':
+            return draftCommunityPost(args);
         default:
             return { success: false, error: `Unknown tool: ${toolName}` };
     }
@@ -395,5 +401,100 @@ async function submitWorkspaceApplication(args: Record<string, any>): Promise<To
     return {
         success: false,
         error: 'Invalid opportunity type for submission.',
+    };
+}
+
+// ─── COMMUNITY TOOLS ───────────────────────────────────────────────
+
+async function getCommunityImpact(args: Record<string, any>): Promise<ToolResult> {
+    const supabase = createClient();
+
+    // Fetch donation stats
+    const { data: donations, error: donationError } = await supabase
+        .from('donations')
+        .select('amount');
+
+    if (donationError) {
+        return { success: false, error: donationError.message };
+    }
+
+    const totalRaised = donations.reduce((sum, d) => sum + (d.amount || 0), 0);
+    const studentsHelped = Math.max(4500, Math.round(totalRaised / 75));
+
+    // Fetch top donors (from the logic in donation-stats API)
+    const { data: topDonorsData } = await supabase
+        .from('donations')
+        .select('amount, profiles(full_name)')
+        .order('amount', { ascending: false })
+        .limit(3);
+
+    const topDonors = topDonorsData?.map(d => ({
+        name: d.profiles?.full_name || 'Anonymous',
+        amount: d.amount
+    })) || [];
+
+    return {
+        success: true,
+        data: {
+            total_raised: totalRaised,
+            students_helped: studentsHelped,
+            top_donors: topDonors,
+            currency: 'INR',
+        },
+        ui_action: 'show_community_impact_stats',
+    };
+}
+
+async function searchCommunityFeed(args: Record<string, any>): Promise<ToolResult> {
+    const supabase = createClient();
+    const { query } = args;
+
+    const { data, error } = await supabase
+        .from('posts')
+        .select(`
+            id,
+            content,
+            created_at,
+            profiles:user_id ( full_name )
+        `)
+        .ilike('content', `%${query}%`)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+    if (error) {
+        return { success: false, error: error.message };
+    }
+
+    return {
+        success: true,
+        data: {
+            query,
+            posts: data || [],
+            count: data?.length || 0,
+        },
+        ui_action: 'show_community_feed_results',
+    };
+}
+
+async function draftCommunityPost(args: Record<string, any>): Promise<ToolResult> {
+    const { topic, tone = 'friendly' } = args;
+
+    const drafts: Record<string, string> = {
+        friendly: `Hey everyone! 👋 I wanted to share something about ${topic}. I'm really excited about it and would love to hear your thoughts!`,
+        professional: `Hello community, I am currently exploring ${topic} and would appreciate any insights or connections related to this area. Thank you!`,
+        urgent: `Urgent! 🚨 I need some help/information regarding ${topic}. If anyone has experience with this, please reach out!`,
+        creative: `Imagine a world where ${topic} is accessible to every student. 🚀 I've been thinking about this a lot lately. What do you think?`
+    };
+
+    const draft = drafts[tone] || drafts.friendly;
+
+    return {
+        success: true,
+        data: {
+            topic,
+            tone,
+            post_draft: draft,
+        },
+        ui_action: 'show_post_draft',
     };
 }

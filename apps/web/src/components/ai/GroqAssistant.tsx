@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import MarketplaceCard from './MarketplaceCard';
 import { OpportunityCard } from './WorkspaceDraftPanel';
+import { Heart, Users, TrendingUp, MessageSquare, Edit3 } from 'lucide-react';
 
 type Message = {
     role: 'user' | 'assistant';
@@ -92,6 +93,98 @@ export function GroqAssistant() {
                             <OpportunityCard key={opp.id} opportunity={opp} type={action.data.type} onSelect={() => { }} />
                         ))}
                     </div>
+                );
+            }
+            if (action.action === 'show_community_impact_stats') {
+                return (
+                    <Card key={idx} className="mt-2 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 border-amber-100 dark:border-amber-900 overflow-hidden">
+                        <CardContent className="p-3 space-y-2">
+                            <div className="flex items-center gap-2 text-amber-700 dark:text-amber-300 font-bold text-xs">
+                                <Heart className="h-3.5 w-3.5 fill-current" />
+                                Community Impact
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                                <div className="bg-white/50 dark:bg-black/20 p-2 rounded-lg border border-amber-100 dark:border-amber-800">
+                                    <div className="text-[10px] text-amber-600 dark:text-amber-400">Raised</div>
+                                    <div className="text-sm font-bold">₹{action.data.total_raised.toLocaleString()}</div>
+                                </div>
+                                <div className="bg-white/50 dark:bg-black/20 p-2 rounded-lg border border-amber-100 dark:border-amber-800">
+                                    <div className="text-[10px] text-amber-600 dark:text-amber-400">Students Helped</div>
+                                    <div className="text-sm font-bold">{action.data.students_helped}+</div>
+                                </div>
+                            </div>
+                            {action.data.top_donors?.length > 0 && (
+                                <div className="pt-1 border-t border-amber-100 dark:border-amber-800">
+                                    <div className="text-[9px] uppercase tracking-wider text-amber-600 dark:text-amber-400 font-semibold mb-1 flex items-center gap-1">
+                                        <TrendingUp className="h-2.5 w-2.5" /> Top Donors
+                                    </div>
+                                    <div className="space-y-1">
+                                        {action.data.top_donors.slice(0, 2).map((d: any, i: number) => (
+                                            <div key={i} className="flex justify-between text-[10px]">
+                                                <span>{d.name}</span>
+                                                <span className="font-semibold text-amber-700 dark:text-amber-300">₹{d.amount}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                            <Link href="/donate">
+                                <Button size="sm" className="w-full h-7 text-[10px] mt-1 bg-amber-600 hover:bg-amber-700 text-white border-none">
+                                    Donate Now
+                                </Button>
+                            </Link>
+                        </CardContent>
+                    </Card>
+                );
+            }
+            if (action.action === 'show_community_feed_results') {
+                return (
+                    <div key={idx} className="mt-2 space-y-2">
+                        <div className="flex items-center gap-1.5 px-1 text-indigo-600 dark:text-indigo-400 font-semibold text-xs mb-1">
+                            <MessageSquare className="h-3.5 w-3.5" />
+                            Feed Results for "{action.data.query}"
+                        </div>
+                        {action.data.posts.map((post: any) => (
+                            <Card key={post.id} className="p-2.5 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors border shadow-sm">
+                                <div className="flex justify-between items-start mb-1 text-[10px]">
+                                    <span className="font-bold text-indigo-600 dark:text-indigo-400">{post.profiles?.full_name}</span>
+                                    <span className="text-muted-foreground">{new Date(post.created_at).toLocaleDateString()}</span>
+                                </div>
+                                <p className="text-[11px] line-clamp-3 text-foreground/90">{post.content}</p>
+                            </Card>
+                        ))}
+                    </div>
+                );
+            }
+            if (action.action === 'show_post_draft') {
+                return (
+                    <Card key={idx} className="mt-2 border-dashed border-indigo-300 dark:border-indigo-700 bg-indigo-50/30 dark:bg-indigo-950/20 overflow-hidden">
+                        <CardContent className="p-3 space-y-2">
+                            <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300 font-bold text-xs">
+                                <Edit3 className="h-3.5 w-3.5" />
+                                Community Post Draft
+                            </div>
+                            <div className="relative">
+                                <div className="absolute top-2 right-2 flex gap-1">
+                                    <Badge variant="outline" className="text-[8px] h-4 bg-white dark:bg-indigo-950">{action.data.tone}</Badge>
+                                </div>
+                                <div className="bg-white/80 dark:bg-black/40 p-3 rounded-lg border border-indigo-100 dark:border-indigo-800 italic text-[11px] leading-relaxed text-slate-700 dark:text-slate-300">
+                                    "{action.data.post_draft}"
+                                </div>
+                            </div>
+                            <div className="flex gap-2 mt-1">
+                                <Button
+                                    size="sm"
+                                    className="flex-1 h-7 text-[10px] bg-indigo-600 hover:bg-indigo-700 text-white"
+                                    onClick={() => {
+                                        window.open('/feed', '_blank');
+                                    }}
+                                >
+                                    Go to Feed to Post
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
                 );
             }
             return null;
