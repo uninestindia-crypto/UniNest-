@@ -366,17 +366,34 @@ I bring a combination of ${skills_list.join(', ')} that I have honed through my 
 async function submitWorkspaceApplication(args: Record<string, any>): Promise<ToolResult> {
     const { opportunity_id, opportunity_type, cover_letter } = args;
 
-    // This is a controlled submission — we flag it but in a real scenario
-    // it would write to the applications table. For now, return a success state
-    // that the UI can use to show confirmation.
+    if (opportunity_type === 'internship') {
+        return {
+            success: true,
+            data: {
+                opportunity_id,
+                opportunity_type,
+                status: 'draft_ready',
+                message: 'I have prepared your application draft! To complete the submission, please click "Apply Now" on the internship card above and upload your Resume (PDF). I cannot submit files on your behalf yet.',
+            },
+            ui_action: 'show_submission_preview',
+        };
+    }
+
+    if (opportunity_type === 'competition') {
+        return {
+            success: true,
+            data: {
+                opportunity_id,
+                opportunity_type,
+                status: 'draft_ready',
+                message: 'I have prepared your entry details! To complete the entry, please click "Enter Competition" on the card above. You will need to upload your Pitch Deck and complete the payment if required.',
+            },
+            ui_action: 'show_submission_preview',
+        };
+    }
+
     return {
-        success: true,
-        data: {
-            opportunity_id,
-            opportunity_type,
-            status: 'submitted',
-            message: 'Your application has been submitted successfully! You can track its status in the Workspace section.',
-        },
-        ui_action: 'show_submission_confirmation',
+        success: false,
+        error: 'Invalid opportunity type for submission.',
     };
 }

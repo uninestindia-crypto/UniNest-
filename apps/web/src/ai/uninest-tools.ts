@@ -159,7 +159,7 @@ export const uninestTools: ToolDefinition[] = [
     function: {
       name: 'submit_workspace_application',
       description:
-        'Submit the approved application for an opportunity. This should ONLY be called after the user has explicitly reviewed and approved the draft. Never call without user confirmation.',
+        'Finalize the application draft and prepare it for submission. This will prompt the user to perform the final manual steps like uploading a resume or pitch deck on the UI. Use this ONLY after the user has explicitly reviewed and approved the draft.',
       parameters: {
         type: 'object',
         properties: {
