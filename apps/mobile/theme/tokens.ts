@@ -33,6 +33,12 @@ export const colors = {
     successForeground: '#ffffff',
     warning: '#f59e0b',
     warningForeground: '#ffffff',
+    // WhatsApp brand colors
+    whatsappGreen: '#25D366',
+    whatsappDarkGreen: '#075E54',
+    whatsappTeal: '#128C7E',
+    whatsappLightGreen: '#DCF8C6',
+    whatsappBlue: '#34B7F1',
 } as const;
 
 export const darkColors = {
@@ -54,6 +60,12 @@ export const darkColors = {
     successForeground: '#ffffff',
     warning: '#f59e0b',
     warningForeground: '#ffffff',
+    // WhatsApp brand colors
+    whatsappGreen: '#25D366',
+    whatsappDarkGreen: '#075E54',
+    whatsappTeal: '#128C7E',
+    whatsappLightGreen: '#DCF8C6',
+    whatsappBlue: '#34B7F1',
 } as const;
 
 export const spacing = {

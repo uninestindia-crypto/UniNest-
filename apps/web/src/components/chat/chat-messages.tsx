@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Paperclip, Send, Loader2, ArrowLeft, X, ShieldCheck, Lock, CheckCheck } from 'lucide-react';
+import { Paperclip, Send, Loader2, ArrowLeft, X, ShieldCheck, Lock, CheckCheck, Phone, Video, Mic, Smile } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { cn } from '@/lib/utils';
@@ -153,7 +153,7 @@ export default function ChatMessages({ room, messages, onSendMessage, loading, c
         </div>
         <div className="flex items-center gap-4 text-[#54656f] dark:text-[#aebac1]">
           <Button variant="ghost" size="icon" className="h-10 w-auto px-3 gap-2 rounded-full border border-border/20 text-[13px] font-medium hover:bg-black/5 dark:hover:bg-white/10 hidden md:flex">
-            <video className="size-4" />
+            <Video className="size-4" />
             <span>Call</span>
           </Button>
           <Search className="size-5 cursor-pointer hover:opacity-70 transition-opacity" />
@@ -226,6 +226,7 @@ export default function ChatMessages({ room, messages, onSendMessage, loading, c
       {/* Input Area */}
       <div className="bg-[#f0f2f5] dark:bg-[#202c33] px-4 py-2 flex items-center gap-2 shrink-0">
         <div className="flex items-center gap-2 text-[#54656f] dark:text-[#aebac1]">
+          <Smile className="size-6 cursor-pointer hover:opacity-70 transition-opacity" />
           <Plus className="size-6 cursor-pointer hover:opacity-70 transition-opacity" onClick={() => fileInputRef.current?.click()} />
           <input
             type="file"
@@ -263,7 +264,7 @@ export default function ChatMessages({ room, messages, onSendMessage, loading, c
               size="icon"
               className="text-[#54656f] dark:text-[#aebac1] hover:bg-transparent"
             >
-              <video className="size-6" />
+              <Mic className="size-6" />
             </Button>
           )}
         </div>
