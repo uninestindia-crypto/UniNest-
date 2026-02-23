@@ -146,6 +146,11 @@ export type ThemeColors = {
     successForeground: string;
     warning: string;
     warningForeground: string;
+    whatsappGreen: string;
+    whatsappDarkGreen: string;
+    whatsappTeal: string;
+    whatsappLightGreen: string;
+    whatsappBlue: string;
 };
 
 export type Theme = {
