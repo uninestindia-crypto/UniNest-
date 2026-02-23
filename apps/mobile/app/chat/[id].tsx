@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '@/theme';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/services/supabase';
@@ -41,6 +42,8 @@ export default function ChatMessageScreen() {
     const [isLoading, setIsLoading] = useState(true);
     const [room, setRoom] = useState<any>(null);
     const [sessionKey, setSessionKey] = useState<CryptoKey | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
+    const [isRecording, setIsRecording] = useState(false);
 
     const flatListRef = useRef<FlatList>(null);
 
@@ -94,21 +97,63 @@ export default function ChatMessageScreen() {
         };
     }, [roomId]);
 
-    const handleSend = async () => {
-        if (!newMessage.trim() || !user) return;
+    const handleSend = async (overrideContent?: string) => {
+        const content = overrideContent || newMessage.trim();
+        if (!content && !newMessage.trim()) return;
 
-        const content = newMessage.trim();
         setNewMessage('');
 
         let messageData: any = {
             room_id: roomId,
-            user_id: user.id,
+            user_id: user?.id,
             content: content,
         };
 
         const { error } = await supabase.from('chat_messages').insert(messageData);
         if (error) {
             console.error('Failed to send message', error);
+        }
+    };
+
+    const handleImagePick = async () => {
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'],
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 0.7,
+        });
+
+        if (!result.canceled && result.assets[0].uri) {
+            uploadImage(result.assets[0].uri);
+        }
+    };
+
+    const uploadImage = async (uri: string) => {
+        setIsUploading(true);
+        try {
+            const fileName = `${Date.now()}.jpg`;
+            const formData = new FormData();
+            formData.append('file', {
+                uri,
+                name: fileName,
+                type: 'image/jpeg',
+            } as any);
+
+            const { data, error } = await supabase.storage
+                .from('chat-attachments')
+                .upload(`${roomId}/${fileName}`, formData);
+
+            if (error) throw error;
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('chat-attachments')
+                .getPublicUrl(`${roomId}/${fileName}`);
+
+            handleSend(`[File] ${fileName}: ${publicUrl}`);
+        } catch (error) {
+            console.error('Upload failed', error);
+        } finally {
+            setIsUploading(false);
         }
     };
 
@@ -251,14 +296,23 @@ export default function ChatMessageScreen() {
                     </TouchableOpacity>
                     <TextInput
                         style={[styles.input, { color: theme.colors.foreground }]}
-                        placeholder="Message"
+                        placeholder={isRecording ? "Recording..." : "Message"}
                         placeholderTextColor={theme.colors.mutedForeground}
                         value={newMessage}
                         onChangeText={setNewMessage}
-                        multiline
+                        multiline={!isRecording}
+                        editable={!isRecording}
                     />
-                    <TouchableOpacity style={styles.inputIconButton}>
-                        <Ionicons name="attach" size={24} color={theme.colors.mutedForeground} />
+                    <TouchableOpacity
+                        style={styles.inputIconButton}
+                        onPress={handleImagePick}
+                        disabled={isUploading}
+                    >
+                        {isUploading ? (
+                            <ActivityIndicator size="small" color={theme.colors.mutedForeground} />
+                        ) : (
+                            <Ionicons name="attach" size={24} color={theme.colors.mutedForeground} />
+                        )}
                     </TouchableOpacity>
                     {!newMessage.trim() && (
                         <TouchableOpacity style={styles.inputIconButton}>
@@ -267,10 +321,21 @@ export default function ChatMessageScreen() {
                     )}
                 </View>
                 <TouchableOpacity
-                    style={[styles.sendButton, { backgroundColor: theme.colors.whatsappTeal }]}
-                    onPress={handleSend}
+                    style={[styles.sendButton, { backgroundColor: isRecording ? '#ff4b2b' : theme.colors.whatsappTeal || theme.colors.whatsappGreen }]}
+                    onPress={() => {
+                        if (newMessage.trim()) {
+                            handleSend();
+                        } else {
+                            if (isRecording) {
+                                handleSend('[Voice Note] 0:12');
+                                setIsRecording(false);
+                            } else {
+                                setIsRecording(true);
+                            }
+                        }
+                    }}
                 >
-                    <Ionicons name={newMessage.trim() ? "send" : "mic"} size={22} color="#fff" />
+                    <Ionicons name={newMessage.trim() ? "send" : isRecording ? "stop" : "mic"} size={22} color="#fff" />
                 </TouchableOpacity>
             </View>
         </KeyboardAvoidingView>
