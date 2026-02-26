@@ -8,15 +8,7 @@ import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recha
 import type { Product } from "@/lib/types";
 import Link from "next/link";
 import { useMemo } from "react";
-import { buildWeeklyOrderTrend, computeConversionStats } from "@/components/vendor/dashboard/dashboard-analytics";
-
-const usageData = [
-  { time: '10 AM', users: 5 }, { time: '11 AM', users: 8 },
-  { time: '12 PM', users: 12 }, { time: '1 PM', users: 15 },
-  { time: '2 PM', users: 14 }, { time: '3 PM', users: 18 },
-  { time: '4 PM', users: 22 }, { time: '5 PM', users: 20 },
-  { time: '6 PM', users: 16 },
-];
+import { buildWeeklyOrderTrend, computeConversionStats, computePeakUsage } from "@/components/vendor/dashboard/dashboard-analytics";
 
 type CybercafeDashboardProps = {
     products: Product[];
@@ -35,40 +27,41 @@ export default function CybercafeDashboard({ products, orders }: CybercafeDashbo
     const contactWhatsApp = cafeListing?.whatsapp_number;
     const conversionStats = useMemo(() => computeConversionStats(orders), [orders]);
     const weeklyTrend = useMemo(() => buildWeeklyOrderTrend(orders), [orders]);
+    const usageData = useMemo(() => computePeakUsage(orders), [orders]);
 
     return (
         <div className="space-y-8">
             <h2 className="text-2xl font-bold tracking-tight">Cybercafé Management</h2>
-            
+
             <div className="grid lg:grid-cols-3 gap-6">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
                         <CardTitle>Total Plans/Services</CardTitle>
-                        <Computer className="text-primary"/>
+                        <Computer className="text-primary" />
                     </CardHeader>
                     <CardContent>
                         <p className="text-3xl font-bold">{services.length}</p>
                         <p className="text-sm text-muted-foreground">Active service listings</p>
                     </CardContent>
                 </Card>
-                 <Card>
+                <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
                         <CardTitle>Total Orders</CardTitle>
-                        <Check className="text-green-500"/>
+                        <Check className="text-green-500" />
                     </CardHeader>
                     <CardContent>
                         <p className="text-3xl font-bold">{stats.orders}</p>
-                         <p className="text-sm text-muted-foreground">Across all services</p>
+                        <p className="text-sm text-muted-foreground">Across all services</p>
                     </CardContent>
                 </Card>
-                 <Card>
+                <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
                         <CardTitle>Total Revenue</CardTitle>
-                        <IndianRupee className="text-primary"/>
+                        <IndianRupee className="text-primary" />
                     </CardHeader>
                     <CardContent>
-                         <p className="text-3xl font-bold">₹{stats.revenue.toLocaleString()}</p>
-                         <p className="text-sm text-muted-foreground">from all-time sales</p>
+                        <p className="text-3xl font-bold">₹{stats.revenue.toLocaleString()}</p>
+                        <p className="text-sm text-muted-foreground">from all-time sales</p>
                     </CardContent>
                 </Card>
             </div>
@@ -76,7 +69,7 @@ export default function CybercafeDashboard({ products, orders }: CybercafeDashbo
             <div className="grid lg:grid-cols-2 gap-6">
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Check className="text-primary"/> Booking Funnel</CardTitle>
+                        <CardTitle className="flex items-center gap-2"><Check className="text-primary" /> Booking Funnel</CardTitle>
                         <CardDescription>Track how many enquiries convert into paid sessions.</CardDescription>
                     </CardHeader>
                     <CardContent className="grid gap-3 text-sm">
@@ -133,7 +126,7 @@ export default function CybercafeDashboard({ products, orders }: CybercafeDashbo
             <div className="grid lg:grid-cols-3 gap-6">
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Clock className="text-primary"/> Hourly Slots</CardTitle>
+                        <CardTitle className="flex items-center gap-2"><Clock className="text-primary" /> Hourly Slots</CardTitle>
                         <CardDescription>Track availability windows for customers.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-2 text-sm">
@@ -150,7 +143,7 @@ export default function CybercafeDashboard({ products, orders }: CybercafeDashbo
                 </Card>
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Server className="text-primary"/> Services & Equipment</CardTitle>
+                        <CardTitle className="flex items-center gap-2"><Server className="text-primary" /> Services & Equipment</CardTitle>
                         <CardDescription>Highlight the experience your café provides.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3 text-sm">
@@ -178,16 +171,16 @@ export default function CybercafeDashboard({ products, orders }: CybercafeDashbo
                 </Card>
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Phone className="text-primary"/> Contact</CardTitle>
+                        <CardTitle className="flex items-center gap-2"><Phone className="text-primary" /> Contact</CardTitle>
                         <CardDescription>Keep support lines visible for quick bookings.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-2 text-sm">
                         <div className="flex items-center gap-2">
-                            <Phone className="size-4 text-primary"/>
+                            <Phone className="size-4 text-primary" />
                             {contactPhone ? <span>{contactPhone}</span> : <span className="text-muted-foreground">Add a phone number to your listing.</span>}
                         </div>
                         <div className="flex items-center gap-2">
-                            <MessageCircle className="size-4 text-green-500"/>
+                            <MessageCircle className="size-4 text-green-500" />
                             {contactWhatsApp ? <span>{contactWhatsApp}</span> : <span className="text-muted-foreground">Include a WhatsApp number to confirm slots faster.</span>}
                         </div>
                     </CardContent>
@@ -204,11 +197,11 @@ export default function CybercafeDashboard({ products, orders }: CybercafeDashbo
                         <ResponsiveContainer width="100%" height={300}>
                             <BarChart data={usageData}>
                                 <XAxis dataKey="time" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                                <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`}/>
+                                <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`} />
                                 <Tooltip
-                                    contentStyle={{ 
-                                        backgroundColor: 'hsl(var(--background))', 
-                                        border: '1px solid hsl(var(--border))' 
+                                    contentStyle={{
+                                        backgroundColor: 'hsl(var(--background))',
+                                        border: '1px solid hsl(var(--border))'
                                     }}
                                     label="Users"
                                 />
@@ -224,12 +217,12 @@ export default function CybercafeDashboard({ products, orders }: CybercafeDashbo
                             <CardDescription>Manage your service pricing.</CardDescription>
                         </div>
                         <Button asChild>
-                           <Link href="/vendor/products/new?category=Cybercafé">
-                             <PlusCircle className="mr-2"/> Add New Plan
-                           </Link>
+                            <Link href="/vendor/products/new?category=Cybercafé">
+                                <PlusCircle className="mr-2" /> Add New Plan
+                            </Link>
                         </Button>
                     </CardHeader>
-                     <CardContent className="space-y-4">
+                    <CardContent className="space-y-4">
                         {services.length > 0 ? (
                             services.map(plan => (
                                 <div key={plan.id} className="flex items-center justify-between p-3 rounded-lg bg-muted">
@@ -240,9 +233,9 @@ export default function CybercafeDashboard({ products, orders }: CybercafeDashbo
                                     <span className="font-bold">₹{plan.price.toLocaleString()}/hr</span>
                                 </div>
                             ))
-                         ) : (
+                        ) : (
                             <p className="text-muted-foreground text-center py-10">No service plans found. <Link href="/vendor/products/new?category=Cybercafé" className="text-primary underline">Add a plan now</Link>.</p>
-                         )}
+                        )}
                     </CardContent>
                 </Card>
             </div>

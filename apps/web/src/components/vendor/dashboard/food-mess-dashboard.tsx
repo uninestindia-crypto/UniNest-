@@ -41,7 +41,7 @@ export default function FoodMessDashboard({ products, orders }: FoodMessDashboar
             <div className="grid lg:grid-cols-3 gap-6">
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Utensils className="text-primary"/> Meal Plan</CardTitle>
+                        <CardTitle className="flex items-center gap-2"><Utensils className="text-primary" /> Meal Plan</CardTitle>
                         <CardDescription>Quick view of the current menu cycle.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3 text-sm">
@@ -67,7 +67,7 @@ export default function FoodMessDashboard({ products, orders }: FoodMessDashboar
                 </Card>
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Users className="text-primary"/> Subscriber Summary</CardTitle>
+                        <CardTitle className="flex items-center gap-2"><Users className="text-primary" /> Subscriber Summary</CardTitle>
                         <CardDescription>Keep track of recurring diners.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3 text-sm">
@@ -87,12 +87,12 @@ export default function FoodMessDashboard({ products, orders }: FoodMessDashboar
                 </Card>
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Phone className="text-primary"/> Contact Channels</CardTitle>
+                        <CardTitle className="flex items-center gap-2"><Phone className="text-primary" /> Contact Channels</CardTitle>
                         <CardDescription>Ensure hungry students can reach you quickly.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-2 text-sm">
                         <div className="flex items-center gap-2">
-                            <Phone className="size-4 text-primary"/>
+                            <Phone className="size-4 text-primary" />
                             {contactPhone ? (
                                 <span>{contactPhone}</span>
                             ) : (
@@ -100,7 +100,7 @@ export default function FoodMessDashboard({ products, orders }: FoodMessDashboar
                             )}
                         </div>
                         <div className="flex items-center gap-2">
-                            <MessageCircle className="size-4 text-green-500"/>
+                            <MessageCircle className="size-4 text-green-500" />
                             {contactWhatsApp ? (
                                 <span>{contactWhatsApp}</span>
                             ) : (
@@ -171,7 +171,7 @@ export default function FoodMessDashboard({ products, orders }: FoodMessDashboar
             <div className="grid lg:grid-cols-3 gap-6">
                 <Card className="lg:col-span-2">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><ChefHat className="text-primary"/> Recent Orders</CardTitle>
+                        <CardTitle className="flex items-center gap-2"><ChefHat className="text-primary" /> Recent Orders</CardTitle>
                         <CardDescription>A snapshot of your latest food orders.</CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -199,15 +199,15 @@ export default function FoodMessDashboard({ products, orders }: FoodMessDashboar
                                 </TableBody>
                             </Table>
                         ) : (
-                             <p className="text-muted-foreground text-center py-10">No recent orders.</p>
+                            <p className="text-muted-foreground text-center py-10">No recent orders.</p>
                         )}
                     </CardContent>
                 </Card>
 
-                 <div className="space-y-6">
+                <div className="space-y-6">
                     <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2"><IndianRupee className="text-primary"/> Total Sales</CardTitle>
+                            <CardTitle className="flex items-center gap-2"><IndianRupee className="text-primary" /> Total Sales</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <p className="text-3xl font-bold">₹{totalRevenue.toLocaleString()}</p>
@@ -216,10 +216,17 @@ export default function FoodMessDashboard({ products, orders }: FoodMessDashboar
                     </Card>
                     <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2"><Users className="text-primary"/> Subscriptions</CardTitle>
+                            <CardTitle className="flex items-center gap-2"><Users className="text-primary" /> Subscriptions</CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-2">
-                            <p className="text-muted-foreground text-center py-4">Subscription feature coming soon!</p>
+                        <CardContent className="space-y-3">
+                            <div className="flex justify-between items-center border-b pb-2">
+                                <span className="text-muted-foreground">Active Subscribers</span>
+                                <span className="text-xl font-bold text-primary">{Math.max(orders.filter(o => o.status === 'Ready' || o.status === 'approved').length, 0)}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <span className="text-muted-foreground">Pending Requests</span>
+                                <span className="text-xl font-bold text-amber-500">{orders.filter(o => o.status === 'Pending' || o.status === 'pending_approval').length}</span>
+                            </div>
                         </CardContent>
                     </Card>
                 </div>
@@ -228,12 +235,12 @@ export default function FoodMessDashboard({ products, orders }: FoodMessDashboar
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div>
-                        <CardTitle className="flex items-center gap-2"><Utensils className="text-primary"/> Menu Management</CardTitle>
+                        <CardTitle className="flex items-center gap-2"><Utensils className="text-primary" /> Menu Management</CardTitle>
                         <CardDescription>Update your daily menu and prices.</CardDescription>
                     </div>
                     <Button asChild>
                         <Link href="/vendor/products/new?category=Food Mess">
-                            <PlusCircle className="mr-2"/> Add Menu Item
+                            <PlusCircle className="mr-2" /> Add Menu Item
                         </Link>
                     </Button>
                 </CardHeader>
@@ -262,7 +269,7 @@ export default function FoodMessDashboard({ products, orders }: FoodMessDashboar
                             </TableBody>
                         </Table>
                     ) : (
-                         <p className="text-muted-foreground text-center py-10">No menu items found. <Link href="/vendor/products/new?category=Food Mess" className="text-primary underline">Add one now</Link>.</p>
+                        <p className="text-muted-foreground text-center py-10">No menu items found. <Link href="/vendor/products/new?category=Food Mess" className="text-primary underline">Add one now</Link>.</p>
                     )}
                 </CardContent>
             </Card>

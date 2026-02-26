@@ -39,6 +39,8 @@ type Applicant = {
         full_name: string;
         avatar_url: string | null;
         email?: string | null;
+        phone_number?: string | null;
+        whatsapp_number?: string | null;
     } | null;
 }
 
@@ -62,6 +64,7 @@ export default function ApplicantsTable({ initialApplicants, competitionId }: Ap
         return applicants.filter(applicant =>
             applicant.profiles?.full_name?.toLowerCase().includes(query) ||
             applicant.profiles?.email?.toLowerCase().includes(query) ||
+            applicant.profiles?.phone_number?.toLowerCase().includes(query) ||
             applicant.user_id.toLowerCase().includes(query) ||
             applicant.razorpay_payment_id?.toLowerCase().includes(query)
         );
@@ -106,6 +109,7 @@ export default function ApplicantsTable({ initialApplicants, competitionId }: Ap
                         <TableHeader>
                             <TableRow>
                                 <TableHead>User</TableHead>
+                                <TableHead>Contact Info</TableHead>
                                 <TableHead>Entered On</TableHead>
                                 <TableHead>Payment ID</TableHead>
                                 <TableHead>Pitch Deck</TableHead>
@@ -138,6 +142,13 @@ export default function ApplicantsTable({ initialApplicants, competitionId }: Ap
                                                 </div>
                                             </div>
                                         </TableCell>
+                                        <TableCell>
+                                            <div className="text-sm">
+                                                {entry.profiles?.phone_number && <p>📱 {entry.profiles.phone_number}</p>}
+                                                {entry.profiles?.whatsapp_number && <p className="text-emerald-600 dark:text-emerald-400">💬 {entry.profiles.whatsapp_number}</p>}
+                                                {!entry.profiles?.phone_number && !entry.profiles?.whatsapp_number && <p className="text-muted-foreground">N/A</p>}
+                                            </div>
+                                        </TableCell>
                                         <TableCell>{format(new Date(entry.created_at), 'PPP')}</TableCell>
                                         <TableCell>
                                             {entry.razorpay_payment_id ? (
@@ -145,7 +156,7 @@ export default function ApplicantsTable({ initialApplicants, competitionId }: Ap
                                                     {entry.razorpay_payment_id}
                                                 </code>
                                             ) : (
-                                                <Badge variant="secondary">Free Entry</Badge>
+                                                <Badge variant="outline">Free Entry</Badge>
                                             )}
                                         </TableCell>
                                         <TableCell>

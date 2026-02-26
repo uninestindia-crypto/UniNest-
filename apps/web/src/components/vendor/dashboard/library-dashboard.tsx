@@ -51,9 +51,9 @@ export default function LibraryDashboard({ products, orders: initialOrders }: Li
     const handleApproval = async (orderId: number, newStatus: 'approved' | 'rejected') => {
         if (!supabase) return;
         setUpdatingOrderId(orderId);
-        
+
         const { error } = await supabase.from('orders').update({ status: newStatus }).eq('id', orderId);
-        
+
         if (error) {
             toast({ variant: 'destructive', title: 'Error', description: `Failed to ${newStatus === 'approved' ? 'approve' : 'reject'} booking.` });
         } else {
@@ -74,7 +74,7 @@ export default function LibraryDashboard({ products, orders: initialOrders }: Li
                 <h2 className="text-2xl font-bold">No Library Found</h2>
                 <p className="text-muted-foreground mt-2">You haven't created a library listing yet.</p>
                 <Button asChild className="mt-4">
-                    <Link href="/vendor/products/new?category=Library"><PlusCircle className="mr-2"/> Create Library Listing</Link>
+                    <Link href="/vendor/products/new?category=Library"><PlusCircle className="mr-2" /> Create Library Listing</Link>
                 </Button>
             </div>
         )
@@ -84,26 +84,28 @@ export default function LibraryDashboard({ products, orders: initialOrders }: Li
         <div className="space-y-8">
             <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-bold tracking-tight">{library.name} - Dashboard</h2>
-                 <Button variant="outline" asChild>
+                <Button variant="outline" asChild>
                     <Link href={`/vendor/products/${library.id}/edit`}>
-                        <Settings className="mr-2"/> Configure Library
+                        <Settings className="mr-2" /> Configure Library
                     </Link>
                 </Button>
             </div>
-            
+
             <div className="grid lg:grid-cols-2 gap-6">
                 <Card>
-                    <CardHeader><CardTitle className="flex items-center gap-2"><Armchair className="text-primary"/> Seat Status</CardTitle></CardHeader>
+                    <CardHeader><CardTitle className="flex items-center gap-2"><Armchair className="text-primary" /> Seat Status</CardTitle></CardHeader>
                     <CardContent className="space-y-2">
                         <div className="flex justify-between"><span>Total Seats</span><span className="font-bold">{totalSeats}</span></div>
                         <div className="flex justify-between"><span>Booked</span><span className="font-bold text-green-500">{approvedBookings.length}</span></div>
                         <div className="flex justify-between"><span>Available</span><span className="font-bold">{availableSeats}</span></div>
                     </CardContent>
                 </Card>
-                 <Card>
-                    <CardHeader><CardTitle className="flex items-center gap-2"><Users className="text-primary"/> Memberships</CardTitle></CardHeader>
-                    <CardContent className="text-center text-muted-foreground pt-4">
-                        <p>Membership feature coming soon!</p>
+                <Card>
+                    <CardHeader><CardTitle className="flex items-center gap-2"><Users className="text-primary" /> Memberships</CardTitle></CardHeader>
+                    <CardContent className="space-y-2 pt-4">
+                        <div className="flex justify-between"><span>Active Subscribers</span><span className="font-bold text-primary">{approvedBookings.length}</span></div>
+                        <div className="flex justify-between"><span>Pending Requests</span><span className="font-bold text-amber-500">{pendingApprovals.length}</span></div>
+                        <p className="text-xs text-muted-foreground mt-4 text-center">Based on currently approved seat reservations.</p>
                     </CardContent>
                 </Card>
             </div>
@@ -111,7 +113,7 @@ export default function LibraryDashboard({ products, orders: initialOrders }: Li
             <div className="grid lg:grid-cols-2 gap-6">
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><CheckCircle className="text-primary"/> Conversion Snapshot</CardTitle>
+                        <CardTitle className="flex items-center gap-2"><CheckCircle className="text-primary" /> Conversion Snapshot</CardTitle>
                         <CardDescription>Monitor booking funnel performance.</CardDescription>
                     </CardHeader>
                     <CardContent className="grid gap-3 text-sm">
@@ -168,7 +170,7 @@ export default function LibraryDashboard({ products, orders: initialOrders }: Li
             <div className="grid lg:grid-cols-2 gap-6">
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Clock className="text-primary"/> Opening Hours</CardTitle>
+                        <CardTitle className="flex items-center gap-2"><Clock className="text-primary" /> Opening Hours</CardTitle>
                         <CardDescription>Shifts currently available for students.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-2">
@@ -190,7 +192,7 @@ export default function LibraryDashboard({ products, orders: initialOrders }: Li
                 </Card>
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Book className="text-primary"/> Amenities & Contact</CardTitle>
+                        <CardTitle className="flex items-center gap-2"><Book className="text-primary" /> Amenities & Contact</CardTitle>
                         <CardDescription>Keep students informed about facilities and support channels.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3 text-sm">
@@ -222,7 +224,7 @@ export default function LibraryDashboard({ products, orders: initialOrders }: Li
             </div>
 
             <Card>
-                 <CardHeader>
+                <CardHeader>
                     <CardTitle>Pending Approvals ({pendingApprovals.length})</CardTitle>
                     <CardDescription>Review and approve or reject monthly seat reservation requests.</CardDescription>
                 </CardHeader>
@@ -248,7 +250,7 @@ export default function LibraryDashboard({ products, orders: initialOrders }: Li
                                         <TableCell>
                                             {booking.created_at ? format(new Date(booking.created_at), 'PPP') : 'N/A'}
                                         </TableCell>
-                                         <TableCell>
+                                        <TableCell>
                                             <Badge variant="outline">{booking.booking_slot || 'N/A'}</Badge>
                                         </TableCell>
                                         <TableCell className="text-right space-x-2">

@@ -10,17 +10,17 @@ type ApplyPageProps = {
 
 export default async function ApplyPage({ params }: ApplyPageProps) {
     const supabase = createClient();
-    
+
     const { data: internship, error } = await supabase
         .from('internships')
         .select('id, role, company')
         .eq('id', params.id)
         .single();
-    
+
     if (error || !internship) {
         notFound();
     }
-    
+
     return (
         <div className="max-w-2xl mx-auto">
             <PageHeader
@@ -28,7 +28,7 @@ export default async function ApplyPage({ params }: ApplyPageProps) {
                 description={`You are applying to ${internship.company}.`}
             />
             <div className="mt-8">
-                <ApplicationForm internshipId={internship.id} />
+                <ApplicationForm internship={internship} />
             </div>
         </div>
     )

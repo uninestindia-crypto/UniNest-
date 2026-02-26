@@ -8,9 +8,13 @@ type Applicant = {
     id: number;
     created_at: string;
     razorpay_payment_id: string | null;
+    pitch_deck_url: string | null;
     user_id: string;
     profiles: {
         full_name: string;
+        email: string | null;
+        phone_number: string | null;
+        whatsapp_number: string | null;
         avatar_url: string | null;
     } | null;
 };
@@ -53,8 +57,12 @@ export default async function CompetitionApplicantsPage({ params }: { params: { 
                 created_at,
                 razorpay_payment_id,
                 user_id,
+                pitch_deck_url,
                 profile:profiles (
                     full_name,
+                    email,
+                    phone_number,
+                    whatsapp_number,
                     avatar_url
                 )
             `)
@@ -92,10 +100,14 @@ export default async function CompetitionApplicantsPage({ params }: { params: { 
             id: Number(entry.id),
             created_at: entry.created_at as string,
             razorpay_payment_id: entry.razorpay_payment_id ?? null,
+            pitch_deck_url: entry.pitch_deck_url ?? null,
             user_id: entry.user_id as string,
             profiles: rawProfile
                 ? {
                     full_name: (rawProfile.full_name ?? 'Anonymous') as string,
+                    email: rawProfile.email ?? null,
+                    phone_number: rawProfile.phone_number ?? null,
+                    whatsapp_number: rawProfile.whatsapp_number ?? null,
                     avatar_url: rawProfile.avatar_url ?? null,
                 }
                 : null,
@@ -105,7 +117,7 @@ export default async function CompetitionApplicantsPage({ params }: { params: { 
     return (
         <div className="space-y-8">
             <PageHeader title={`Entrants for ${competition.title}`} description="All users who have entered this competition." />
-            <ApplicantsTable 
+            <ApplicantsTable
                 initialApplicants={mappedEntries}
                 competitionId={competition.id.toString()}
             />
