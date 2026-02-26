@@ -61,12 +61,15 @@ async function searchMarketplace(args: Record<string, any>): Promise<ToolResult>
         product: 'Other Products',
     };
 
-    let dbCategory = categoryMap[category];
-    if (!dbCategory && category !== 'all') {
-        // Use a heuristic mapping to match incoming category with what might be in the db dynamically.
-        // E.g 'books' -> 'Books', 'cyber_cafe' -> 'Cyber Café'
-        dbCategory = category.split('_').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-        if (category === 'cyber_cafe') dbCategory = 'Cyber Café';
+    let dbCategory: string | undefined = undefined;
+    if (category) {
+        dbCategory = categoryMap[category];
+        if (!dbCategory && category !== 'all') {
+            // Use a heuristic mapping to match incoming category with what might be in the db dynamically.
+            // E.g 'books' -> 'Books', 'cyber_cafe' -> 'Cyber Café'
+            dbCategory = category.split('_').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+            if (category === 'cyber_cafe') dbCategory = 'Cyber Café';
+        }
     }
 
     let queryBuilder = supabase
@@ -418,7 +421,7 @@ async function getCommunityImpact(args: Record<string, any>): Promise<ToolResult
         return { success: false, error: donationError.message };
     }
 
-    const totalRaised = donations.reduce((sum, d) => sum + (d.amount || 0), 0);
+    const totalRaised = donations.reduce((sum: number, d: { amount?: number }) => sum + (d.amount || 0), 0);
     const studentsHelped = Math.max(4500, Math.round(totalRaised / 75));
 
     // Fetch top donors (from the logic in donation-stats API)
@@ -428,8 +431,8 @@ async function getCommunityImpact(args: Record<string, any>): Promise<ToolResult
         .order('amount', { ascending: false })
         .limit(3);
 
-    const topDonors = topDonorsData?.map(d => ({
-        name: d.profiles?.full_name || 'Anonymous',
+    const topDonors = topDonorsData?.map((d: any) => ({
+        name: (d.profiles as any)?.full_name || 'Anonymous',
         amount: d.amount
     })) || [];
 

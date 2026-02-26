@@ -19,7 +19,7 @@ export const uninestTools: ToolDefinition[] = [
     function: {
       name: 'search_marketplace',
       description:
-        'Search the Uninest Marketplace for items across 4 categories: hostel, library, food_mess, product. Returns a list of matching items with name, price, location, and key details. Use this when a user wants to find or browse items.',
+        'Search the Uninest Marketplace for items. Supports categories: hostel, library, food_mess, product. You can also search WITHOUT a category to find items by name or description across all categories. Returns a list of matching items with name, price, location, and key details. Use this when a user wants to find or browse items.',
       parameters: {
         type: 'object',
         properties: {
@@ -46,7 +46,7 @@ export const uninestTools: ToolDefinition[] = [
             description: 'Optional minimum price filter in INR.',
           },
         },
-        required: ['category'],
+        required: [],
       },
     },
   },
@@ -192,6 +192,47 @@ export const uninestTools: ToolDefinition[] = [
       parameters: {
         type: 'object',
         properties: {},
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'search_community_feed',
+      description:
+        'Search the UniNest community feed for posts matching a keyword. Returns recent posts from students. Note: The feed is currently limited, so results may be scarce.',
+      parameters: {
+        type: 'object',
+        properties: {
+          query: {
+            type: 'string',
+            description: 'The keyword to search for in community posts.',
+          },
+        },
+        required: ['query'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'draft_community_post',
+      description:
+        'Draft a community post on a given topic with a specified tone. The user can then review and post it manually on the feed. Note: The social feed may be deactivated; if so, redirect the user to Marketplace or Workspace.',
+      parameters: {
+        type: 'object',
+        properties: {
+          topic: {
+            type: 'string',
+            description: 'The topic or subject of the post.',
+          },
+          tone: {
+            type: 'string',
+            enum: ['friendly', 'professional', 'urgent', 'creative'],
+            description: 'The tone of the post. Defaults to friendly.',
+          },
+        },
+        required: ['topic'],
       },
     },
   },
