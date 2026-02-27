@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import UniNestChat from '@/components/ai/UniNestChat';
+import { Suspense } from 'react';
 
 export const metadata: Metadata = {
   title: 'AI Assistant | UniNest',
@@ -9,7 +10,9 @@ export const metadata: Metadata = {
 export default function AIChatPage() {
   return (
     <div className="w-full h-full">
-      <UniNestChat />
+      <Suspense fallback={<div className="flex h-screen w-full items-center justify-center">Loading AI Assistant...</div>}>
+        <UniNestChat />
+      </Suspense>
     </div>
   );
 }
