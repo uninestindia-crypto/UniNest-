@@ -14,6 +14,7 @@ import { OpportunityCard } from './WorkspaceDraftPanel';
 import { Heart, Users, TrendingUp, MessageSquare, Edit3 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { createClient } from '@/lib/supabase/client';
+import { Badge } from '@/components/ui/badge';
 
 type Message = {
     role: 'user' | 'assistant';
