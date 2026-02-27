@@ -1,0 +1,141 @@
+
+> @uninest/web@0.1.0 build D:\Zeaul\studio-uninest-deployed-main\apps\web
+> next build
+
+  ▲ Next.js 14.2.35
+  - Environments: .env
+
+   Creating an optimized production build ...
+ ⚠ Compiled with warnings
+
+../../node_modules/.pnpm/require-in-the-middle@8.0.1/node_modules/require-in-the-middle/index.js
+Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+
+Import trace for requested module:
+../../node_modules/.pnpm/require-in-the-middle@8.0.1/node_modules/require-in-the-middle/index.js
+../../node_modules/.pnpm/@opentelemetry+instrumentation@0.208.0_@opentelemetry+api@1.9.0/node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+../../node_modules/.pnpm/@opentelemetry+instrumentation@0.208.0_@opentelemetry+api@1.9.0/node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+../../node_modules/.pnpm/@opentelemetry+instrumentation@0.208.0_@opentelemetry+api@1.9.0/node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+../../node_modules/.pnpm/@opentelemetry+instrumentation@0.208.0_@opentelemetry+api@1.9.0/node_modules/@opentelemetry/instrumentation/build/esm/index.js
+../../node_modules/.pnpm/@sentry+node@10.32.1/node_modules/@sentry/node/build/cjs/integrations/tracing/postgresjs.js
+../../node_modules/.pnpm/@sentry+node@10.32.1/node_modules/@sentry/node/build/cjs/index.js
+../../node_modules/.pnpm/@sentry+nextjs@10.32.1_@opentelemetry+context-async-hooks@2.2.0_@opentelemetry+api@1.9.0__@op_quulday6qndrs3xtcvssbo2jsa/node_modules/@sentry/nextjs/build/cjs/index.server.js
+./src/app/error.tsx
+
+ ✓ Compiled successfully
+   Skipping validation of types
+   Skipping linting
+   Collecting page data ...
+ ⚠ Using edge runtime on a page currently disables static generation for that page
+   Generating static pages (0/72) ...
+   Generating static pages (18/72) 
+   Generating static pages (30/72) 
+   Generating static pages (36/72) 
+   Generating static pages (46/72) 
+   Generating static pages (54/72) 
+ ✓ Generating static pages (72/72)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                              Size     First Load JS
+┌ ƒ /                                    13.5 kB         132 kB
+├ ○ /_not-found                          156 B          87.9 kB
+├ ○ /about                               538 B           102 kB
+├ ƒ /admin/competitions                  10.5 kB         153 kB
+├ ƒ /admin/competitions/[id]/applicants  13.8 kB         128 kB
+├ ƒ /admin/competitions/[id]/edit        155 B           192 kB
+├ ƒ /admin/competitions/[id]/results     10.9 kB         138 kB
+├ ○ /admin/competitions/new              154 B           192 kB
+├ ƒ /admin/dashboard                     17.8 kB         216 kB
+├ ○ /admin/instagram                     3.24 kB        99.1 kB
+├ ƒ /admin/internships                   10.5 kB         153 kB
+├ ƒ /admin/internships/[id]/applicants   11.9 kB         128 kB
+├ ƒ /admin/internships/[id]/edit         166 B           220 kB
+├ ○ /admin/internships/new               166 B           220 kB
+├ ○ /admin/leads                         123 kB          312 kB
+├ ƒ /admin/listings                      11.1 kB         164 kB
+├ ƒ /admin/live-users                    144 B            99 kB
+├ ƒ /admin/logs                          144 B            99 kB
+├ ƒ /admin/marketing                     12.9 kB         121 kB
+├ ƒ /admin/marketing/donations           6.21 kB         102 kB
+├ ƒ /admin/payments                      8.96 kB         140 kB
+├ ƒ /admin/settings                      21 kB           169 kB
+├ ○ /admin/setup                         5.46 kB         134 kB
+├ ○ /admin/sql                           156 B          87.9 kB
+├ ƒ /admin/suggestions                   12.2 kB         146 kB
+├ ƒ /admin/tickets                       2.53 kB         141 kB
+├ ƒ /admin/tickets/[id]                  2.53 kB         141 kB
+├ ƒ /admin/users                         9.28 kB         209 kB
+├ ○ /ai/chat                             16.4 kB         193 kB
+├ ƒ /api/admin/backfill-handles          0 B                0 B
+├ ƒ /api/admin/promote                   0 B                0 B
+├ ƒ /api/admin/promote-user              0 B                0 B
+├ ƒ /api/admin/settings                  0 B                0 B
+├ ƒ /api/ai/chat                         0 B                0 B
+├ ƒ /api/analytics/pwa-install           0 B                0 B
+├ ƒ /api/create-order                    0 B                0 B
+├ ƒ /api/donations/stats                 0 B                0 B
+├ ƒ /api/notifications/send              0 B                0 B
+├ ƒ /api/storage/competition-pitch       0 B                0 B
+├ ƒ /api/support/ensure-bucket           0 B                0 B
+├ ƒ /api/upload                          0 B                0 B
+├ ƒ /api/verify-payment                  0 B                0 B
+├ ƒ /api/version                         0 B                0 B
+├ ○ /booking                             156 B          87.9 kB
+├ ○ /chat                                427 B           196 kB
+├ ƒ /donate                              13.9 kB         181 kB
+├ ○ /donate/thank-you                    12.1 kB         185 kB
+├ ○ /feed                                2.44 kB         107 kB
+├ ƒ /hostels                             190 B           102 kB
+├ ƒ /hostels/[id]                        10.3 kB         179 kB
+├ ƒ /icon                                0 B                0 B
+├ ○ /icon.svg                            0 B                0 B
+├ ○ /login                               5.72 kB         202 kB
+├ ○ /manifest.webmanifest                0 B                0 B
+├ ƒ /marketplace                         11.7 kB         219 kB
+├ ƒ /marketplace/[id]                    15.8 kB         206 kB
+├ ƒ /marketplace/library/[id]            11.8 kB         220 kB
+├ ƒ /marketplace/new                     168 B           224 kB
+├ ○ /password-reset                      6.79 kB         185 kB
+├ ƒ /profile                             156 B          87.9 kB
+├ ƒ /profile/[handle]                    15.1 kB         225 kB
+├ ƒ /profile/setup                       6.64 kB         185 kB
+├ ○ /search                              6.18 kB         181 kB
+├ ○ /settings                            164 B           207 kB
+├ ○ /signup                              7.29 kB         204 kB
+├ ○ /sitemap.xml                         0 B                0 B
+├ ○ /social                              187 B          96.6 kB
+├ ○ /social/connections                  187 B          96.6 kB
+├ ƒ /support                             7.12 kB         214 kB
+├ ○ /terms                               2.04 kB        89.8 kB
+├ ƒ /vendor/analytics                    1.55 kB         109 kB
+├ ○ /vendor/chat                         395 B           196 kB
+├ ƒ /vendor/dashboard                    2.87 kB         111 kB
+├ ƒ /vendor/dashboard/[category]         10.3 kB         283 kB
+├ ƒ /vendor/onboarding                   10.2 kB         113 kB
+├ ƒ /vendor/orders                       7.61 kB         142 kB
+├ ƒ /vendor/products                     7.66 kB         220 kB
+├ ƒ /vendor/products/[id]/edit           168 B           224 kB
+├ ƒ /vendor/products/new                 168 B           224 kB
+├ ƒ /vendor/promotions                   13 kB           115 kB
+├ ƒ /vendor/settings                     164 B           207 kB
+├ ƒ /vendor/subscription                 7.3 kB          174 kB
+├ ○ /workspace                           13.4 kB         217 kB
+├ ○ /workspace/competitions              4.84 kB         177 kB
+├ ƒ /workspace/competitions/[id]         9.46 kB         217 kB
+├ ƒ /workspace/competitions/[id]/apply   6.68 kB         192 kB
+├ ƒ /workspace/internships               4.43 kB         114 kB
+├ ƒ /workspace/internships/[id]          6.76 kB         212 kB
+├ ƒ /workspace/internships/[id]/apply    6.21 kB         189 kB
+└ ○ /workspace/suggest                   7.27 kB         186 kB
++ First Load JS shared by all            87.7 kB
+  ├ chunks/7124fd19-c1455a0e15692f9e.js  53.6 kB
+  ├ chunks/7583-3b3d51f80c48c7b9.js      31.9 kB
+  └ other shared chunks (total)          2.18 kB
+
+
+ƒ Middleware                             77 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

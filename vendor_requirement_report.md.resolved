@@ -1,0 +1,49 @@
+# UniNest Platform: Detailed Vendor Requirement Report
+
+This report outlines the diverse ecosystem of vendors required to support the UniNest platform's mission of providing a comprehensive student housing and opportunity matching experience.
+
+## 1. Core Accommodation Vendors
+The primary focus of UniNest is student housing. These vendors are essential for the platform's core booking and listing functionality.
+
+*   **Hostel Owners & Operators**: Large-scale student housing providers offering shared or private rooms.
+*   **PG (Paying Guest) Accommodations**: Smaller, home-based or managed accommodations, typically including meals.
+*   **Private Rental Owners**: Individual apartment owners looking to lease to students.
+*   **Library & Study Spaces**: Managed reading rooms or co-working spaces specifically for students.
+
+## 2. Essential Student Service Vendors
+To provide a holistic experience, UniNest integrates service vendors that cater to the daily needs of students.
+
+*   **Dining & Food (Mess/Tiffin)**: Vendors providing subscription-based meal plans (Mess) or home-delivered meals (Tiffin).
+*   **Laundry Service Providers**: Local laundry or dry-cleaning vendors.
+*   **Fitness Centers (Gyms)**: Student-friendly gyms and wellness centers near housing clusters.
+*   **Logistics & Moving**: Packers and movers to assist students moving in or out.
+
+## 3. Retail & Educational Vendors
+These vendors support the academic and lifestyle needs of the student community.
+
+*   **Stationery & Bookstores**: Providers of academic supplies, textbooks, and general merchandise.
+*   **Training & Coaching Institutes**: Educational partners offering supplemental courses, competitive exam prep, or skill development.
+*   **Internship & Opportunity Providers**: Companies (SMEs to Corporates) looking to post internship roles and recruit from the student base.
+
+## 4. Digital Creators & Software Vendors
+Given the "Studio" aspect of the platform, it supports creators of digital assets.
+
+*   **Content Creators**: Students or professionals selling digital notes, courses, or guides.
+*   **Software Developers**: Teams or individuals listing apps or digital tools relevant to the student ecosystem.
+
+## 5. Technical & Operational Partners (B2B)
+To facilitate smooth platform operations, UniNest relies on several technical vendors.
+
+*   **Payment Gateways (e.g., Razorpay)**: Essential for processing rent, bookings, and donations.
+*   **Communication Providers**: Services for WhatsApp automation, SMS notifications, and transactional emails.
+*   **Security Services**: Physical security providers for partnered hostels or smart lock (IoT) vendors.
+
+## 6. Strategic Marketing & Growth Partners
+*   **Lead Generation Sources**: Integration partners like Google Maps, Instagram, or Excel-based lead providers to fuel the vendor onboarding pipeline.
+
+---
+### Technical Summary for Implementation
+The platform already supports these via:
+- **[ProductCategory](file:///d:/Zeaul/studio-uninest-deployed-main/packages/shared-types/src/product.ts#58-68)**: `hostel`, `pg`, `mess`, `tiffin`, `library`, `gym`, `laundry`, `stationary`.
+- **Vendor Tools**: Metrics dashboards, pricing insights, booking calendars, and automated lead management.
+- **Roles**: Explicit `vendor` role within the [UserRole](file:///d:/Zeaul/studio-uninest-deployed-main/packages/shared-types/src/user.ts#25-26) definition.
