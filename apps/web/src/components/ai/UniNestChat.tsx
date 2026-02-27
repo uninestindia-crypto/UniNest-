@@ -168,7 +168,7 @@ export default function UniNestChat() {
 
     // Save message to Supabase
     const saveMessage = useCallback(async (msg: Message, sessionId: string) => {
-        if (!user) return;
+        if (!user || sessionId === 'guest-session') return;
         try {
             const supabase = createClient();
             await supabase.from('ai_chat_messages').insert({
@@ -324,14 +324,20 @@ export default function UniNestChat() {
         if (!content.trim() || isLoading) return;
 
         let sessionId = activeSessionId;
+        const isGuest = !user;
 
         // If no active session, create one
         if (!sessionId) {
-            const newId = await createSession('New Chat');
-            if (!newId) return;
-            sessionId = newId;
-            setActiveSessionId(newId);
-            setIsFirstMessage(true);
+            if (isGuest) {
+                sessionId = 'guest-session';
+                setActiveSessionId('guest-session');
+            } else {
+                const newId = await createSession('New Chat');
+                if (!newId) return;
+                sessionId = newId;
+                setActiveSessionId(newId);
+                setIsFirstMessage(true);
+            }
         }
 
         const userMsg: Message = {
