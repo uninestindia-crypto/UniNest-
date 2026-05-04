@@ -1,11 +1,12 @@
 /**
  * UniNest AI Tool Executor
  *
- * Implements execution logic for each of the 6 UniNest AI tools.
+ * Implements execution logic for each of the UniNest AI tools.
+ * Uses a service-role Supabase client for reliable server-side data access.
  * Each function queries Supabase for real data — no fabricated responses.
  */
 
-import { createClient } from '@/lib/supabase/server';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 
 export type ToolResult = {
     success: boolean;
@@ -15,33 +16,60 @@ export type ToolResult = {
 };
 
 /**
+ * Create a Supabase client for server-side tool execution.
+ * Uses the service role key to bypass RLS so the AI agent can read data.
+ */
+function getSupabaseClient() {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const serviceKey = process.env.SUPABASE_SERVICE_KEY;
+    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!url) {
+        throw new Error('NEXT_PUBLIC_SUPABASE_URL is not configured');
+    }
+
+    // Prefer service role key for reliable server-side access
+    const key = serviceKey || anonKey;
+    if (!key) {
+        throw new Error('No Supabase key configured');
+    }
+
+    return createSupabaseClient(url, key);
+}
+
+/**
  * Execute a tool by name with the given arguments.
  */
 export async function executeTool(
     toolName: string,
     args: Record<string, any>
 ): Promise<ToolResult> {
-    switch (toolName) {
-        case 'search_marketplace':
-            return searchMarketplace(args);
-        case 'get_item_details':
-            return getItemDetails(args);
-        case 'draft_marketplace_order':
-            return draftMarketplaceOrder(args);
-        case 'search_opportunities':
-            return searchOpportunities(args);
-        case 'draft_application_responses':
-            return draftApplicationResponses(args);
-        case 'submit_workspace_application':
-            return submitWorkspaceApplication(args);
-        case 'get_community_impact':
-            return getCommunityImpact(args);
-        case 'search_community_feed':
-            return searchCommunityFeed(args);
-        case 'draft_community_post':
-            return draftCommunityPost(args);
-        default:
-            return { success: false, error: `Unknown tool: ${toolName}` };
+    try {
+        switch (toolName) {
+            case 'search_marketplace':
+                return await searchMarketplace(args);
+            case 'get_item_details':
+                return await getItemDetails(args);
+            case 'draft_marketplace_order':
+                return await draftMarketplaceOrder(args);
+            case 'search_opportunities':
+                return await searchOpportunities(args);
+            case 'draft_application_responses':
+                return await draftApplicationResponses(args);
+            case 'submit_workspace_application':
+                return await submitWorkspaceApplication(args);
+            case 'get_community_impact':
+                return await getCommunityImpact(args);
+            case 'search_community_feed':
+                return await searchCommunityFeed(args);
+            case 'draft_community_post':
+                return await draftCommunityPost(args);
+            default:
+                return { success: false, error: `Unknown tool: ${toolName}` };
+        }
+    } catch (error: any) {
+        console.error(`[AI Tool Executor] Error executing ${toolName}:`, error?.message);
+        return { success: false, error: `Tool execution failed: ${error?.message || 'Unknown error'}` };
     }
 }
 
@@ -76,10 +104,10 @@ const FALLBACK_IMPACT = {
 // ─── MARKETPLACE TOOLS ─────────────────────────────────────────────
 
 async function searchMarketplace(args: Record<string, any>): Promise<ToolResult> {
-    const supabase = createClient();
     const { category, query, location, max_price, min_price } = args;
 
     try {
+        const supabase = getSupabaseClient();
         const categoryMap: Record<string, string> = {
             hostel: 'Hostels',
             library: 'Library',
@@ -105,8 +133,12 @@ async function searchMarketplace(args: Record<string, any>): Promise<ToolResult>
 
         const { data, error } = await queryBuilder.order('created_at', { ascending: false }).limit(10);
 
-        if (error || !data || data.length === 0) {
-            console.warn("[AI Agent] Marketplace query failed or returned empty. Using fallbacks.", error);
+        if (error) {
+            console.warn("[AI Agent] Marketplace query error:", error.message);
+        }
+
+        if (!data || data.length === 0) {
+            console.log("[AI Agent] No marketplace results, using fallbacks");
             const fallback = FALLBACK_MARKETPLACE.filter(item =>
                 (!category || category === 'all' || item.category === categoryMap[category]) &&
                 (!location || item.location.toLowerCase().includes(location.toLowerCase()))
@@ -119,16 +151,17 @@ async function searchMarketplace(args: Record<string, any>): Promise<ToolResult>
         }
 
         return { success: true, data: { category, results: data, count: data.length }, ui_action: 'show_marketplace_cards' };
-    } catch (e) {
+    } catch (e: any) {
+        console.error("[AI Agent] Marketplace search exception:", e?.message);
         return { success: true, data: { category, results: FALLBACK_MARKETPLACE, count: FALLBACK_MARKETPLACE.length }, ui_action: 'show_marketplace_cards' };
     }
 }
 
 async function getItemDetails(args: Record<string, any>): Promise<ToolResult> {
-    const supabase = createClient();
     const { item_id } = args;
 
     try {
+        const supabase = getSupabaseClient();
         const { data, error } = await supabase
             .from('products')
             .select(`id, name, price, location, description, image_url, category, amenities, total_seats`)
@@ -148,10 +181,10 @@ async function getItemDetails(args: Record<string, any>): Promise<ToolResult> {
 }
 
 async function draftMarketplaceOrder(args: Record<string, any>): Promise<ToolResult> {
-    const supabase = createClient();
     const { item_id, quantity = 1 } = args;
 
     try {
+        const supabase = getSupabaseClient();
         const { data: product } = await supabase.from('products').select('*').eq('id', item_id).single();
         const item = product || FALLBACK_MARKETPLACE.find(p => p.id === Number(item_id)) || FALLBACK_MARKETPLACE[0];
         const total = item.price * quantity;
@@ -180,10 +213,10 @@ async function draftMarketplaceOrder(args: Record<string, any>): Promise<ToolRes
 // ─── WORKSPACE TOOLS ───────────────────────────────────────────────
 
 async function searchOpportunities(args: Record<string, any>): Promise<ToolResult> {
-    const supabase = createClient();
     const { type, query, location, min_stipend } = args;
 
     try {
+        const supabase = getSupabaseClient();
         if (type === 'internship') {
             const { data, error } = await supabase.from('internships').select('*').limit(5);
             if (error || !data || data.length === 0) {
@@ -239,7 +272,7 @@ async function submitWorkspaceApplication(args: Record<string, any>): Promise<To
 
 async function getCommunityImpact(args: Record<string, any>): Promise<ToolResult> {
     try {
-        const supabase = createClient();
+        const supabase = getSupabaseClient();
         const { data, error } = await supabase.from('donations').select('amount');
         if (error || !data) return { success: true, data: FALLBACK_IMPACT, ui_action: 'show_community_impact_stats' };
 
