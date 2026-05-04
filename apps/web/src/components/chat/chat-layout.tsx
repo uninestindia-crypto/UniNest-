@@ -5,7 +5,7 @@ import ChatList from './chat-list';
 import ChatMessages from './chat-messages';
 import type { Room, Message, Profile } from '@/lib/types';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { ArrowLeft, Filter, Loader2, Plus, Search } from 'lucide-react';
+import { ArrowLeft, Filter, Loader2, Plus, Search, MessageSquare, PlusCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
@@ -39,7 +39,7 @@ export default function ChatLayout() {
   const [isNewChatModalOpen, setIsNewChatModalOpen] = useState(false);
   const [hasRedirected, setHasRedirected] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeInboxTab, setActiveInboxTab] = useState<'primary' | 'general' | 'requests'>('primary');
+  const [activeInboxTab, setActiveInboxTab] = useState<'all' | 'unread'>('all');
 
   useEffect(() => {
     if (!authLoading && !user && !hasRedirected) {
@@ -53,7 +53,6 @@ export default function ChatLayout() {
       return [];
     }
 
-    // First get the room IDs this user participates in
     const { data: participantRows, error: participantError } = await supabase
       .from('chat_participants')
       .select('room_id')
@@ -183,7 +182,6 @@ export default function ChatLayout() {
     setMessages([]);
     setSessionKey(null);
 
-    // 1. Fetch encrypted session key for this room
     const { data: keyData, error: keyError } = await supabase
       .from('chat_room_keys')
       .select('encrypted_session_key, room_id, user_id')
@@ -195,8 +193,6 @@ export default function ChatLayout() {
 
     if (keyData && e2eeKeys) {
       try {
-        // Find the other participant's public key to unwrap the session key
-        // (In a private chat, there's only one other person)
         const { data: participants } = await supabase
           .from('chat_participants')
           .select('user_id')
@@ -226,7 +222,6 @@ export default function ChatLayout() {
       }
     }
 
-    // 2. Fetch messages
     const { data: messageRows, error } = await supabase
       .from('chat_messages')
       .select('id, content, created_at, room_id, user_id')
@@ -265,7 +260,6 @@ export default function ChatLayout() {
     const messagesWithProfiles = await Promise.all(
       rawMessages.map(async (message) => {
         let content = message.content;
-        // Try to decrypt if it's an encrypted message
         if (currentSessionKey && (message as any).iv) {
           try {
             content = await decryptContent(message.content, (message as any).iv, currentSessionKey);
@@ -283,7 +277,7 @@ export default function ChatLayout() {
 
     setMessages(messagesWithProfiles);
     setLoadingMessages(false);
-  }, [supabase, toast]);
+  }, [supabase, toast, user, e2eeKeys]);
 
   useEffect(() => {
     if (!isMobile && rooms.length > 0 && !selectedRoom) {
@@ -291,7 +285,6 @@ export default function ChatLayout() {
     }
   }, [rooms, isMobile, selectedRoom, handleSelectRoom]);
 
-  // Real-time message subscription
   useEffect(() => {
     if (!supabase || !user) return;
 
@@ -301,9 +294,7 @@ export default function ChatLayout() {
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'chat_messages' },
         async (payload) => {
-          // Refetch rooms to get new "last message" and order
           fetchRooms();
-          // If the message is for the currently selected room, add it to the view
           if (selectedRoom && payload.new.room_id === selectedRoom.id) {
             const newMessage = payload.new as Message;
             const { data: profileData, error } = await supabase
@@ -316,7 +307,6 @@ export default function ChatLayout() {
               newMessage.profile = profileData as Profile;
             }
 
-            // Decrypt matching message
             if (sessionKey && (payload.new as any).iv) {
               try {
                 newMessage.content = await decryptContent(newMessage.content, (payload.new as any).iv, sessionKey);
@@ -334,7 +324,7 @@ export default function ChatLayout() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [selectedRoom, supabase, fetchRooms, user]);
+  }, [selectedRoom, supabase, fetchRooms, user, sessionKey]);
 
 
   const handleSendMessage = async (content: string) => {
@@ -350,7 +340,7 @@ export default function ChatLayout() {
         iv = encrypted.iv;
       } catch (err) {
         console.error('Encryption failed:', err);
-        return; // Don't send unencrypted if encryption failed
+        return;
       }
     }
 
@@ -360,7 +350,7 @@ export default function ChatLayout() {
         content: finalContent,
         room_id: selectedRoom.id,
         user_id: user.id,
-        iv, // Include IV for decryption
+        iv,
       } as any);
 
     if (error) {
@@ -389,7 +379,6 @@ export default function ChatLayout() {
       if (error) throw error;
 
       await fetchRooms();
-      // Stay in the current context (vendor or student chat)
       router.refresh();
 
     } catch (error) {
@@ -399,80 +388,74 @@ export default function ChatLayout() {
   }
 
   const inboxTabs = [
-    { value: 'primary' as const, label: 'Primary' },
-    { value: 'general' as const, label: 'General' },
-    { value: 'requests' as const, label: 'Requests' },
+    { value: 'all' as const, label: 'All Messages' },
+    { value: 'unread' as const, label: 'Unread' },
   ];
 
   const filteredRooms = useMemo(() => {
+    let result = rooms;
+    if (activeInboxTab === 'unread') {
+      result = result.filter(r => (r.unread_count || 0) > 0);
+    }
     if (!searchTerm.trim()) {
-      return rooms;
+      return result;
     }
     const query = searchTerm.toLowerCase();
-    return rooms.filter((room) => {
+    return result.filter((room) => {
       const name = room.name?.toLowerCase() ?? '';
       const lastMessage = room.last_message?.toLowerCase() ?? '';
       return name.includes(query) || lastMessage.includes(query);
     });
-  }, [rooms, searchTerm]);
-
-  const highlightRooms = useMemo(() => rooms.slice(0, 8), [rooms]);
+  }, [rooms, searchTerm, activeInboxTab]);
 
 
   const ChatListScreen = () => (
-    <div className="flex h-full flex-col bg-[#ffffff] dark:bg-[#111b21]">
-      <header className="bg-[#f0f2f5] dark:bg-[#202c33] px-4 py-2 flex items-center justify-between shrink-0 h-[59px]">
-        <div className="flex items-center gap-2">
-          {isMobile ? (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-full hover:bg-muted/80"
-              onClick={() => router.back()}
-            >
-              <ArrowLeft className="size-5" />
+    <div className="flex h-full flex-col bg-background/95 backdrop-blur-md">
+      <header className="px-5 py-4 flex items-center justify-between shrink-0 border-b border-border/50">
+        <div className="flex items-center gap-3">
+          {isMobile && (
+            <Button variant="ghost" size="icon" className="-ml-2 h-8 w-8 rounded-full" onClick={() => router.back()}>
+              <ArrowLeft className="size-4" />
             </Button>
-          ) : null}
-          <div className="flex items-center gap-3">
-            <BrandingLogo size={36} className="h-9 w-auto" />
-            <span className="text-[19px] font-bold text-[#111b21] dark:text-[#e9edef] tracking-tight">UniNest</span>
+          )}
+          <div className="flex items-center gap-2.5">
+            <div className="bg-indigo-600 rounded-lg p-1.5 shadow-sm">
+                <MessageSquare className="h-4 w-4 text-white" />
+            </div>
+            <h1 className="text-xl font-bold tracking-tight">Messages</h1>
           </div>
         </div>
-        <div className="flex items-center gap-1 text-[#54656f] dark:text-[#aebac1]">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="rounded-full hover:bg-black/5 dark:hover:bg-white/10"
-            onClick={() => setIsNewChatModalOpen(true)}
-          >
-            <Plus className="size-5" />
-          </Button>
-        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="rounded-full bg-indigo-50 text-indigo-600 hover:bg-indigo-100 hover:text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400 dark:hover:bg-indigo-900"
+          onClick={() => setIsNewChatModalOpen(true)}
+        >
+          <PlusCircle className="size-5" />
+        </Button>
       </header>
 
-      <div className="px-3 py-2 space-y-2 border-b border-border/10">
+      <div className="px-4 py-3 space-y-3">
         <div className="relative group">
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/70">
-            <Search className="size-4" />
-          </div>
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
-            placeholder="Search or start new chat"
-            className="h-9 w-full rounded-lg border-none bg-[#f0f2f5] dark:bg-[#202c33] pl-10 pr-4 text-[14px] focus-visible:ring-0 placeholder:text-[#54656f] dark:placeholder:text-[#8696a0]"
+            placeholder="Search messages..."
+            className="h-10 w-full rounded-xl bg-muted/50 border-transparent pl-9 pr-4 text-sm focus-visible:ring-1 focus-visible:ring-indigo-500 transition-all"
           />
         </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide py-1">
+        <div className="flex items-center gap-2 border-b border-border/50 pb-2">
           {inboxTabs.map((tab) => (
             <button
               key={tab.value}
               onClick={() => setActiveInboxTab(tab.value)}
               className={cn(
-                'px-3 py-1.5 rounded-full text-[13px] font-medium transition-all whitespace-nowrap',
+                'px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200',
                 activeInboxTab === tab.value
-                  ? 'bg-[#00a884] text-white shadow-sm'
-                  : 'bg-[#f0f2f5] dark:bg-[#202c33] text-[#54656f] dark:text-[#aebac1] hover:bg-[#e9edef] dark:hover:bg-[#2a3942]'
+                  ? 'bg-foreground text-background shadow-sm'
+                  : 'text-muted-foreground hover:bg-muted/80 hover:text-foreground'
               )}
             >
               {tab.label}
@@ -482,7 +465,7 @@ export default function ChatLayout() {
       </div>
       {loadingRooms ? (
         <div className="flex flex-1 items-center justify-center">
-          <Loader2 className="size-8 animate-spin text-primary" />
+          <Loader2 className="size-8 animate-spin text-indigo-600" />
         </div>
       ) : (
         <ChatList rooms={filteredRooms} selectedRoom={selectedRoom} onSelectRoom={handleSelectRoom} />
@@ -493,7 +476,7 @@ export default function ChatLayout() {
   if (authLoading) {
     return (
       <div className="flex h-[calc(100vh-8rem)] items-center justify-center">
-        <Loader2 className="size-8 animate-spin text-primary" />
+        <Loader2 className="size-8 animate-spin text-indigo-600" />
       </div>
     );
   }
@@ -501,7 +484,7 @@ export default function ChatLayout() {
   if (!user) {
     return (
       <div className="flex h-[calc(100vh-8rem)] items-center justify-center">
-        <p>Please log in to view your chats.</p>
+        <p className="text-muted-foreground">Please log in to view your chats.</p>
       </div>
     );
   }
@@ -513,35 +496,44 @@ export default function ChatLayout() {
         onOpenChange={setIsNewChatModalOpen}
         onSelectUser={handleStartNewChat}
       />
-      {/* Desktop: side-by-side layout */}
-      <div className="hidden md:grid md:grid-cols-[30%_70%] lg:grid-cols-[25%_75%] xl:grid-cols-[400px_1fr] h-full overflow-hidden bg-background">
-        <div className="border-r border-border/40 overflow-hidden bg-background">
+      {/* Desktop Layout */}
+      <div className="hidden md:grid md:grid-cols-[320px_1fr] lg:grid-cols-[380px_1fr] h-[calc(100vh-4.5rem)] rounded-2xl border border-border/50 overflow-hidden bg-background shadow-sm m-4 lg:m-6">
+        <div className="border-r border-border/50 bg-slate-50/50 dark:bg-slate-950/50 overflow-hidden">
           <ChatListScreen />
         </div>
-        <div className="flex flex-col overflow-hidden relative">
-          {/* WhatsApp Background Pattern */}
-          <div
-            className="absolute inset-0 opacity-[0.06] dark:opacity-[0.03] z-0 pointer-events-none"
-            style={{
-              backgroundImage: `url('https://w0.peakpx.com/wallpaper/580/630/wallpaper-whatsapp-background-patterns-social-media.jpg')`,
-              backgroundSize: '400px'
-            }}
-          />
-          <div className="absolute inset-0 bg-[#efeae2] dark:bg-[#0b141a] z-[-1]" />
-
+        <div className="flex flex-col overflow-hidden relative bg-white dark:bg-slate-950">
           <div className="relative z-10 flex flex-col overflow-hidden h-full">
-            <ChatMessages
-              room={selectedRoom}
-              messages={messages}
-              onSendMessage={handleSendMessage}
-              loading={loadingMessages}
-              currentUser={user}
-            />
+            {selectedRoom ? (
+              <ChatMessages
+                room={selectedRoom}
+                messages={messages}
+                onSendMessage={handleSendMessage}
+                loading={loadingMessages}
+                currentUser={user}
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-center p-8 bg-slate-50/50 dark:bg-transparent">
+                <div className="h-20 w-20 bg-indigo-50 dark:bg-indigo-950/50 rounded-full flex items-center justify-center mb-6 shadow-sm">
+                    <MessageSquare className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
+                </div>
+                <h2 className="text-2xl font-bold text-foreground mb-2 tracking-tight">Your Messages</h2>
+                <p className="text-muted-foreground max-w-md mx-auto text-sm leading-relaxed">
+                  Select a conversation from the sidebar or start a new chat with someone from the marketplace.
+                </p>
+                <Button 
+                    onClick={() => setIsNewChatModalOpen(true)}
+                    className="mt-6 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-6 shadow-sm"
+                >
+                    <PlusCircle className="mr-2 h-4 w-4" /> Start New Chat
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>
-      {/* Mobile: show list OR messages */}
-      <div className="flex flex-col h-full md:hidden overflow-hidden">
+      
+      {/* Mobile Layout */}
+      <div className="flex flex-col h-[calc(100vh-4rem)] md:hidden overflow-hidden bg-background">
         {selectedRoom ? (
           <ChatMessages
             room={selectedRoom}
