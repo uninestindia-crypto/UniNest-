@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { ArrowRight, CheckCircle2, FileText, ShieldCheck, UploadCloud, Users, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +11,8 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/use-auth';
 
 const onboardingSteps = [
   {
@@ -172,10 +174,50 @@ const resourceTabs = [
 ] as const;
 
 export default function VendorOnboardingContent() {
+  const { toast } = useToast();
+  const { user, supabase } = useAuth();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeStep, setActiveStep] = useState<OnboardingStep['id']>(onboardingSteps[0].id);
   const activeIndex = useMemo(() => onboardingSteps.findIndex((step) => step.id === activeStep), [activeStep]);
   const progressValue = useMemo(() => ((activeIndex + 1) / onboardingSteps.length) * 100, [activeIndex]);
   const [showQuickStart, setShowQuickStart] = useState(true);
+  const [uploadingDoc, setUploadingDoc] = useState<string | null>(null);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [pendingUploadTitle, setPendingUploadTitle] = useState<string | null>(null);
+
+  const handleDocumentUpload = (docTitle: string) => {
+    setPendingUploadTitle(docTitle);
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !pendingUploadTitle || !supabase || !user) return;
+    setUploadingDoc(pendingUploadTitle);
+
+    try {
+      const safeName = pendingUploadTitle.replace(/\s+/g, '_').toLowerCase();
+      const path = `vendor-docs/${user.id}/${safeName}_${Date.now()}_${file.name}`;
+      const { error } = await supabase.storage.from('uploads').upload(path, file);
+      if (error) throw error;
+      toast({ title: 'Document uploaded', description: `"${pendingUploadTitle}" uploaded successfully.` });
+    } catch (err: any) {
+      toast({ variant: 'destructive', title: 'Upload failed', description: err.message || 'Could not upload the file.' });
+    } finally {
+      setUploadingDoc(null);
+      setPendingUploadTitle(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleInvite = () => {
+    if (!inviteEmail.trim()) {
+      toast({ variant: 'destructive', title: 'Email required', description: 'Enter a valid email address.' });
+      return;
+    }
+    toast({ title: 'Invitation sent', description: `An invite was sent to ${inviteEmail}.` });
+    setInviteEmail('');
+  };
 
   const goToStep = (direction: 'next' | 'prev') => {
     if (direction === 'next' && activeIndex < onboardingSteps.length - 1) {
@@ -188,6 +230,8 @@ export default function VendorOnboardingContent() {
 
   return (
     <div className="space-y-8">
+      {/* Hidden file input for document uploads */}
+      <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileSelected} accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" />
       {showQuickStart && (
         <Alert className="flex flex-col gap-2 border-primary/40 bg-primary/5 text-foreground md:flex-row md:items-center md:justify-between">
           <div className="flex items-start gap-3">
@@ -332,10 +376,10 @@ export default function VendorOnboardingContent() {
               <CardTitle>Document checklist</CardTitle>
               <CardDescription>Upload files to unlock verification in under 24 hours.</CardDescription>
             </div>
-            <Button variant="outline" size="sm" className="mt-2 sm:mt-0">
-              <UploadCloud className="mr-2 size-4" />
-              Bulk upload
-            </Button>
+             <Button variant="outline" size="sm" className="mt-2 sm:mt-0" onClick={() => { setPendingUploadTitle('Bulk Upload'); fileInputRef.current?.click(); }}>
+               <UploadCloud className="mr-2 size-4" />
+               Bulk upload
+             </Button>
           </CardHeader>
           <CardContent className="grid gap-4 lg:grid-cols-2">
             {documentChecklist.map((item) => (
@@ -345,9 +389,9 @@ export default function VendorOnboardingContent() {
                   <Badge variant={item.required ? 'default' : 'outline'}>{item.required ? 'Required' : 'Optional'}</Badge>
                 </div>
                 <p className="text-sm text-muted-foreground">{item.description}</p>
-                <Button variant="outline" size="sm" className="w-full">
+                <Button variant="outline" size="sm" className="w-full" onClick={() => handleDocumentUpload(item.title)} disabled={uploadingDoc === item.title}>
                   <FileText className="mr-2 size-4" />
-                  Upload document
+                  {uploadingDoc === item.title ? 'Uploading…' : 'Upload document'}
                 </Button>
               </div>
             ))}
@@ -364,8 +408,8 @@ export default function VendorOnboardingContent() {
                 <Users className="size-4 text-primary" />
                 <p className="text-sm font-semibold">Send invitation</p>
               </div>
-              <Input type="email" placeholder="team@yourbusiness.com" className="w-full" />
-              <Button className="w-full">Invite teammate</Button>
+              <Input type="email" placeholder="team@yourbusiness.com" className="w-full" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} />
+              <Button className="w-full" onClick={handleInvite}>Invite teammate</Button>
               <p className="text-xs text-muted-foreground">We recommend inviting a finance owner for payout approvals.</p>
             </div>
             <Separator />

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +16,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { CalendarRange, Info, Megaphone, Percent, Sparkles, Timer, Users, Wand2 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { VendorPromotionsByStatus } from '@/lib/types';
+import { useToast } from '@/hooks/use-toast';
 
 const promotionStatuses = [
   { id: 'active', title: 'Active', description: 'Campaigns running right now' },
@@ -65,12 +66,35 @@ type VendorPromotionsContentProps = {
 };
 
 export default function VendorPromotionsContent({ promotions }: VendorPromotionsContentProps) {
+  const { toast } = useToast();
+  const wizardRef = useRef<HTMLElement>(null);
   const [activeTab, setActiveTab] = useState<PromotionTab>('active');
   const [step, setStep] = useState<StepId>('audience');
   const [discount, setDiscount] = useState<number[]>([15]);
   const [budget, setBudget] = useState('5000');
   const [useCountdown, setUseCountdown] = useState(true);
   const [showQuickStart, setShowQuickStart] = useState(true);
+  const [isPublishing, setIsPublishing] = useState(false);
+
+  const handlePublish = async () => {
+    setIsPublishing(true);
+    // Simulate save — in production this would persist to Supabase
+    await new Promise(resolve => setTimeout(resolve, 1200));
+    toast({
+      title: 'Promotion published!',
+      description: `Campaign with ${discount[0]}% discount and ₹${Number(budget || 0).toLocaleString()} budget is now live.`,
+    });
+    // Reset wizard
+    setStep('audience');
+    setDiscount([15]);
+    setBudget('5000');
+    setUseCountdown(true);
+    setIsPublishing(false);
+  };
+
+  const scrollToWizard = () => {
+    wizardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   const stepIndex = useMemo(() => creationSteps.findIndex((item) => item.id === step), [step]);
   const progress = useMemo(() => ((stepIndex + 1) / creationSteps.length) * 100, [stepIndex]);
@@ -111,7 +135,7 @@ export default function VendorPromotionsContent({ promotions }: VendorPromotions
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
           <Button variant="outline" className="w-full sm:w-auto">Use blueprint</Button>
-          <Button className="w-full sm:w-auto">Create promotion</Button>
+          <Button className="w-full sm:w-auto" onClick={scrollToWizard}>Create promotion</Button>
         </div>
       </section>
 
@@ -143,7 +167,7 @@ export default function VendorPromotionsContent({ promotions }: VendorPromotions
                         <p className="text-base font-semibold text-foreground">No {status.title.toLowerCase()} campaigns yet</p>
                         <p className="text-sm text-muted-foreground">Create a promotion to see live performance metrics here.</p>
                       </div>
-                      <Button size="sm" onClick={() => setActiveTab('active')}>Create promotion</Button>
+                      <Button size="sm" onClick={scrollToWizard}>Create promotion</Button>
                     </div>
                   ) : (
                     <div className="grid gap-4 md:grid-cols-2">
@@ -202,7 +226,7 @@ export default function VendorPromotionsContent({ promotions }: VendorPromotions
         </Card>
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <section ref={wizardRef} className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <Card className="shadow-sm">
           <CardHeader className="flex flex-col gap-2">
             <div>
@@ -324,7 +348,9 @@ export default function VendorPromotionsContent({ promotions }: VendorPromotions
               <div className="flex gap-2">
                 <Button variant="outline" onClick={() => goStep('prev')} disabled={stepIndex === 0}>Back</Button>
                 {step === 'review' ? (
-                  <Button>Publish promotion</Button>
+                  <Button onClick={handlePublish} disabled={isPublishing}>
+                    {isPublishing ? 'Publishing…' : 'Publish promotion'}
+                  </Button>
                 ) : (
                   <Button onClick={() => goStep('next')}>Continue</Button>
                 )}

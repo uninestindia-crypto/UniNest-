@@ -52,9 +52,10 @@ export function VendorSidebarNav() {
   const pathname = usePathname();
   const { vendorCategories } = useAuth();
 
-  const vendorSpecificDashboards = categoryDashboards.filter(dash =>
-    vendorCategories?.includes(dash.id.replace('-', ' '))
-  );
+  const vendorSpecificDashboards = categoryDashboards.filter(dash => {
+    const dashLabel = dash.id.replace('-', ' ').toLowerCase();
+    return vendorCategories?.some(cat => cat.toLowerCase() === dashLabel);
+  });
 
   const NavItem = ({ item }: { item: any }) => (
     <SidebarMenuItem key={item.href}>

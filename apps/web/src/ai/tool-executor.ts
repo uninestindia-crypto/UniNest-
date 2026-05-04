@@ -5,8 +5,6 @@
  * Each function queries Supabase for real data — no fabricated responses.
  */
 
-'use server';
-
 import { createClient } from '@/lib/supabase/server';
 
 export type ToolResult = {

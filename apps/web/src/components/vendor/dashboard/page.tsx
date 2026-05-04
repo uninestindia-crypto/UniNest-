@@ -52,67 +52,84 @@ export default function VendorDashboardContent({ userName, vendorCategories, sta
     : [];
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8 md:space-y-10 min-w-0">
-      {/* Header */}
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between min-w-0">
-        <div className="min-w-0">
-          <p className="text-[10px] md:text-xs font-medium uppercase tracking-[0.3em] text-muted-foreground">Vendor HQ</p>
-          <h1 className="mt-2 text-2xl md:text-3xl font-semibold text-foreground lg:text-4xl truncate">Welcome back, {userName}</h1>
-          <p className="mt-2 md:mt-3 max-w-xl text-xs md:text-sm text-muted-foreground leading-relaxed">
-            Manage your listings, track orders, and grow your business on UniNest.
-          </p>
-          {normalizedVendorCategories.length > 0 && (
-            <div className="mt-4 flex flex-wrap gap-2">
-              {normalizedVendorCategories.map((category) => (
-                <Badge key={category} className="rounded-full bg-secondary/10 px-3 py-1 text-secondary-foreground hover:bg-secondary/20">
-                  {category.replace(/-/g, ' ').toUpperCase()}
-                </Badge>
-              ))}
+    <div className="mx-auto max-w-7xl space-y-8 min-w-0 pb-12">
+      {/* Dark Premium Hero Section from Prototype */}
+      <div className="relative overflow-hidden rounded-[2.5rem] bg-slate-950 px-6 py-10 md:px-12 md:py-16 shadow-2xl">
+        {/* Subtle glow effects */}
+        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-blue-600/20 blur-[80px]" />
+        <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-purple-600/20 blur-[80px]" />
+        
+        <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
+          <div>
+            <div className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-white/80 backdrop-blur-sm mb-4">
+              <Sparkles className="mr-2 h-3 w-3 text-blue-400" />
+              Vendor Operations
             </div>
-          )}
-        </div>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <Button size="lg" className="rounded-full px-6 py-2 shadow-sm" asChild>
-            <Link href="/marketplace/new">
-              <Plus className="mr-2 size-4" />
-              Add new listing
-            </Link>
-          </Button>
-          <Button variant="outline" size="lg" className="rounded-full px-6 py-2" asChild>
-            <Link href="/vendor/orders">
-              <ShoppingCart className="mr-2 size-4" />
-              View orders
-            </Link>
-          </Button>
-        </div>
-      </div>
+            <h1 className="text-3xl md:text-5xl font-semibold text-white tracking-tight">Welcome back, <br className="hidden sm:block" />{userName}</h1>
+            <p className="mt-3 max-w-md text-sm md:text-base text-white/60 leading-relaxed">
+              Manage your campus listings, track new orders, and monitor your business performance.
+            </p>
+            {normalizedVendorCategories.length > 0 && (
+              <div className="mt-5 flex flex-wrap gap-2">
+                {normalizedVendorCategories.map((category) => (
+                  <Badge key={category} className="rounded-full border-none bg-white/10 px-3 py-1 text-white hover:bg-white/20 font-medium">
+                    {category.replace(/-/g, ' ').toUpperCase()}
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
 
-      {/* Stats Cards - Real data from database */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatsCard
-          title="Total Listings"
-          value={stats.products.toString()}
-          icon={Package}
-          description="Active products/services listed"
-        />
-        <StatsCard
-          title="Total Orders"
-          value={stats.orders.toString()}
-          icon={ShoppingCart}
-          description="Completed transactions"
-        />
-        <StatsCard
-          title="Total Revenue"
-          value={`₹${stats.revenue.toLocaleString()}`}
-          icon={Wallet}
-          description="Net earnings processed"
-        />
-        <StatsCard
-          title="Average Rating"
-          value={stats.rating > 0 ? stats.rating.toFixed(1) : 'N/A'}
-          icon={Star}
-          description="Based on customer reviews"
-        />
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Button size="lg" className="rounded-full bg-white px-6 py-2 text-slate-950 hover:bg-white/90 shadow-lg font-bold" asChild>
+              <Link href="/marketplace/new">
+                <Plus className="mr-2 size-4 stroke-[3]" />
+                New Listing
+              </Link>
+            </Button>
+            <Button variant="outline" size="lg" className="rounded-full border-white/20 bg-white/5 px-6 py-2 text-white hover:bg-white/10 hover:text-white backdrop-blur-sm font-semibold" asChild>
+              <Link href="/vendor/orders">
+                <ShoppingCart className="mr-2 size-4" />
+                Orders
+              </Link>
+            </Button>
+          </div>
+        </div>
+
+        {/* Prototype Style KPI Grid */}
+        <div className="relative z-10 grid gap-4 grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-md transition-transform hover:-translate-y-1">
+            <div className="flex items-center gap-2 text-white/60 mb-2">
+              <Package className="h-4 w-4" />
+              <span className="text-xs font-semibold uppercase tracking-wider">Listings</span>
+            </div>
+            <div className="text-3xl font-bold text-white">{stats.products}</div>
+          </div>
+          
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-md transition-transform hover:-translate-y-1">
+            <div className="flex items-center gap-2 text-white/60 mb-2">
+              <ShoppingCart className="h-4 w-4" />
+              <span className="text-xs font-semibold uppercase tracking-wider">Orders</span>
+            </div>
+            <div className="text-3xl font-bold text-white">{stats.orders}</div>
+          </div>
+
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-md transition-transform hover:-translate-y-1">
+            <div className="flex items-center gap-2 text-white/60 mb-2">
+              <Wallet className="h-4 w-4" />
+              <span className="text-xs font-semibold uppercase tracking-wider">Revenue</span>
+            </div>
+            <div className="text-3xl font-bold text-white">₹{stats.revenue.toLocaleString()}</div>
+          </div>
+
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-md transition-transform hover:-translate-y-1">
+            <div className="flex items-center gap-2 text-white/60 mb-2">
+              <Star className="h-4 w-4" />
+              <span className="text-xs font-semibold uppercase tracking-wider">Rating</span>
+            </div>
+            <div className="text-3xl font-bold text-white">{stats.rating > 0 ? stats.rating.toFixed(1) : 'N/A'}</div>
+          </div>
+        </div>
       </div>
 
       {/* Quick Actions Grid */}

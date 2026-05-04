@@ -102,12 +102,15 @@ export default function UniNestChat() {
                 if (urlSessionId) {
                     setActiveSessionId(urlSessionId);
                     setSessions(data || []);
+                    // isLoadingHistory will be set to false by the message-loading effect
                 } else if (data && data.length > 0) {
                     setSessions(data);
                     setActiveSessionId(data[0].id);
+                    // isLoadingHistory will be set to false by the message-loading effect
                 } else {
                     // No sessions — we'll create one when user sends first message
                     setIsLoadingHistory(false);
+                    setIsFirstMessage(true);
                 }
             } catch (err) {
                 console.error('Error loading sessions:', err);
@@ -168,7 +171,7 @@ export default function UniNestChat() {
 
     // Save message to Supabase
     const saveMessage = useCallback(async (msg: Message, sessionId: string) => {
-        if (!user || sessionId === 'guest-session') return;
+        if (!user || !sessionId || sessionId === 'guest-session') return;
         try {
             const supabase = createClient();
             await supabase.from('ai_chat_messages').insert({
@@ -186,7 +189,7 @@ export default function UniNestChat() {
 
     // Update session title (auto-title from first user message)
     const updateSessionTitle = useCallback(async (sessionId: string, title: string) => {
-        if (!user) return;
+        if (!user || sessionId === 'guest-session') return;
         try {
             const supabase = createClient();
             const truncatedTitle = title.length > 50 ? title.substring(0, 47) + '...' : title;
@@ -205,7 +208,7 @@ export default function UniNestChat() {
 
     // Update session updated_at timestamp
     const touchSession = useCallback(async (sessionId: string) => {
-        if (!user) return;
+        if (!user || sessionId === 'guest-session') return;
         try {
             const supabase = createClient();
             const now = new Date().toISOString();
@@ -332,11 +335,22 @@ export default function UniNestChat() {
                 sessionId = 'guest-session';
                 setActiveSessionId('guest-session');
             } else {
-                const newId = await createSession('New Chat');
-                if (!newId) return;
-                sessionId = newId;
-                setActiveSessionId(newId);
-                setIsFirstMessage(true);
+                try {
+                    const newId = await createSession('New Chat');
+                    if (!newId) {
+                        // Fallback: still allow sending without persistence
+                        sessionId = 'guest-session';
+                        setActiveSessionId('guest-session');
+                    } else {
+                        sessionId = newId;
+                        setActiveSessionId(newId);
+                        setIsFirstMessage(true);
+                    }
+                } catch (err) {
+                    console.error('Failed to create session, falling back to guest mode:', err);
+                    sessionId = 'guest-session';
+                    setActiveSessionId('guest-session');
+                }
             }
         }
 
@@ -350,17 +364,19 @@ export default function UniNestChat() {
         setInput('');
         setIsLoading(true);
 
-        // Save user message to DB
-        saveMessage(userMsg, sessionId);
+        // Save user message to DB (non-blocking, errors won't stop the flow)
+        try { saveMessage(userMsg, sessionId); } catch {}
 
         // Auto-title: if this is the first message in the session, use it as title
-        if (isFirstMessage) {
-            updateSessionTitle(sessionId, content.trim());
+        if (isFirstMessage && sessionId !== 'guest-session') {
+            try { updateSessionTitle(sessionId, content.trim()); } catch {}
             setIsFirstMessage(false);
         }
 
-        // Touch session to update timestamp
-        touchSession(sessionId);
+        // Touch session to update timestamp (non-blocking)
+        if (sessionId !== 'guest-session') {
+            try { touchSession(sessionId); } catch {}
+        }
 
         try {
             const history = messages.map(m => ({
@@ -396,8 +412,8 @@ export default function UniNestChat() {
             }
 
             setMessages(prev => [...prev, assistantMsg]);
-            // Save assistant message to DB
-            saveMessage(assistantMsg, sessionId);
+            // Save assistant message to DB (non-blocking)
+            try { saveMessage(assistantMsg, sessionId); } catch {}
         } catch (error) {
             console.error('Chat error:', error);
             const errorMsg: Message = {
@@ -406,12 +422,12 @@ export default function UniNestChat() {
                 content: 'Sorry, something went wrong. Please try again.',
             };
             setMessages(prev => [...prev, errorMsg]);
-            saveMessage(errorMsg, sessionId);
+            try { saveMessage(errorMsg, sessionId); } catch {}
         } finally {
             setIsLoading(false);
             inputRef.current?.focus();
         }
-    }, [messages, isLoading, activeSessionId, saveMessage, createSession, isFirstMessage, updateSessionTitle, touchSession]);
+    }, [messages, isLoading, activeSessionId, user, saveMessage, createSession, isFirstMessage, updateSessionTitle, touchSession]);
 
     const handleQuickAction = (prompt: string) => {
         sendMessage(prompt);
@@ -788,38 +804,16 @@ export default function UniNestChat() {
                 {/* Messages */}
                 <ScrollArea className="flex-1 px-3 py-3 md:px-6 md:py-4 overflow-x-hidden" ref={scrollRef}>
                     <div className="space-y-4 max-w-4xl mx-auto">
-                        {/* Welcome State */}
                         {messages.length === 0 && (
-                            <div className="flex flex-col items-center justify-center py-8 space-y-6 animate-in fade-in duration-500">
-                                <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-indigo-600 to-violet-600 shadow-2xl shadow-indigo-500/30">
-                                    <Sparkles className="h-8 w-8 text-white" />
-                                </div>
-                                <div className="text-center space-y-1">
-                                    <h2 className="text-xl font-bold text-foreground">Welcome to UniNest AI</h2>
-                                    <p className="text-sm text-muted-foreground max-w-sm">
-                                        I can help you find hostels, libraries, internships, and more. What would you like to do?
+                            <div className="w-full animate-in fade-in duration-500">
+                                <div className="bg-gradient-to-br from-indigo-600/5 to-cyan-500/10 p-8 md:p-12 text-center rounded-3xl border border-indigo-100/50 dark:border-indigo-900/20 mb-8 mx-auto max-w-2xl">
+                                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 to-cyan-500 shadow-xl shadow-indigo-500/20 mx-auto mb-4">
+                                        <Sparkles className="h-8 w-8 text-white" />
+                                    </div>
+                                    <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3 tracking-tight">How can I help today?</h2>
+                                    <p className="text-sm md:text-base text-muted-foreground max-w-sm mx-auto">
+                                        Your personal smart campus assistant. Find housing, internships, events, and more.
                                     </p>
-                                </div>
-
-                                {/* Quick Action Chips */}
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 md:gap-2 w-full max-w-lg">
-                                    {quickActions.map((action) => {
-                                        const Icon = action.icon;
-                                        return (
-                                            <button
-                                                key={action.label}
-                                                onClick={() => handleQuickAction(action.prompt)}
-                                                className={cn(
-                                                    'flex items-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-medium transition-all',
-                                                    'hover:shadow-md hover:scale-[1.02] active:scale-[0.98]',
-                                                    action.color
-                                                )}
-                                            >
-                                                <Icon className="h-4 w-4 shrink-0" />
-                                                {action.label}
-                                            </button>
-                                        );
-                                    })}
                                 </div>
                             </div>
                         )}
@@ -894,38 +888,59 @@ export default function UniNestChat() {
                 </ScrollArea>
 
                 {/* Input Bar */}
-                <div className="border-t bg-background/80 backdrop-blur-sm px-3 py-2.5 md:px-6 md:py-3 shrink-0">
-                    <form
-                        onSubmit={(e) => {
-                            e.preventDefault();
-                            sendMessage(input);
-                        }}
-                        className="flex items-center gap-2 max-w-4xl mx-auto"
-                    >
-                        <Input
-                            ref={inputRef}
-                            placeholder="Ask UniNest AI anything..."
-                            value={input}
-                            onChange={(e) => setInput(e.target.value)}
-                            disabled={isLoading}
-                            className="flex-1 rounded-xl border-muted-foreground/20 bg-muted/50 focus-visible:ring-indigo-500 h-10 md:h-11 text-sm"
-                        />
-                        <Button
-                            type="submit"
-                            disabled={isLoading || !input.trim()}
-                            className="h-10 w-10 md:h-11 md:w-11 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 shadow-lg shadow-indigo-500/25 shrink-0"
-                            size="icon"
+                <div className="bg-background/95 backdrop-blur-md px-3 py-3 md:px-6 md:py-4 shrink-0 border-t z-30">
+                    <div className="max-w-4xl mx-auto flex flex-col gap-3">
+                        {/* Suggested Prompts (Scrollable) */}
+                        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none snap-x w-full">
+                            {quickActions.map(action => (
+                                <button
+                                    key={action.label}
+                                    onClick={() => handleQuickAction(action.prompt)}
+                                    className="whitespace-nowrap px-4 py-2 bg-background border border-border rounded-full text-[13px] text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950 transition-colors snap-start"
+                                >
+                                    {action.label}
+                                </button>
+                            ))}
+                        </div>
+                        
+                        <form
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                sendMessage(input);
+                            }}
+                            className="flex items-center gap-2 bg-background border border-border rounded-full px-2 py-2 shadow-sm focus-within:ring-1 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all"
                         >
-                            {isLoading ? (
-                                <Loader2 className="h-5 w-5 animate-spin" />
-                            ) : (
-                                <Send className="h-5 w-5" />
-                            )}
-                        </Button>
-                    </form>
-                    <p className="text-[10px] text-muted-foreground text-center mt-1.5 max-w-4xl mx-auto">
-                        UniNest AI may produce inaccurate information. Always verify critical details.
-                    </p>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-muted-foreground hover:text-foreground rounded-full shrink-0 hidden sm:flex"
+                                disabled={isLoading}
+                            >
+                                <Sparkles className="h-4 w-4 text-indigo-500" />
+                            </Button>
+                            <Input
+                                ref={inputRef}
+                                placeholder="Ask anything about campus..."
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                disabled={isLoading}
+                                className="flex-1 border-0 bg-transparent shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 h-10 text-sm md:text-base px-2"
+                            />
+                            <Button
+                                type="submit"
+                                disabled={isLoading || !input.trim()}
+                                className="h-10 w-10 md:h-11 md:w-11 rounded-full bg-indigo-600 hover:bg-indigo-700 shadow-md shrink-0"
+                                size="icon"
+                            >
+                                {isLoading ? (
+                                    <Loader2 className="h-5 w-5 animate-spin text-white" />
+                                ) : (
+                                    <Send className="h-5 w-5 text-white" />
+                                )}
+                            </Button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>

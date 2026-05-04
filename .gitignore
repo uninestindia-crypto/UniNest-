@@ -4,6 +4,8 @@
 node_modules/
 /.pnp
 .pnp.js
+.node/
+node.zip
 
 # Testing
 /coverage
@@ -22,6 +24,7 @@ node_modules/
 # Local Environment Variables - CRITICAL: Never commit secrets
 .env
 .env.*
+*.env
 !.env.example
 .env.local
 .env.development.local

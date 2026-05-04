@@ -389,8 +389,8 @@ export default function ChatLayout() {
       if (error) throw error;
 
       await fetchRooms();
-      router.push('/chat');
-      // The selection will happen via useEffect after rooms are refetched
+      // Stay in the current context (vendor or student chat)
+      router.refresh();
 
     } catch (error) {
       console.error('Error starting chat session:', error);
