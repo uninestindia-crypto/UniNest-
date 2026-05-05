@@ -5,18 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import {
-  ArrowUpRight,
-  Sparkles,
   Package,
   ShoppingCart,
   Star,
   Wallet,
-  BarChart3,
-  Settings,
   Plus,
+  ArrowRight,
+  TrendingUp
 } from 'lucide-react';
-
-import StatsCard from '@/components/ui/stats-card';
 
 type VendorCategoryInput = string | { id?: string | null; label?: string | null } | null | undefined;
 
@@ -35,16 +31,9 @@ export default function VendorDashboardContent({ userName, vendorCategories, sta
   const normalizedVendorCategories = Array.isArray(vendorCategories)
     ? vendorCategories
       .map((category) => {
-        if (typeof category === 'string') {
-          return category;
-        }
+        if (typeof category === 'string') return category;
         if (category && typeof category === 'object') {
-          if (category.id && typeof category.id === 'string') {
-            return category.id;
-          }
-          if (category.label && typeof category.label === 'string') {
-            return category.label;
-          }
+          return category.id || category.label || null;
         }
         return null;
       })
@@ -52,202 +41,128 @@ export default function VendorDashboardContent({ userName, vendorCategories, sta
     : [];
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8 min-w-0 pb-12">
-      {/* Dark Premium Hero Section from Prototype */}
-      <div className="relative overflow-hidden rounded-[2.5rem] bg-slate-950 px-6 py-10 md:px-12 md:py-16 shadow-2xl">
-        {/* Subtle glow effects */}
-        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-blue-600/20 blur-[80px]" />
-        <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-purple-600/20 blur-[80px]" />
-        
-        <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
-          <div>
-            <div className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-white/80 backdrop-blur-sm mb-4">
-              <Sparkles className="mr-2 h-3 w-3 text-blue-400" />
-              Vendor Operations
+    <div className="mx-auto max-w-7xl space-y-6 min-w-0 pb-12 px-2 sm:px-4">
+      {/* Clean Welcome Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl bg-card border shadow-sm p-6 md:p-8">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Welcome, {userName}</h1>
+          <p className="mt-1 text-sm md:text-base text-muted-foreground">
+            Here's what's happening with your business today.
+          </p>
+          {normalizedVendorCategories.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {normalizedVendorCategories.map((category) => (
+                <Badge key={category} variant="secondary" className="rounded-full font-medium">
+                  {category.replace(/-/g, ' ').toUpperCase()}
+                </Badge>
+              ))}
             </div>
-            <h1 className="text-3xl md:text-5xl font-semibold text-white tracking-tight">Welcome back, <br className="hidden sm:block" />{userName}</h1>
-            <p className="mt-3 max-w-md text-sm md:text-base text-white/60 leading-relaxed">
-              Manage your campus listings, track new orders, and monitor your business performance.
-            </p>
-            {normalizedVendorCategories.length > 0 && (
-              <div className="mt-5 flex flex-wrap gap-2">
-                {normalizedVendorCategories.map((category) => (
-                  <Badge key={category} className="rounded-full border-none bg-white/10 px-3 py-1 text-white hover:bg-white/20 font-medium">
-                    {category.replace(/-/g, ' ').toUpperCase()}
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Button size="lg" className="rounded-full bg-white px-6 py-2 text-slate-950 hover:bg-white/90 shadow-lg font-bold" asChild>
-              <Link href="/marketplace/new">
-                <Plus className="mr-2 size-4 stroke-[3]" />
-                New Listing
-              </Link>
-            </Button>
-            <Button variant="outline" size="lg" className="rounded-full border-white/20 bg-white/5 px-6 py-2 text-white hover:bg-white/10 hover:text-white backdrop-blur-sm font-semibold" asChild>
-              <Link href="/vendor/orders">
-                <ShoppingCart className="mr-2 size-4" />
-                Orders
-              </Link>
-            </Button>
-          </div>
+          )}
         </div>
 
-        {/* Prototype Style KPI Grid */}
-        <div className="relative z-10 grid gap-4 grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-md transition-transform hover:-translate-y-1">
-            <div className="flex items-center gap-2 text-white/60 mb-2">
-              <Package className="h-4 w-4" />
-              <span className="text-xs font-semibold uppercase tracking-wider">Listings</span>
-            </div>
-            <div className="text-3xl font-bold text-white">{stats.products}</div>
-          </div>
-          
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-md transition-transform hover:-translate-y-1">
-            <div className="flex items-center gap-2 text-white/60 mb-2">
-              <ShoppingCart className="h-4 w-4" />
-              <span className="text-xs font-semibold uppercase tracking-wider">Orders</span>
-            </div>
-            <div className="text-3xl font-bold text-white">{stats.orders}</div>
-          </div>
-
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-md transition-transform hover:-translate-y-1">
-            <div className="flex items-center gap-2 text-white/60 mb-2">
-              <Wallet className="h-4 w-4" />
-              <span className="text-xs font-semibold uppercase tracking-wider">Revenue</span>
-            </div>
-            <div className="text-3xl font-bold text-white">₹{stats.revenue.toLocaleString()}</div>
-          </div>
-
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-md transition-transform hover:-translate-y-1">
-            <div className="flex items-center gap-2 text-white/60 mb-2">
-              <Star className="h-4 w-4" />
-              <span className="text-xs font-semibold uppercase tracking-wider">Rating</span>
-            </div>
-            <div className="text-3xl font-bold text-white">{stats.rating > 0 ? stats.rating.toFixed(1) : 'N/A'}</div>
-          </div>
+        <div className="flex flex-col sm:flex-row gap-3 mt-2 sm:mt-0">
+          <Button asChild className="rounded-full font-semibold w-full sm:w-auto shadow-sm">
+            <Link href="/vendor/products/new">
+              <Plus className="mr-2 size-4" />
+              New Product
+            </Link>
+          </Button>
         </div>
       </div>
 
-      {/* Quick Actions Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="rounded-2xl border shadow-sm hover:shadow-md transition-shadow">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Package className="size-5 text-primary" />
-              Manage Listings
-            </CardTitle>
-            <CardDescription>
-              View, edit, or remove your products and services.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button variant="outline" className="w-full" asChild>
-              <Link href="/vendor/products">
-                Go to Products
-                <ArrowUpRight className="ml-2 size-4" />
-              </Link>
-            </Button>
+      {/* KPI Grid - Mobile Friendly */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+        <Card className="rounded-2xl shadow-sm border">
+          <CardContent className="p-4 sm:p-6 flex flex-col gap-2">
+            <div className="flex items-center justify-between text-muted-foreground mb-1">
+              <span className="text-xs sm:text-sm font-medium">Active Listings</span>
+              <Package className="h-4 w-4" />
+            </div>
+            <div className="text-2xl sm:text-3xl font-bold">{stats.products}</div>
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border shadow-sm hover:shadow-md transition-shadow">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <ShoppingCart className="size-5 text-primary" />
-              Order Management
-            </CardTitle>
-            <CardDescription>
-              Track and manage incoming orders from customers.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button variant="outline" className="w-full" asChild>
-              <Link href="/vendor/orders">
-                View Orders
-                <ArrowUpRight className="ml-2 size-4" />
-              </Link>
-            </Button>
+        <Card className="rounded-2xl shadow-sm border">
+          <CardContent className="p-4 sm:p-6 flex flex-col gap-2">
+            <div className="flex items-center justify-between text-muted-foreground mb-1">
+              <span className="text-xs sm:text-sm font-medium">Total Orders</span>
+              <ShoppingCart className="h-4 w-4" />
+            </div>
+            <div className="text-2xl sm:text-3xl font-bold">{stats.orders}</div>
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border shadow-sm hover:shadow-md transition-shadow">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <BarChart3 className="size-5 text-primary" />
-              Analytics
-            </CardTitle>
-            <CardDescription>
-              View performance metrics and insights.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button variant="outline" className="w-full" asChild>
-              <Link href="/vendor/analytics">
-                View Analytics
-                <ArrowUpRight className="ml-2 size-4" />
-              </Link>
-            </Button>
+        <Card className="rounded-2xl shadow-sm border">
+          <CardContent className="p-4 sm:p-6 flex flex-col gap-2">
+            <div className="flex items-center justify-between text-muted-foreground mb-1">
+              <span className="text-xs sm:text-sm font-medium">Revenue</span>
+              <Wallet className="h-4 w-4" />
+            </div>
+            <div className="text-2xl sm:text-3xl font-bold">₹{stats.revenue.toLocaleString()}</div>
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border shadow-sm hover:shadow-md transition-shadow">
+        <Card className="rounded-2xl shadow-sm border">
+          <CardContent className="p-4 sm:p-6 flex flex-col gap-2">
+            <div className="flex items-center justify-between text-muted-foreground mb-1">
+              <span className="text-xs sm:text-sm font-medium">Rating</span>
+              <Star className="h-4 w-4" />
+            </div>
+            <div className="text-2xl sm:text-3xl font-bold">{stats.rating > 0 ? stats.rating.toFixed(1) : 'N/A'}</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Quick Links / Recent Activity section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="rounded-2xl shadow-sm border flex flex-col justify-between">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Sparkles className="size-5 text-primary" />
-              Create New Listing
-            </CardTitle>
-            <CardDescription>
-              Add a new product or service to the marketplace.
-            </CardDescription>
+             <CardTitle className="flex items-center gap-2">
+               <TrendingUp className="h-5 w-5 text-primary" />
+               Performance Overview
+             </CardTitle>
+             <CardDescription>View your detailed business analytics and sales trends.</CardDescription>
           </CardHeader>
-          <CardContent>
-            <Button className="w-full" asChild>
-              <Link href="/marketplace/new">
-                <Plus className="mr-2 size-4" />
-                Create Listing
-              </Link>
-            </Button>
+          <CardContent className="pb-6">
+             <Button variant="secondary" className="w-full sm:w-auto" asChild>
+               <Link href="/vendor/analytics">
+                 View Full Analytics <ArrowRight className="ml-2 h-4 w-4" />
+               </Link>
+             </Button>
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border shadow-sm hover:shadow-md transition-shadow">
+        <Card className="rounded-2xl shadow-sm border flex flex-col justify-between">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Settings className="size-5 text-primary" />
-              Settings
-            </CardTitle>
-            <CardDescription>
-              Manage your vendor profile and preferences.
-            </CardDescription>
+             <CardTitle className="flex items-center gap-2">
+               <ShoppingCart className="h-5 w-5 text-primary" />
+               Recent Orders
+             </CardTitle>
+             <CardDescription>Manage and fulfill your customer orders.</CardDescription>
           </CardHeader>
-          <CardContent>
-            <Button variant="outline" className="w-full" asChild>
-              <Link href="/settings">
-                Open Settings
-                <ArrowUpRight className="ml-2 size-4" />
-              </Link>
-            </Button>
+          <CardContent className="pb-6">
+             <Button variant="secondary" className="w-full sm:w-auto" asChild>
+               <Link href="/vendor/orders">
+                 Manage Orders <ArrowRight className="ml-2 h-4 w-4" />
+               </Link>
+             </Button>
           </CardContent>
         </Card>
       </div>
 
       {/* Getting Started / Empty State */}
       {stats.products === 0 && (
-        <Card className="rounded-2xl border-dashed border-2 border-primary/20 bg-primary/5">
-          <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+        <Card className="rounded-2xl border-dashed border-2 border-primary/20 bg-primary/5 mt-6">
+          <CardContent className="flex flex-col items-center justify-center py-10 sm:py-16 text-center">
             <div className="rounded-full bg-primary/10 p-4 mb-4">
-              <Sparkles className="size-8 text-primary" />
+              <Package className="size-8 text-primary" />
             </div>
             <h3 className="text-xl font-semibold mb-2">Get started as a vendor</h3>
-            <p className="text-muted-foreground mb-6 max-w-md">
+            <p className="text-muted-foreground mb-6 max-w-sm px-4 mx-auto">
               Create your first listing to start selling on UniNest. Reach thousands of students looking for products and services.
             </p>
-            <Button size="lg" asChild>
-              <Link href="/marketplace/new">
+            <Button size="lg" className="rounded-full w-full sm:w-auto" asChild>
+              <Link href="/vendor/products/new">
                 <Plus className="mr-2 size-4" />
                 Create Your First Listing
               </Link>

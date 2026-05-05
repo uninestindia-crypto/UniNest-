@@ -349,7 +349,7 @@ export default function UniNestChat() {
         }
 
         const userMsg: Message = {
-            id: \`user-\${Date.now()}\`,
+            id: `user-${Date.now()}`,
             role: 'user',
             content: content.trim(),
         };
@@ -387,7 +387,7 @@ export default function UniNestChat() {
             const data = await res.json();
 
             const assistantMsg: Message = {
-                id: \`assistant-\${Date.now()}\`,
+                id: `assistant-${Date.now()}`,
                 role: 'assistant',
                 content: data.response || 'Sorry, I could not process that.',
                 tool_calls: data.tool_calls || [],
@@ -406,7 +406,7 @@ export default function UniNestChat() {
         } catch (error) {
             console.error('Chat error:', error);
             const errorMsg: Message = {
-                id: \`error-\${Date.now()}\`,
+                id: `error-${Date.now()}`,
                 role: 'assistant',
                 content: 'Sorry, something went wrong. Please try again.',
             };
@@ -423,19 +423,19 @@ export default function UniNestChat() {
     };
 
     const handleItemSelect = (item: any) => {
-        sendMessage(\`Tell me more about "\${item.name}" (ID: \${item.id})\`);
+        sendMessage(`Tell me more about "${item.name}" (ID: ${item.id})`);
     };
 
     const handleOpportunitySelect = (opp: any) => {
         const title = opp.role || opp.title;
-        sendMessage(\`I'm interested in "\${title}" (ID: \${opp.id}). Can you help me draft an application?\`);
+        sendMessage(`I'm interested in "${title}" (ID: ${opp.id}). Can you help me draft an application?`);
     };
 
     const handleDraftApprove = (draftText: string) => {
         if (!activeDraft) return;
         const oppId = activeDraft.opportunity?.id;
         const oppType = activeDraft.opportunity?.role ? 'internship' : 'competition';
-        sendMessage(\`I approve the draft. Please submit my application for opportunity ID \${oppId} (\${oppType}). Here is my approved cover letter: \${draftText}\`);
+        sendMessage(`I approve the draft. Please submit my application for opportunity ID ${oppId} (${oppType}). Here is my approved cover letter: ${draftText}`);
         setActiveDraft(null);
     };
 
@@ -490,7 +490,7 @@ export default function UniNestChat() {
                         </div>
                         <Button
                             className="w-full mt-4 bg-green-600 hover:bg-green-700 text-white rounded-xl h-11 font-medium shadow-md transition-all hover:shadow-lg"
-                            onClick={() => router.push(\`/marketplace/\${order.item?.id}\`)}
+                            onClick={() => router.push(`/marketplace/${order.item?.id}`)}
                         >
                             <ShoppingBag className="h-4 w-4 mr-2" />
                             Confirm & Pay
@@ -534,7 +534,7 @@ export default function UniNestChat() {
                                     ))}
                                 </div>
                             )}
-                            <Link href={\`/marketplace/\${item.id}\`} className="block pt-2">
+                            <Link href={`/marketplace/${item.id}`} className="block pt-2">
                                 <Button className="w-full rounded-xl h-10 font-medium" variant="outline">
                                     <ExternalLink className="h-4 w-4 mr-2" />
                                     View Full Details
