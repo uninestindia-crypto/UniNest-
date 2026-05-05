@@ -171,7 +171,7 @@ export async function createProduct(formData: FormData) {
             instagram_url: rawFormData.instagram_url,
             facebook_url: rawFormData.facebook_url,
             twitter_url: rawFormData.twitter_url,
-            status: 'pending',
+            status: 'active',
         }).select().single();
 
         if (error) {

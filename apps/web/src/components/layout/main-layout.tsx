@@ -58,6 +58,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
       '/search',
       '/profile',
       '/hostels',
+      '/libraries',
       '/booking',
     ];
 

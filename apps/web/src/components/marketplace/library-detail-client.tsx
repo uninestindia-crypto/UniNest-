@@ -386,7 +386,8 @@ export default function LibraryDetailClient({ library, initialSeatProducts, init
                                 </Select>
                             </div>
                             <ScrollArea className="h-[420px] rounded-xl border bg-muted/30 p-4">
-                                <div className="grid grid-cols-12 gap-2">
+                                <div className={cn("grid gap-2", filteredSeats.length > 0 ? "grid-cols-12" : "grid-cols-1 h-full")}>
+                                    {filteredSeats.length > 0 ? (
                                     <TooltipProvider>
                                         {filteredSeats.map(seat => {
                                             const countdown = countdownForSeat(seat);
@@ -441,6 +442,13 @@ export default function LibraryDetailClient({ library, initialSeatProducts, init
                                             );
                                         })}
                                     </TooltipProvider>
+                                    ) : (
+                                        <div className="flex flex-col items-center justify-center h-full min-h-[300px] text-muted-foreground rounded-xl border border-dashed bg-muted/10 p-8 text-center">
+                                            <Armchair className="h-12 w-12 mb-4 opacity-30 mx-auto" />
+                                            <p className="text-lg font-medium text-foreground">Seat Map Unavailable</p>
+                                            <p className="text-sm mt-1 max-w-sm mx-auto">The library owner hasn't configured the interactive seat map yet. Please contact them directly to reserve a spot.</p>
+                                        </div>
+                                    )}
                                 </div>
                             </ScrollArea>
                         </CardContent>
