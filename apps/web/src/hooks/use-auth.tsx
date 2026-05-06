@@ -43,11 +43,16 @@ const determineRole = (user: User | null): UserRole => {
 }
 
 const getVendorCategories = (user: User | null): string[] => {
-  if (!user || user.user_metadata?.role !== 'vendor') {
+  if (!user) {
+    return [];
+  }
+  const role = user.user_metadata?.role;
+  if (role !== 'vendor' && role !== 'admin') {
     return [];
   }
   return user.user_metadata?.vendor_categories || [];
 }
+
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const router = useRouter();

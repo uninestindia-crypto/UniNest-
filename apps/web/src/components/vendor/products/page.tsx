@@ -40,8 +40,9 @@ export default function VendorProductsContent({ initialProducts }: VendorProduct
   const [isDeleting, setIsDeleting] = useState(false);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const router = useRouter();
-  const { supabase, vendorSubscriptionStatus } = useAuth();
+  const { supabase, vendorSubscriptionStatus, role } = useAuth();
   const { toast } = useToast();
+  const canAddProduct = role === 'admin' || vendorSubscriptionStatus.isVendorActive;
 
   const handleDelete = async () => {
     if (!productToDelete || !supabase) return;
@@ -142,8 +143,8 @@ export default function VendorProductsContent({ initialProducts }: VendorProduct
         <PageHeader title="My Products" description="Manage your marketplace listings.">
           <Button
             asChild
-            disabled={!vendorSubscriptionStatus.isVendorActive}
-            title={vendorSubscriptionStatus.isVendorActive ? undefined : 'Activate your subscription to add listings'}
+            disabled={!canAddProduct}
+            title={canAddProduct ? undefined : 'Activate your subscription to add listings'}
           >
             <Link href="/vendor/products/new">
               <PlusCircle className="mr-2" />

@@ -1,6 +1,6 @@
 
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, ShoppingCart, CreditCard, ScrollText, Settings, Briefcase, Trophy, LifeBuoy, Lightbulb, Megaphone, Heart, Activity, Bot, Zap } from 'lucide-react';
+import { LayoutDashboard, Users, ShoppingCart, CreditCard, ScrollText, Settings, Briefcase, Trophy, LifeBuoy, Lightbulb, Megaphone, Heart, Activity, Bot, Zap, GraduationCap } from 'lucide-react';
 import { SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel, SidebarGroupContent } from '@/components/ui/sidebar';
 import Link from 'next/link';
 
@@ -17,6 +17,7 @@ const navGroups = [
     items: [
       { href: '/admin/users', label: 'Users', icon: Users },
       { href: '/admin/listings', label: 'Listings', icon: ShoppingCart },
+      { href: '/admin/exams', label: 'Exam Banks', icon: GraduationCap },
       { href: '/admin/competitions', label: 'Competitions', icon: Trophy },
       { href: '/admin/internships', label: 'Internships', icon: Briefcase },
     ]

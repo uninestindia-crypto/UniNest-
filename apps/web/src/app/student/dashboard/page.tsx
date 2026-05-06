@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Bot, MapPin, Search, Calendar, ChevronRight, Home, LayoutGrid, Compass, MessageSquare } from 'lucide-react';
+import { Bot, MapPin, Search, Calendar, ChevronRight, Home, LayoutGrid, Compass, MessageSquare, GraduationCap } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 
@@ -102,12 +102,12 @@ export default function StudentDashboardPage() {
               <p className="text-[10px] text-muted-foreground mt-0.5">Books & Essentials</p>
             </Link>
             
-            <Link href="/workspace/competitions" className="bg-card border p-4 rounded-[1.5rem] shadow-sm hover:shadow-md transition-shadow">
-              <div className="h-10 w-10 rounded-xl bg-green-100 text-green-600 dark:bg-green-900/30 flex items-center justify-center mb-3">
-                <MessageSquare className="h-5 w-5" />
+            <Link href="/exams" className="bg-card border p-4 rounded-[1.5rem] shadow-sm hover:shadow-md transition-shadow">
+              <div className="h-10 w-10 rounded-xl bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 flex items-center justify-center mb-3">
+                <GraduationCap className="h-5 w-5" />
               </div>
-              <h4 className="font-semibold text-sm">Community</h4>
-              <p className="text-[10px] text-muted-foreground mt-0.5">Discussions & Events</p>
+              <h4 className="font-semibold text-sm">Exam Prep</h4>
+              <p className="text-[10px] text-muted-foreground mt-0.5">NEET, JEE &amp; more</p>
             </Link>
           </div>
         </div>
