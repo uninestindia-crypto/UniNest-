@@ -1,393 +1,393 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
-import { Badge } from '@/components/ui/badge';
+import { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
-import { Slider } from '@/components/ui/slider';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { CalendarRange, Info, Megaphone, Percent, Sparkles, Timer, Users, Wand2 } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
-import type { VendorPromotionsByStatus } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/use-auth';
+import { Tag, Trash2, Plus, Loader2, Percent, Calendar, Package } from 'lucide-react';
 
-const promotionStatuses = [
-  { id: 'active', title: 'Active', description: 'Campaigns running right now' },
-  { id: 'scheduled', title: 'Scheduled', description: 'Upcoming promotions ready to launch' },
-  { id: 'completed', title: 'Completed', description: 'Past performance to review' },
-] as const;
-
-const emptyPromotions: VendorPromotionsByStatus = {
-  active: [],
-  scheduled: [],
-  completed: [],
+type Product = {
+  id: number;
+  name: string;
+  price: number;
+  category: string;
 };
 
-const creationSteps = [
-  { id: 'audience', title: 'Audience & goal', description: 'Choose who sees the campaign and define success.' },
-  { id: 'offer', title: 'Offer details', description: 'Set incentive, price rules, and messaging.' },
-  { id: 'schedule', title: 'Schedule & budget', description: 'Pick launch window, frequency, and spend caps.' },
-  { id: 'review', title: 'Review & publish', description: 'Double-check summary before activating.' },
-] as const;
-
-const discountMarks = [5, 10, 15, 20, 25, 30];
-
-type PlaybookCardProps = {
-  icon: LucideIcon;
+type Offer = {
+  id: string;
   title: string;
   description: string;
+  discountPercent: number;
+  productId: number | null;
+  productName: string | null;
+  validUntil: string | null;
+  createdAt: string;
+  isActive: boolean;
 };
-
-const PlaybookCard = ({ icon: Icon, title, description }: PlaybookCardProps) => (
-  <div className="flex items-start gap-3 rounded-lg border border-muted/40 p-4">
-    <div className="rounded-full bg-primary/10 p-2 text-primary">
-      <Icon className="size-4" />
-    </div>
-    <div className="space-y-1">
-      <h3 className="text-sm font-semibold">{title}</h3>
-      <p className="text-xs text-muted-foreground">{description}</p>
-    </div>
-  </div>
-);
-
-type StepId = (typeof creationSteps)[number]['id'];
-
-type PromotionTab = (typeof promotionStatuses)[number]['id'];
 
 type VendorPromotionsContentProps = {
-  promotions?: VendorPromotionsByStatus | null;
+  vendorId: string;
+  initialOffers: Offer[];
+  products: Product[];
 };
 
-export default function VendorPromotionsContent({ promotions }: VendorPromotionsContentProps) {
+export default function VendorPromotionsContent({
+  vendorId,
+  initialOffers,
+  products,
+}: VendorPromotionsContentProps) {
   const { toast } = useToast();
-  const wizardRef = useRef<HTMLElement>(null);
-  const [activeTab, setActiveTab] = useState<PromotionTab>('active');
-  const [step, setStep] = useState<StepId>('audience');
-  const [discount, setDiscount] = useState<number[]>([15]);
-  const [budget, setBudget] = useState('5000');
-  const [useCountdown, setUseCountdown] = useState(true);
-  const [showQuickStart, setShowQuickStart] = useState(true);
-  const [isPublishing, setIsPublishing] = useState(false);
+  const { supabase } = useAuth();
+  const [offers, setOffers] = useState<Offer[]>(initialOffers);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
 
-  const handlePublish = async () => {
-    setIsPublishing(true);
-    // Simulate save — in production this would persist to Supabase
-    await new Promise(resolve => setTimeout(resolve, 1200));
-    toast({
-      title: 'Promotion published!',
-      description: `Campaign with ${discount[0]}% discount and ₹${Number(budget || 0).toLocaleString()} budget is now live.`,
+  // Form state
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [discountPercent, setDiscountPercent] = useState('');
+  const [selectedProductId, setSelectedProductId] = useState<string>('');
+  const [validUntil, setValidUntil] = useState('');
+
+  const saveOffers = async (updatedOffers: Offer[]) => {
+    if (!supabase) return;
+    await supabase.from('platform_settings').upsert({
+      key: `vendor_offers_${vendorId}`,
+      value: updatedOffers,
     });
-    // Reset wizard
-    setStep('audience');
-    setDiscount([15]);
-    setBudget('5000');
-    setUseCountdown(true);
-    setIsPublishing(false);
   };
 
-  const scrollToWizard = () => {
-    wizardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-
-  const stepIndex = useMemo(() => creationSteps.findIndex((item) => item.id === step), [step]);
-  const progress = useMemo(() => ((stepIndex + 1) / creationSteps.length) * 100, [stepIndex]);
-
-  const promotionsByStatus = promotions ?? emptyPromotions;
-
-  const goStep = (direction: 'next' | 'prev') => {
-    if (direction === 'next' && stepIndex < creationSteps.length - 1) {
-      setStep(creationSteps[stepIndex + 1].id);
+  const handleCreate = async () => {
+    if (!title.trim()) {
+      toast({ variant: 'destructive', title: 'Title required', description: 'Give your offer a title.' });
+      return;
     }
-    if (direction === 'prev' && stepIndex > 0) {
-      setStep(creationSteps[stepIndex - 1].id);
+    const discount = Number(discountPercent);
+    if (!discount || discount < 1 || discount > 90) {
+      toast({ variant: 'destructive', title: 'Invalid discount', description: 'Enter a discount between 1% and 90%.' });
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const selectedProduct = products.find((p) => p.id === Number(selectedProductId));
+      const newOffer: Offer = {
+        id: `offer_${Date.now()}`,
+        title: title.trim(),
+        description: description.trim(),
+        discountPercent: discount,
+        productId: selectedProduct?.id || null,
+        productName: selectedProduct?.name || null,
+        validUntil: validUntil || null,
+        createdAt: new Date().toISOString(),
+        isActive: true,
+      };
+
+      const updatedOffers = [newOffer, ...offers];
+      await saveOffers(updatedOffers);
+      setOffers(updatedOffers);
+
+      // Reset form
+      setTitle('');
+      setDescription('');
+      setDiscountPercent('');
+      setSelectedProductId('');
+      setValidUntil('');
+      setShowForm(false);
+
+      toast({ title: 'Offer created!', description: `"${newOffer.title}" is now visible to students.` });
+    } catch {
+      toast({ variant: 'destructive', title: 'Error', description: 'Could not save the offer. Please try again.' });
+    } finally {
+      setIsSaving(false);
     }
   };
+
+  const handleToggleActive = async (offerId: string) => {
+    const updatedOffers = offers.map((o) => (o.id === offerId ? { ...o, isActive: !o.isActive } : o));
+    setOffers(updatedOffers);
+    await saveOffers(updatedOffers);
+    toast({ title: 'Updated', description: 'Offer status changed.' });
+  };
+
+  const handleDelete = async (offerId: string) => {
+    setIsDeleting(offerId);
+    try {
+      const updatedOffers = offers.filter((o) => o.id !== offerId);
+      await saveOffers(updatedOffers);
+      setOffers(updatedOffers);
+      toast({ title: 'Offer removed', description: 'The offer has been deleted.' });
+    } catch {
+      toast({ variant: 'destructive', title: 'Error', description: 'Could not delete the offer.' });
+    } finally {
+      setIsDeleting(null);
+    }
+  };
+
+  const activeOffers = offers.filter((o) => o.isActive);
+  const inactiveOffers = offers.filter((o) => !o.isActive);
 
   return (
-    <div className="space-y-8">
-      {showQuickStart && (
-        <Alert className="flex flex-col gap-2 border-primary/40 bg-primary/5 text-foreground md:flex-row md:items-center md:justify-between">
-          <div className="flex items-start gap-3">
-            <Info className="size-5 text-primary" />
-            <div>
-              <AlertTitle>Quick start tip</AlertTitle>
-              <AlertDescription>
-                Review existing campaigns before launching new ones so budgets and audiences don't overlap.
-              </AlertDescription>
+    <div className="space-y-6 max-w-4xl mx-auto pb-12 px-2 sm:px-4">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl bg-card border shadow-sm p-6">
+        <div>
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <Tag className="size-6 text-primary" />
+            Offers & Discounts
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Create special offers to attract more students to your listings.
+          </p>
+        </div>
+        <Button onClick={() => setShowForm((prev) => !prev)} className="w-full sm:w-auto">
+          <Plus className="mr-2 size-4" />
+          {showForm ? 'Cancel' : 'Create Offer'}
+        </Button>
+      </div>
+
+      {/* Create Offer Form */}
+      {showForm && (
+        <Card className="rounded-2xl shadow-sm border border-primary/20 bg-primary/5">
+          <CardHeader>
+            <CardTitle className="text-base">New Offer</CardTitle>
+            <CardDescription>Fill in the details below. Students will see this on your listing.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="offer-title">Offer Title *</Label>
+                <Input
+                  id="offer-title"
+                  placeholder="e.g. Summer Special - 20% Off"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="offer-discount">Discount % *</Label>
+                <div className="relative">
+                  <Percent className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                  <Input
+                    id="offer-discount"
+                    type="number"
+                    min={1}
+                    max={90}
+                    placeholder="e.g. 20"
+                    className="pl-9"
+                    value={discountPercent}
+                    onChange={(e) => setDiscountPercent(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="offer-product">Apply to (Optional)</Label>
+                <select
+                  id="offer-product"
+                  value={selectedProductId}
+                  onChange={(e) => setSelectedProductId(e.target.value)}
+                  className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <option value="">All my listings</option>
+                  {products.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} — ₹{p.price}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="offer-valid">Valid Until (Optional)</Label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                  <Input
+                    id="offer-valid"
+                    type="date"
+                    className="pl-9"
+                    value={validUntil}
+                    min={new Date().toISOString().split('T')[0]}
+                    onChange={(e) => setValidUntil(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="offer-description">Description (Optional)</Label>
+              <Textarea
+                id="offer-description"
+                placeholder="e.g. Available for new students joining this semester. Contact us to avail."
+                rows={3}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <Button onClick={handleCreate} disabled={isSaving}>
+                {isSaving && <Loader2 className="mr-2 size-4 animate-spin" />}
+                Save Offer
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Active Offers */}
+      {activeOffers.length > 0 && (
+        <div className="space-y-3">
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider px-1">
+            Active Offers ({activeOffers.length})
+          </h2>
+          {activeOffers.map((offer) => (
+            <OfferCard
+              key={offer.id}
+              offer={offer}
+              onToggle={handleToggleActive}
+              onDelete={handleDelete}
+              isDeleting={isDeleting === offer.id}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Paused Offers */}
+      {inactiveOffers.length > 0 && (
+        <div className="space-y-3">
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider px-1">
+            Paused ({inactiveOffers.length})
+          </h2>
+          {inactiveOffers.map((offer) => (
+            <OfferCard
+              key={offer.id}
+              offer={offer}
+              onToggle={handleToggleActive}
+              onDelete={handleDelete}
+              isDeleting={isDeleting === offer.id}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Empty State */}
+      {offers.length === 0 && !showForm && (
+        <Card className="rounded-2xl border-dashed border-2 border-muted-foreground/20">
+          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="rounded-full bg-muted p-4 mb-4">
+              <Tag className="size-8 text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">No offers yet</h3>
+            <p className="text-sm text-muted-foreground mb-6 max-w-sm">
+              Create a discount offer to attract more students. Offers appear directly on your listing page.
+            </p>
+            <Button onClick={() => setShowForm(true)}>
+              <Plus className="mr-2 size-4" />
+              Create Your First Offer
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Tips */}
+      <Card className="rounded-2xl border bg-muted/30">
+        <CardContent className="p-5">
+          <p className="text-sm font-semibold mb-2 text-foreground">💡 Tips for effective offers</p>
+          <ul className="space-y-1 text-sm text-muted-foreground">
+            <li>• Use offers at semester start (June & December) for maximum impact</li>
+            <li>• A 10–20% discount is enough to stand out without hurting profit</li>
+            <li>• Add a deadline to create urgency — "Valid until 30 June"</li>
+          </ul>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function OfferCard({
+  offer,
+  onToggle,
+  onDelete,
+  isDeleting,
+}: {
+  offer: Offer;
+  onToggle: (id: string) => void;
+  onDelete: (id: string) => void;
+  isDeleting: boolean;
+}) {
+  const isExpired = offer.validUntil ? new Date(offer.validUntil) < new Date() : false;
+
+  return (
+    <Card className={`rounded-2xl border shadow-sm ${!offer.isActive ? 'opacity-60' : ''}`}>
+      <CardContent className="p-5">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-base font-semibold">{offer.title}</span>
+              <Badge variant="secondary" className="text-xs font-bold text-green-700 bg-green-100">
+                {offer.discountPercent}% OFF
+              </Badge>
+              {isExpired && (
+                <Badge variant="outline" className="text-xs text-red-500 border-red-300">
+                  Expired
+                </Badge>
+              )}
+              {!offer.isActive && (
+                <Badge variant="outline" className="text-xs">
+                  Paused
+                </Badge>
+              )}
+            </div>
+            {offer.description && (
+              <p className="text-sm text-muted-foreground mt-1">{offer.description}</p>
+            )}
+            <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-muted-foreground">
+              {offer.productName ? (
+                <span className="flex items-center gap-1">
+                  <Package className="size-3" /> {offer.productName}
+                </span>
+              ) : (
+                <span className="flex items-center gap-1">
+                  <Package className="size-3" /> All listings
+                </span>
+              )}
+              {offer.validUntil && (
+                <span className="flex items-center gap-1">
+                  <Calendar className="size-3" />
+                  Until {new Date(offer.validUntil).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                </span>
+              )}
             </div>
           </div>
-          <Button variant="ghost" size="sm" onClick={() => setShowQuickStart(false)} className="self-end md:self-center">
-            Got it
-          </Button>
-        </Alert>
-      )}
-      <section className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold md:text-3xl">Promotions hub</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Plan, launch, and measure campaigns that drive qualified bookings.</p>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onToggle(offer.id)}
+              className="text-xs"
+            >
+              {offer.isActive ? 'Pause' : 'Activate'}
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-destructive hover:text-destructive hover:bg-destructive/10 size-8"
+              onClick={() => onDelete(offer.id)}
+              disabled={isDeleting}
+            >
+              {isDeleting ? <Loader2 className="size-3 animate-spin" /> : <Trash2 className="size-3" />}
+            </Button>
+          </div>
         </div>
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <Button variant="outline" className="w-full sm:w-auto">Use blueprint</Button>
-          <Button className="w-full sm:w-auto" onClick={scrollToWizard}>Create promotion</Button>
-        </div>
-      </section>
-
-      <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <Card className="shadow-sm">
-          <CardHeader className="flex flex-col gap-2">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <CardTitle>Campaign overview</CardTitle>
-                <CardDescription>Switch tabs to review active, scheduled, or completed campaigns.</CardDescription>
-              </div>
-              <Badge variant="secondary">Smart recommendations on</Badge>
-            </div>
-            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as PromotionTab)}>
-              <TabsList className="grid w-full grid-cols-3">
-                {promotionStatuses.map((status) => (
-                  <TabsTrigger key={status.id} value={status.id} className="flex flex-col gap-1 py-3 text-xs">
-                    <span className="text-sm font-semibold">{status.title}</span>
-                    <span className="text-muted-foreground">{status.description}</span>
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-              {promotionStatuses.map((status) => (
-                <TabsContent key={status.id} value={status.id}>
-                  {promotionsByStatus[status.id as keyof VendorPromotionsByStatus].length === 0 ? (
-                    <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-muted-foreground/40 bg-muted/20 p-10 text-center">
-                      <Sparkles className="size-8 text-primary" />
-                      <div className="space-y-1">
-                        <p className="text-base font-semibold text-foreground">No {status.title.toLowerCase()} campaigns yet</p>
-                        <p className="text-sm text-muted-foreground">Create a promotion to see live performance metrics here.</p>
-                      </div>
-                      <Button size="sm" onClick={scrollToWizard}>Create promotion</Button>
-                    </div>
-                  ) : (
-                    <div className="grid gap-4 md:grid-cols-2">
-                      {promotionsByStatus[status.id as keyof VendorPromotionsByStatus].map((promo) => (
-                        <Card key={promo.id} className="border border-muted/40">
-                          <CardHeader className="space-y-1">
-                            <div className="flex items-center justify-between">
-                              <CardTitle className="text-lg">{promo.name}</CardTitle>
-                              <Badge variant="outline">{promo.id}</Badge>
-                            </div>
-                            {promo.audience && <CardDescription>{promo.audience}</CardDescription>}
-                          </CardHeader>
-                          <CardContent className="space-y-2 text-sm">
-                            {promo.uplift && (
-                              <div className="flex items-center justify-between">
-                                <span className="text-muted-foreground">Performance</span>
-                                <span className="font-medium text-foreground">{promo.uplift}</span>
-                              </div>
-                            )}
-                            {promo.dates && (
-                              <div className="flex items-center justify-between">
-                                <span className="text-muted-foreground">Run window</span>
-                                <span className="font-medium text-foreground">{promo.dates}</span>
-                              </div>
-                            )}
-                            {promo.budget && (
-                              <div className="flex items-center justify-between">
-                                <span className="text-muted-foreground">Budget</span>
-                                <span className="font-medium text-foreground">{promo.budget}</span>
-                              </div>
-                            )}
-                          </CardContent>
-                          <CardFooter className="flex flex-col gap-2 border-t bg-muted/40 p-4 sm:flex-row sm:justify-between">
-                            <Button variant="outline" size="sm" className="w-full sm:w-auto">View insights</Button>
-                            <Button size="sm" className="w-full sm:w-auto">Boost</Button>
-                          </CardFooter>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
-                </TabsContent>
-              ))}
-            </Tabs>
-          </CardHeader>
-        </Card>
-        <Card className="self-start border border-muted-foreground/20 shadow-sm">
-          <CardHeader>
-            <CardTitle>Playbook ideas</CardTitle>
-            <CardDescription>Use proven templates to launch faster.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 text-sm">
-            <PlaybookCard icon={Megaphone} title="Launch flash sale" description="Drive urgency with limited slots and countdown timers for hostels." />
-            <PlaybookCard icon={Sparkles} title="Promote add-ons" description="Bundle meal plans with laundry to grow average order value." />
-            <PlaybookCard icon={Timer} title="Re-engage leads" description="Send timed WhatsApp nudges to students who saved your listing." />
-          </CardContent>
-        </Card>
-      </section>
-
-      <section ref={wizardRef} className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <Card className="shadow-sm">
-          <CardHeader className="flex flex-col gap-2">
-            <div>
-              <CardTitle>Build a promotion</CardTitle>
-              <CardDescription>Complete the guided wizard to launch confidently.</CardDescription>
-            </div>
-            <Progress value={progress} className="h-2" />
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <Tabs value={step} onValueChange={(value) => setStep(value as StepId)} className="space-y-6">
-              <div className="grid gap-4 md:grid-cols-4">
-                {creationSteps.map((item, index) => (
-                  <Button
-                    key={item.id}
-                    variant={step === item.id ? 'default' : 'outline'}
-                    className="flex flex-col items-start gap-1 py-3 text-left"
-                    onClick={() => setStep(item.id)}
-                  >
-                    <span className="text-xs uppercase tracking-wide text-muted-foreground">Step {index + 1}</span>
-                    <span className="text-sm font-semibold">{item.title}</span>
-                    <span className="text-xs text-muted-foreground">{item.description}</span>
-                  </Button>
-                ))}
-              </div>
-
-              <TabsContent value="audience" className="space-y-4">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="promotion-audience" className="text-sm font-medium">Target audience</Label>
-                    <Input id="promotion-audience" placeholder="e.g. Hostel residents" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="promotion-goal" className="text-sm font-medium">Primary goal</Label>
-                    <Input id="promotion-goal" placeholder="Increase bookings by 15%" />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="promotion-message" className="text-sm font-medium">Key message</Label>
-                  <Textarea id="promotion-message" rows={4} placeholder="Describe the offer and the call to action." />
-                </div>
-              </TabsContent>
-
-              <TabsContent value="offer" className="space-y-4">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium">Discount</Label>
-                    <Badge variant="outline">{discount[0]}%</Badge>
-                  </div>
-                  <Slider value={discount} min={5} max={30} step={5} onValueChange={setDiscount} />
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    {discountMarks.map((mark) => (
-                      <span key={mark}>{mark}%</span>
-                    ))}
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="promotion-offer" className="text-sm font-medium">Offer details</Label>
-                  <Textarea id="promotion-offer" rows={4} placeholder="Outline eligibility, add-ons, and upsell hooks." />
-                </div>
-              </TabsContent>
-
-              <TabsContent value="schedule" className="space-y-4">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="promotion-budget" className="text-sm font-medium">Budget (₹)</Label>
-                    <Input id="promotion-budget" value={budget} onChange={(event) => setBudget(event.target.value)} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="promotion-window" className="text-sm font-medium">Schedule window</Label>
-                    <Input id="promotion-window" placeholder="10 Oct – 24 Oct" />
-                  </div>
-                </div>
-                <div className="flex items-center justify-between rounded-lg border border-dashed border-muted-foreground/40 p-4">
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">Enable countdown timer</p>
-                    <p className="text-xs text-muted-foreground">Adds urgency widget to your listing page.</p>
-                  </div>
-                  <Switch checked={useCountdown} onCheckedChange={setUseCountdown} />
-                </div>
-              </TabsContent>
-
-              <TabsContent value="review" className="space-y-4">
-                <div className="space-y-3 rounded-lg border border-muted/40 p-4 text-sm">
-                  <div className="flex items-start gap-3">
-                    <Users className="mt-0.5 size-4 text-muted-foreground" />
-                    <div>
-                      <p className="font-semibold">Audience</p>
-                      <p className="text-muted-foreground">Hostel leads · Primary goal: boost mid-semester occupancy.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <Percent className="mt-0.5 size-4 text-muted-foreground" />
-                    <div>
-                      <p className="font-semibold">Incentive</p>
-                      <p className="text-muted-foreground">{discount[0]}% savings plus complimentary add-ons.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CalendarRange className="mt-0.5 size-4 text-muted-foreground" />
-                    <div>
-                      <p className="font-semibold">Schedule</p>
-                      <p className="text-muted-foreground">Launch window: 10–24 Oct · Budget ₹{Number(budget || 0).toLocaleString()}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <Wand2 className="mt-0.5 size-4 text-muted-foreground" />
-                    <div>
-                      <p className="font-semibold">Automation</p>
-                      <p className="text-muted-foreground">Countdown timer {useCountdown ? 'enabled' : 'disabled'} for landing page urgency.</p>
-                    </div>
-                  </div>
-                </div>
-                <Textarea rows={3} placeholder="Add final reviewer notes or handoff instructions." />
-              </TabsContent>
-            </Tabs>
-
-            <div className="flex flex-col gap-3 border-t border-muted/40 pt-4 sm:flex-row sm:items-center sm:justify-between">
-              <span className="text-xs text-muted-foreground">Step {stepIndex + 1} of {creationSteps.length}</span>
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={() => goStep('prev')} disabled={stepIndex === 0}>Back</Button>
-                {step === 'review' ? (
-                  <Button onClick={handlePublish} disabled={isPublishing}>
-                    {isPublishing ? 'Publishing…' : 'Publish promotion'}
-                  </Button>
-                ) : (
-                  <Button onClick={() => goStep('next')}>Continue</Button>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="self-start border border-muted-foreground/20 shadow-sm">
-          <CardHeader>
-            <CardTitle>Optimization tips</CardTitle>
-            <CardDescription>Quick wins to maximise your campaign impact.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 text-sm">
-            <div className="flex items-start gap-3">
-              <Megaphone className="mt-0.5 size-4 text-primary" />
-              <div>
-                <p className="font-semibold">Align messaging</p>
-                <p className="text-muted-foreground">Use action verbs in headlines and reinforce scarcity in the first sentence.</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <Sparkles className="mt-0.5 size-4 text-primary" />
-              <div>
-                <p className="font-semibold">Highlight add-ons</p>
-                <p className="text-muted-foreground">Bundle laundry or meal upgrades to increase average order value.</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <Timer className="mt-0.5 size-4 text-primary" />
-              <div>
-                <p className="font-semibold">Act on urgency</p>
-                <p className="text-muted-foreground">Schedule nudges 48 hours before expiry to capture undecided leads.</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </section>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

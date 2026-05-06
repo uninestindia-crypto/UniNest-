@@ -4,8 +4,8 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 
 export const metadata: Metadata = {
-  title: 'List Your Student Business Free | Uninest Vendor Registration',
-  description: 'Register your hostel, library, food mess, or student product business on Uninest. Reach thousands of college students. Free to start. AI tools included.',
+  title: 'Get Started | Uninest Vendor',
+  description: 'Complete your vendor setup and start reaching students on UniNest.',
 };
 
 export default async function VendorOnboardingPage() {
@@ -19,10 +19,33 @@ export default async function VendorOnboardingPage() {
   }
 
   const role = user.user_metadata?.role;
-
   if (role !== 'vendor' && role !== 'admin') {
     redirect('/');
   }
 
-  return <VendorOnboardingContent />;
+  // Check what the vendor has completed
+  const [productsResult, subscriptionResult] = await Promise.all([
+    supabase.from('products').select('id', { count: 'exact', head: true }).eq('seller_id', user.id),
+    Promise.resolve({
+      isActive: Boolean(user.user_metadata?.is_vendor_active),
+      isTrialActive: user.user_metadata?.vendor_trial_expires_at
+        ? new Date() <= new Date(user.user_metadata.vendor_trial_expires_at)
+        : false,
+    }),
+  ]);
+
+  const checklistStatus = {
+    hasProfile: Boolean(user.user_metadata?.full_name && user.user_metadata?.contact_number),
+    hasAvatar: Boolean(user.user_metadata?.avatar_url),
+    hasCategories: (user.user_metadata?.vendor_categories?.length || 0) > 0,
+    hasListing: (productsResult.count || 0) > 0,
+    hasActiveSubscription: subscriptionResult.isActive || subscriptionResult.isTrialActive,
+  };
+
+  return (
+    <VendorOnboardingContent
+      userName={user.user_metadata?.full_name || 'Vendor'}
+      checklistStatus={checklistStatus}
+    />
+  );
 }

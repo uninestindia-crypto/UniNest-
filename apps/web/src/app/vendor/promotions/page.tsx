@@ -2,11 +2,10 @@ import type { Metadata } from 'next';
 import VendorPromotionsContent from '@/components/vendor/promotions/page';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import type { VendorPromotionsByStatus } from '@/lib/types';
 
 export const metadata: Metadata = {
-  title: 'Vendor Promotions | UniNest',
-  description: 'Manage campaigns, budgets, and performance for your promotions.',
+  title: 'Offers & Discounts | UniNest Vendor',
+  description: 'Create simple discount offers for your listings to attract more students.',
 };
 
 export default async function VendorPromotionsPage() {
@@ -20,21 +19,32 @@ export default async function VendorPromotionsPage() {
   }
 
   const role = user.user_metadata?.role;
-
   if (role !== 'vendor' && role !== 'admin') {
     redirect('/');
   }
 
-  const { data: promotionsSetting } = await supabase
+  // Fetch this vendor's offers stored in platform_settings keyed by vendor ID
+  const { data: offersData } = await supabase
     .from('platform_settings')
     .select('value')
-    .eq('key', 'vendor_promotions')
+    .eq('key', `vendor_offers_${user.id}`)
     .maybeSingle();
 
-  const rawPromotions = promotionsSetting?.value as VendorPromotionsByStatus | null;
-  const promotions = Array.isArray(rawPromotions?.active) && Array.isArray(rawPromotions?.scheduled) && Array.isArray(rawPromotions?.completed)
-    ? rawPromotions
-    : null;
+  // Fetch vendor's products for the offer form dropdown
+  const { data: products } = await supabase
+    .from('products')
+    .select('id, name, price, category')
+    .eq('seller_id', user.id)
+    .eq('status', 'active')
+    .order('created_at', { ascending: false });
 
-  return <VendorPromotionsContent promotions={promotions} />;
+  const offers = Array.isArray(offersData?.value) ? offersData.value : [];
+
+  return (
+    <VendorPromotionsContent
+      vendorId={user.id}
+      initialOffers={offers}
+      products={products || []}
+    />
+  );
 }

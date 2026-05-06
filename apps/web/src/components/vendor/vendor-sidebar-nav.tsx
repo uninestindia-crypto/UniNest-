@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { usePathname } from 'next/navigation';
@@ -13,11 +12,10 @@ import {
   Bed,
   Laptop,
   PlusCircle,
-  CheckCircle2,
   LineChart,
-  Megaphone,
   ShieldCheck,
-  MessageSquare
+  MessageSquare,
+  Tag,
 } from 'lucide-react';
 import { SidebarMenu, SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar';
 import Link from 'next/link';
@@ -30,34 +28,29 @@ const overviewItems = [
 ];
 
 const marketplaceItems = [
-  { href: '/vendor/products', label: 'My Products', icon: Package },
-  { href: '/vendor/products/new', label: 'Add New Product', icon: PlusCircle },
+  { href: '/vendor/products', label: 'My Listings', icon: Package },
+  { href: '/vendor/products/new', label: 'Add New Listing', icon: PlusCircle },
   { href: '/vendor/orders', label: 'Orders', icon: ShoppingCart },
-];
-
-const businessItems = [
-  { href: '/vendor/onboarding', label: 'Onboarding', icon: CheckCircle2 },
-  { href: '/vendor/subscription', label: 'Subscription', icon: ShieldCheck },
-  { href: '/vendor/promotions', label: 'Promotions', icon: Megaphone },
+  { href: '/vendor/promotions', label: 'Offers & Discounts', icon: Tag },
 ];
 
 const categoryDashboards = [
-  { id: "library", label: "Library Hub", icon: Library },
-  { id: "food-mess", label: "Food Mess Hub", icon: Utensils },
-  { id: "hostels", label: "Hostel Hub", icon: Bed },
-  { id: "cybercafe", label: "Cybercafé Hub", icon: Laptop },
+  { id: 'library', label: 'Library Hub', icon: Library },
+  { id: 'food-mess', label: 'Food Mess Hub', icon: Utensils },
+  { id: 'hostels', label: 'Hostel Hub', icon: Bed },
+  { id: 'cybercafe', label: 'Cybercafé Hub', icon: Laptop },
 ];
 
 export function VendorSidebarNav() {
   const pathname = usePathname();
   const { vendorCategories } = useAuth();
 
-  const vendorSpecificDashboards = categoryDashboards.filter(dash => {
+  const vendorSpecificDashboards = categoryDashboards.filter((dash) => {
     const dashLabel = dash.id.replace('-', ' ').toLowerCase();
-    return vendorCategories?.some(cat => cat.toLowerCase() === dashLabel);
+    return vendorCategories?.some((cat) => cat.toLowerCase() === dashLabel);
   });
 
-  const NavItem = ({ item }: { item: any }) => (
+  const NavItem = ({ item }: { item: { href: string; label: string; icon: React.ElementType } }) => (
     <SidebarMenuItem key={item.href}>
       <SidebarMenuButton
         asChild
@@ -75,28 +68,31 @@ export function VendorSidebarNav() {
     <SidebarMenu>
       {/* Overview Section */}
       <li className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Overview</li>
-      {overviewItems.map(item => <NavItem key={item.href} item={item} />)}
+      {overviewItems.map((item) => (
+        <NavItem key={item.href} item={item} />
+      ))}
 
       <SidebarMenuItem>
         <Separator className="my-2" />
       </SidebarMenuItem>
 
       {/* Marketplace Section */}
-      <li className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Marketplace</li>
-      {marketplaceItems.map(item => <NavItem key={item.href} item={item} />)}
+      <li className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">My Business</li>
+      {marketplaceItems.map((item) => (
+        <NavItem key={item.href} item={item} />
+      ))}
 
       {vendorSpecificDashboards.length > 0 && (
         <>
           <SidebarMenuItem>
             <Separator className="my-2" />
           </SidebarMenuItem>
-          <li className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Service Hubs</li>
-          {vendorSpecificDashboards.map(item => (
+          <li className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Service Hubs
+          </li>
+          {vendorSpecificDashboards.map((item) => (
             <SidebarMenuItem key={item.id}>
-              <SidebarMenuButton
-                asChild
-                isActive={pathname === `/vendor/dashboard/${item.id}`}
-              >
+              <SidebarMenuButton asChild isActive={pathname === `/vendor/dashboard/${item.id}`}>
                 <Link href={`/vendor/dashboard/${item.id}`}>
                   <item.icon className="size-4" />
                   <span>{item.label}</span>
@@ -111,9 +107,8 @@ export function VendorSidebarNav() {
         <Separator className="my-2" />
       </SidebarMenuItem>
 
-      {/* Business Section */}
-      <li className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Business</li>
-      {businessItems.map(item => <NavItem key={item.href} item={item} />)}
+      {/* Account Section */}
+      <li className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Account</li>
       <SidebarMenuItem>
         <SidebarMenuButton asChild isActive={pathname.startsWith('/vendor/chat')}>
           <Link href="/vendor/chat">
@@ -122,8 +117,16 @@ export function VendorSidebarNav() {
           </Link>
         </SidebarMenuButton>
       </SidebarMenuItem>
+      <SidebarMenuItem>
+        <SidebarMenuButton asChild isActive={pathname.startsWith('/vendor/subscription')}>
+          <Link href="/vendor/subscription">
+            <ShieldCheck className="size-4" />
+            <span>Subscription</span>
+          </Link>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
 
-      <div className='flex-grow' />
+      <div className="flex-grow" />
 
       <SidebarMenuItem>
         <Separator className="my-2" />
@@ -140,4 +143,3 @@ export function VendorSidebarNav() {
     </SidebarMenu>
   );
 }
-
