@@ -58,13 +58,14 @@ async function getVendorDataForCategory(categoryLabel: string, userId: string) {
                 buyer:profiles!buyer_id(full_name, avatar_url),
                 order_items:order_items!inner(
                     product_id,
-                    products ( name, category )
+                    products:products!order_items_product_id_fkey( name, category )
                 )
             `)
             .eq('vendor_id', userId)
             .in('order_items.product_id', productIds)
             .order('created_at', { ascending: false })
         : { data: [], error: null };
+
 
     if (ordersError) {
         console.error(`Error fetching orders for ${categoryLabel} dashboard:`, ordersError);

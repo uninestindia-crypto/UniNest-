@@ -50,3 +50,18 @@ pnpm-debug.log*
 # Firebase
 .firebase/
 firebase-debug.log
+
+# ─── Electron Desktop ──────────────────────────────────────────────────────────
+apps/desktop/dist/
+apps/desktop/node_modules/
+apps/desktop/package-lock.json
+
+# ─── Capacitor Mobile ──────────────────────────────────────────────────────────
+# Android - keep gradle files but ignore build output
+apps/mobile/android/.gradle/
+apps/mobile/android/app/build/
+apps/mobile/android/build/
+apps/mobile/node_modules/
+apps/mobile/package-lock.json
+# iOS - only need on Mac
+apps/mobile/ios/

@@ -48,9 +48,10 @@ const profileFormSchema = z.object({
   contactNumber: z.string().optional(),
   bio: z.string().max(200, 'Bio must not exceed 200 characters.').optional(),
   openingHours: z.string().max(200, 'Opening hours must not exceed 200 characters.').optional(),
-  role: z.enum(['student', 'vendor']),
+  role: z.enum(['student', 'vendor', 'admin', 'co-admin']),
   vendorCategories: z.array(z.string()).optional(),
 });
+
 
 const passwordFormSchema = z.object({
   newPassword: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
@@ -550,30 +551,38 @@ export default function SettingsContent() {
                         name="role"
                         render={({ field }) => (
                           <FormItem className="space-y-2 md:col-span-2">
-                            <FormLabel>I am a...</FormLabel>
+                            <FormLabel>Role</FormLabel>
                             <FormControl>
-                              <RadioGroup
-                                onValueChange={field.onChange}
-                                defaultValue={field.value}
-                                className="flex space-x-4"
-                              >
-                                <FormItem className="flex items-center space-x-2 space-y-0 border rounded-lg p-3 hover:bg-muted/50 transition-colors cursor-pointer">
-                                  <FormControl>
-                                    <RadioGroupItem value="student" />
-                                  </FormControl>
-                                  <FormLabel className="font-normal cursor-pointer flex items-center gap-2">
-                                    <UserIcon className="size-4" /> Student
-                                  </FormLabel>
-                                </FormItem>
-                                <FormItem className="flex items-center space-x-2 space-y-0 border rounded-lg p-3 hover:bg-muted/50 transition-colors cursor-pointer">
-                                  <FormControl>
-                                    <RadioGroupItem value="vendor" />
-                                  </FormControl>
-                                  <FormLabel className="font-normal cursor-pointer flex items-center gap-2">
-                                    <Store className="size-4" /> Vendor
-                                  </FormLabel>
-                                </FormItem>
-                              </RadioGroup>
+                              {field.value === 'admin' || field.value === 'co-admin' ? (
+                                <div className="flex items-center gap-2 rounded-lg border bg-muted/30 p-3">
+                                  <Shield className="size-4 text-primary" />
+                                  <span className="font-semibold capitalize">{field.value}</span>
+                                  <span className="text-xs text-muted-foreground ml-1">— Role cannot be changed for admin accounts.</span>
+                                </div>
+                              ) : (
+                                <RadioGroup
+                                  onValueChange={field.onChange}
+                                  defaultValue={field.value}
+                                  className="flex space-x-4"
+                                >
+                                  <FormItem className="flex items-center space-x-2 space-y-0 border rounded-lg p-3 hover:bg-muted/50 transition-colors cursor-pointer">
+                                    <FormControl>
+                                      <RadioGroupItem value="student" />
+                                    </FormControl>
+                                    <FormLabel className="font-normal cursor-pointer flex items-center gap-2">
+                                      <UserIcon className="size-4" /> Student
+                                    </FormLabel>
+                                  </FormItem>
+                                  <FormItem className="flex items-center space-x-2 space-y-0 border rounded-lg p-3 hover:bg-muted/50 transition-colors cursor-pointer">
+                                    <FormControl>
+                                      <RadioGroupItem value="vendor" />
+                                    </FormControl>
+                                    <FormLabel className="font-normal cursor-pointer flex items-center gap-2">
+                                      <Store className="size-4" /> Vendor
+                                    </FormLabel>
+                                  </FormItem>
+                                </RadioGroup>
+                              )}
                             </FormControl>
                             <FormMessage />
                           </FormItem>
